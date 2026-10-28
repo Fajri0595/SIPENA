@@ -155,8 +155,7 @@
         '<div class="grid2 mb16">' + SP.PROGRAM.map(function (p) { return '<div class="card card-p20 row between"><span><b>' + esc(SP.PROG_LABEL[p]) + '</b></span>' + SP.badge(kel.program[p]) + '</div>'; }).join('') + '</div>' +
         '<h3 class="h3 mb16">Riwayat penilaian</h3>' + (hist.length ? '<div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>Program</th><th>Siklus</th><th>Semester</th><th>Kelas</th><th>Status</th><th>Diperbarui</th></tr></thead><tbody>' +
           hist.map(function (r) { return '<tr><td>' + esc(SP.PROG_SHORT[r.program]) + '</td><td class="num">' + (r.siklus > 1 ? 'Pengulangan ke-' + (r.siklus - 1) : 'Reguler') + '</td><td>' + esc(SP.semLabel(r.semester) + ' ' + r.tahun_ajaran) + '</td><td>' + esc(SP.kelasNama(r.kelas_id)) + '</td><td>' + SP.badge(r.status) + '</td><td class="muted" style="font-size:12.5px">' + SP.waktu(r.waktu_ubah) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="muted">Belum ada nilai tercatat.</p>') +
-        (peng.length ? '<h3 class="h3 mt24 mb16">Pengulangan</h3>' + peng.map(function (r) { return '<div class="callout warn" style="margin-bottom:8px"><div class="ic">' + SP.icon('rotate') + '</div><div class="grow"><div class="ct">' + esc(SP.PROG_LABEL[r.program]) + ' ' + SP.badge(r.status) + '</div><div class="tx">Jadwal: ' + esc(SP.targetLabel(r)) + (r.kelas_ulang_id ? ' · Kelas ' + esc(SP.kelasNama(r.kelas_ulang_id)) : '') + '</div></div></div>'; }).join('') : '') +
-        (sert && sert.file_id ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">Sertifikat diterbitkan</div><div class="tx"><span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) + '</div></div><button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button></div>' : ''),
+        (sert && sert.file_id ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">Sertifikat diterbitkan</div><div class="tx"><span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) + '</div></div>' + (SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button>' : '') + '</div>' : ''),
       footer: '<button class="btn btn-outline" data-act="editMhs" data-nim="' + esc(nim) + '">' + SP.icon('pencil') + ' Ubah data</button><label class="btn btn-outline" style="cursor:pointer">' + SP.icon('image') + ' Unggah foto<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="fotoMhs" data-nim="' + esc(nim) + '"></label><button class="btn btn-primary" data-act="tutupModal">Tutup</button>'
     });
     SP.api('ambilFoto', { nim: nim }).then(function (r) {
@@ -280,16 +279,18 @@
   // ============================================================
   // CETAK SERTIFIKAT
   // ============================================================
-  SP.ui.cert = SP.ui.cert || { kelas: '', tab: 'siap', sel: {}, q: '', page: 1, job: null };
+  SP.ui.cert = SP.ui.cert || { kelas: '', angkatan: '', tab: 'siap', sel: {}, q: '', page: 1, job: null };
 
   function certData() {
     const izin = {}; SP.kelasCetak().forEach(function (k) { izin[k.id] = true; });
     const adm = SP.isAdmin();
+    const u = SP.ui.cert;
     return SP.barisKelulusan().filter(function (b) {
       if (b.akhir !== 'LULUS') return false;
+      if (u.angkatan && b.m.angkatan !== u.angkatan) return false;
       const rows = (SP.X.km[b.m.nim] || []).filter(function (r) { return r.jenis !== 'PENGULANGAN'; });
       if (!adm && !rows.some(function (r) { return izin[r.kelas_id]; })) return false;
-      if (SP.ui.cert.kelas && !rows.some(function (r) { return r.kelas_id === SP.ui.cert.kelas; })) return false;
+      if (u.kelas && !rows.some(function (r) { return r.kelas_id === u.kelas; })) return false;
       return true;
     });
   }
@@ -366,16 +367,17 @@
     judul: 'Cetak Sertifikat',
     render: function () {
       if (!SP.bolehCetakUI()) {
-        return SP.header({ crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], judul: 'Penerbitan & Pencetakan Sertifikat' }) + '<div class="card">' + SP.kosong('lock', 'Akses terbatas', 'Modul ini khusus <b>tutor semester genap</b> dan Superadmin, karena kelulusan ditetapkan setelah melihat hasil keseluruhan dua semester.') + '</div>';
+        return SP.header({ crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], judul: 'Penerbitan & Pencetakan Sertifikat' }) + '<div class="card">' + SP.kosong('lock', 'Akses Terbatas', 'Modul pencetakan sertifikat hanya boleh dilakukan oleh <b>Superadmin</b> dan <b>tutor yang diberikan izin akses</b> oleh Administrator.') + '</div>';
       }
       const u = SP.ui.cert, s = SP.set();
       return SP.header({
-        crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], eyebrow: 'Modul Registrar & Kelulusan', judul: 'Penerbitan & Pencetakan Sertifikat', desc: 'Khusus tutor semester genap &amp; Superadmin untuk mahasiswa berstatus Lulus 4 Program.',
+        crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], eyebrow: 'Modul Registrar & Kelulusan', judul: 'Penerbitan & Pencetakan Sertifikat', desc: 'Khusus Superadmin &amp; tutor yang telah diberikan hak akses cetak oleh Administrator untuk mahasiswa berstatus Lulus 4 Program.',
         aksi: '<button class="btn btn-outline" data-act="certContoh">' + SP.icon('eye') + ' Contoh PDF</button>' + (SP.isAdmin() ? '<a class="btn btn-outline" href="#/pengaturan">' + SP.icon('sliders') + ' Ubah Template</a>' : '')
       }) +
         (s.template_slides_id || !SP.isAdmin() ? '' : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Template sertifikat belum diatur', teks: 'Buka <a href="#/pengaturan"><b>Pengaturan</b></a> lalu buat template bawaan sebelum mencetak.' })) +
         '<div class="card kuota" data-part="certKuota" style="background:var(--callout)">' + SP.parts.certKuota() + '</div>' +
-        '<div class="grid-main" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div><div class="toolbar"><div class="field" style="min-width:240px"><label for="cs-k">Kelas</label><select id="cs-k" class="select" data-ch="certKelas"><option value="">Semua kelas (' + SP.kelasCetak().length + ')</option>' + SP.kelasCetak().map(function (k) { return '<option value="' + esc(k.id) + '" ' + (u.kelas === k.id ? 'selected' : '') + '>' + esc(k.nama) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="grid-main" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div><div class="toolbar"><div class="field" style="min-width:200px"><label for="cs-k">Kelas</label><select id="cs-k" class="select" data-ch="certKelas"><option value="">Semua kelas (' + SP.kelasCetak().length + ')</option>' + SP.kelasCetak().map(function (k) { return '<option value="' + esc(k.id) + '" ' + (u.kelas === k.id ? 'selected' : '') + '>' + esc(k.nama) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field" style="min-width:160px"><label for="cs-a">Angkatan</label><select id="cs-a" class="select" data-ch="certAngkatan"><option value="">Semua Angkatan</option>' + SP.angkatanList().map(function (a) { return '<option value="' + a + '" ' + (u.angkatan === a ? 'selected' : '') + '>Angkatan ' + a + '</option>'; }).join('') + '</select></div>' +
         '<div class="sch" style="align-self:flex-end"><span style="position:absolute;left:12px;top:11px;color:var(--text3)">' + SP.icon('search') + '</span><input class="input" style="padding-left:38px" placeholder="Cari NIM atau nama…" data-in="certQ" value="' + esc(u.q) + '"></div></div>' +
         '<div data-part="certTabel">' + SP.parts.certTabel() + '</div></div>' +
         '<div class="card card-p" style="position:sticky;top:84px"><div class="row between mb16"><h2 class="h3">' + SP.icon('file') + ' Pratinjau Lembar Sertifikat PDF</h2><span class="chip">A4 Landscape</span></div><div data-part="certPreview">' + SP.parts.certPreview() + '</div>' +
@@ -386,6 +388,7 @@
   SP.actions.certTab = function (el) { SP.ui.cert.tab = el.dataset.v; SP.ui.cert.page = 1; SP.refresh('certTabel'); };
   SP.actions.certHal = function (el) { SP.ui.cert.page = Number(el.dataset.p); SP.refresh('certTabel'); };
   SP.changes.certKelas = function (el) { SP.ui.cert.kelas = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.refresh('certTabel'); SP.refresh('certPreview'); };
+  SP.changes.certAngkatan = function (el) { SP.ui.cert.angkatan = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.refresh('certTabel'); SP.refresh('certPreview'); };
   SP.inputs.certQ = SP.debounce(function (el) { SP.ui.cert.q = el.value; SP.ui.cert.page = 1; SP.refresh('certTabel'); }, 150);
   SP.changes.certPilih = function (el) { SP.ui.cert.sel[el.dataset.nim] = el.checked; SP.refresh('certTabel'); SP.refresh('certPreview'); };
   SP.changes.certSemua = function (el) {

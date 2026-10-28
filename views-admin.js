@@ -134,15 +134,19 @@
     let list = SP.S.pengguna.filter(function (x) { return (!u.bahasa || x.bahasa === u.bahasa) && (!u.status || x.status === u.status) && (!q || (x.nama + ' ' + x.email + ' ' + (x.nip || '')).toLowerCase().indexOf(q) >= 0); });
     list.sort(function (a, b) { return u.urut === 'nama' ? (a.nama < b.nama ? -1 : 1) : ((b.terakhir_login || '') < (a.terakhir_login || '') ? -1 : 1); });
     const pg = SP.paginate(list, u.page, 8); u.page = pg.page;
-    return '<div class="tbl-wrap has-foot"><table class="tbl cards compact"><thead><tr><th>Nama tutor</th><th>Surel Google</th><th>Rumpun bahasa</th><th>Kelas diampu (semester ini)</th><th>Status</th><th>Terakhir login</th><th>Aksi</th></tr></thead><tbody>' +
+    return '<div class="tbl-wrap has-foot"><table class="tbl cards compact"><thead><tr><th>Nama tutor</th><th>Surel Google</th><th>Rumpun bahasa</th><th>Kelas diampu (semester ini)</th><th>Izin Cetak</th><th>Status</th><th>Terakhir login</th><th>Aksi</th></tr></thead><tbody>' +
       (pg.items.length ? pg.items.map(function (x) {
         const kd = kelasDiampu(x.email), mati = x.status !== 'AKTIF';
+        const izinCetakHtml = x.peran === 'SUPERADMIN'
+          ? '<span class="chip ok" title="Superadmin otomatis berhak mencetak">' + SP.icon('shieldCheck', 'sm') + ' Superadmin</span>'
+          : '<label class="row gap8" title="Beri atau cabut izin cetak sertifikat"><span class="switch"><input type="checkbox" data-ch="pguToggleCetak" data-email="' + esc(x.email) + '" ' + (x.izin_cetak === '1' ? 'checked' : '') + ' aria-label="Izin Cetak"><span></span></span><b style="font-size:11px;' + (x.izin_cetak === '1' ? 'color:var(--primary)' : 'color:var(--text3)') + '">' + (x.izin_cetak === '1' ? 'DIIZINKAN' : 'TIDAK') + '</b></label>';
         return '<tr style="' + (mati ? 'opacity:.65' : '') + '"><td data-l="Nama"><span class="row gap8"><span class="avatar ' + (x.bahasa === 'INGGRIS' ? 'lt' : '') + '">' + esc(SP.inisial(x.nama)) + '</span><span class="nm"><b>' + esc(x.nama) + '</b><br><small class="muted">' + (x.peran === 'SUPERADMIN' ? 'Superadmin' : 'Tutor') + (x.nip ? ' · NIP. ' + esc(x.nip) : '') + '</small></span></span></td>' +
           '<td data-l="Surel" class="mono" style="font-size:12px">' + esc(x.email) + '</td><td data-l="Rumpun">' + (x.bahasa ? '<span class="chip ' + (x.bahasa === 'ARAB' ? 'ok' : '') + '">' + SP.icon(x.bahasa === 'ARAB' ? 'edit' : 'globe', 'sm') + ' ' + esc(SP.bahasaLabel(x.bahasa)) + '</span>' : '<span class="muted3">—</span>') + '</td>' +
           '<td data-l="Kelas">' + (kd.length ? kd.map(function (n) { return '<span class="chip" style="margin:1px">' + esc(n) + '</span>'; }).join('') : '<i class="muted3">Tidak ada kelas</i>') + '</td>' +
+          '<td data-l="Izin Cetak">' + izinCetakHtml + '</td>' +
           '<td data-l="Status"><label class="row gap8"><span class="switch"><input type="checkbox" data-ch="pguToggle" data-email="' + esc(x.email) + '" ' + (x.status === 'AKTIF' ? 'checked' : '') + ' ' + (x.email === SP.S.me.email ? 'disabled' : '') + ' aria-label="Aktif"><span></span></span><b style="font-size:11px;letter-spacing:.06em">' + (x.status === 'AKTIF' ? 'AKTIF' : 'NONAKTIF') + '</b></label></td>' +
           '<td data-l="Login" class="muted" style="font-size:12.5px">' + (x.terakhir_login ? SP.waktu(x.terakhir_login) : 'Belum pernah') + '</td><td><button class="btn btn-outline btn-sm" data-act="pguEditTutor" data-email="' + esc(x.email) + '">' + SP.icon('pencil', 'sm') + ' Edit</button></td></tr>';
-      }).join('') : '<tr><td colspan="7">' + SP.kosong('users', 'Belum ada tutor', 'Klik “Daftarkan Tutor Baru” untuk menambahkan.') + '</td></tr>') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pg.dari + '–' + pg.sampai + ' dari <b>' + pg.total + '</b> pengguna terdaftar</span>' + SP.pagerHtml('pguHal', pg) + '</div>';
+      }).join('') : '<tr><td colspan="8">' + SP.kosong('users', 'Belum ada tutor', 'Klik “Daftarkan Tutor Baru” untuk menambahkan.') + '</td></tr>') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pg.dari + '–' + pg.sampai + ' dari <b>' + pg.total + '</b> pengguna terdaftar</span>' + SP.pagerHtml('pguHal', pg) + '</div>';
   };
   SP.parts.pguKelas = function () {
     const t = semTerpilih();
@@ -187,7 +191,7 @@
   SP.changes.pguUrut = function (el) { SP.ui.pgu.urut = el.value; SP.refresh('pguTabel'); };
   SP.changes.pguSem = function (el) { SP.ui.pgu.sem = el.value; SP.renderUlang(); };
   SP.actions.pguHal = function (el) { SP.ui.pgu.page = Number(el.dataset.p); SP.refresh('pguTabel'); };
-  SP.actions.pguUnduh = function () { SP.unduhCsv('daftar-tutor.csv', ['Nama', 'Email', 'NIP', 'Peran', 'Bahasa', 'Status'], SP.S.pengguna.map(function (x) { return [x.nama, x.email, x.nip, x.peran, x.bahasa, x.status]; })); };
+  SP.actions.pguUnduh = function () { SP.unduhCsv('daftar-tutor.csv', ['Nama', 'Email', 'NIP', 'Peran', 'Bahasa', 'Izin Cetak', 'Status'], SP.S.pengguna.map(function (x) { return [x.nama, x.email, x.nip, x.peran, x.bahasa, x.peran === 'SUPERADMIN' || x.izin_cetak === '1' ? 'Ya' : 'Tidak', x.status]; })); };
 
   async function simpanTutor(x) {
     try { await SP.api('tutorSimpan', x); await SP.muat(); SP.toast('Data tutor disimpan.'); return true; }
@@ -195,21 +199,35 @@
   }
   SP.changes.pguToggle = async function (el) {
     const x = SP.X.user[el.dataset.email]; const status = el.checked ? 'AKTIF' : 'NONAKTIF';
-    if (!(await simpanTutor({ email: x.email, nama: x.nama, nip: x.nip, peran: x.peran, bahasa: x.bahasa, status: status }))) { el.checked = !el.checked; }
+    if (!(await simpanTutor({ email: x.email, nama: x.nama, nip: x.nip, peran: x.peran, bahasa: x.bahasa, status: status, izin_cetak: x.izin_cetak }))) { el.checked = !el.checked; }
+  };
+  SP.changes.pguToggleCetak = async function (el) {
+    const x = SP.X.user[el.dataset.email]; const izin = el.checked ? '1' : '0';
+    if (!(await simpanTutor({ email: x.email, nama: x.nama, nip: x.nip, peran: x.peran, bahasa: x.bahasa, status: x.status, izin_cetak: izin }))) { el.checked = !el.checked; }
   };
   function formTutor(x) {
-    const baru = !x; x = x || { peran: 'TUTOR', bahasa: 'ARAB', status: 'AKTIF' };
+    const baru = !x; x = x || { peran: 'TUTOR', bahasa: 'ARAB', status: 'AKTIF', izin_cetak: '0' };
     const h = SP.modal({
       judul: baru ? 'Daftarkan Tutor Baru' : 'Ubah Data Tutor', lebar: 520,
       isi: '<div class="stack"><div class="field"><label for="ft-n">Nama lengkap &amp; gelar <span class="req">*</span></label><input id="ft-n" class="input" value="' + esc(x.nama || '') + '"></div>' +
         '<div class="field"><label for="ft-e">Email Google <span class="req">*</span></label><input id="ft-e" type="email" class="input" value="' + esc(x.email || '') + '" ' + (baru ? '' : 'readonly') + ' placeholder="nama@lembaga.ac.id"><div class="help">Hanya email terdaftar yang dapat masuk ke aplikasi.</div></div>' +
         '<div class="grid2"><div class="field"><label for="ft-i">NIP / NIDN</label><input id="ft-i" class="input" value="' + esc(x.nip || '') + '"></div><div class="field"><label for="ft-b">Rumpun bahasa</label><select id="ft-b" class="select">' + opt([['ARAB', 'Bahasa Arab'], ['INGGRIS', 'Bahasa Inggris'], ['', '— (tanpa rumpun)']], x.bahasa) + '</select></div></div>' +
-        '<div class="grid2"><div class="field"><label for="ft-p">Peran</label><select id="ft-p" class="select">' + opt([['TUTOR', 'Tutor'], ['SUPERADMIN', 'Superadmin']], x.peran) + '</select></div><div class="field"><label for="ft-s">Status</label><select id="ft-s" class="select">' + opt([['AKTIF', 'Aktif'], ['NONAKTIF', 'Nonaktif']], x.status) + '</select></div></div></div>',
+        '<div class="grid2"><div class="field"><label for="ft-p">Peran</label><select id="ft-p" class="select">' + opt([['TUTOR', 'Tutor'], ['SUPERADMIN', 'Superadmin']], x.peran) + '</select></div><div class="field"><label for="ft-s">Status</label><select id="ft-s" class="select">' + opt([['AKTIF', 'Aktif'], ['NONAKTIF', 'Nonaktif']], x.status) + '</select></div></div>' +
+        '<div class="callout ok" style="padding:12px 14px"><label class="chk"><input type="checkbox" id="ft-ic" ' + (x.izin_cetak === '1' ? 'checked' : '') + '> <b>Beri hak akses Cetak Sertifikat</b></label><div class="help" style="margin-left:24px;margin-top:4px">Izinkan tutor ini mengakses modul Cetak Sertifikat dan menerbitkan/mengunduh PDF sertifikat.</div></div></div>',
       footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button><button class="btn btn-primary" id="ft-simpan">Simpan</button>'
     });
     h.el.querySelector('#ft-simpan').addEventListener('click', async function (e) {
       const b = e.currentTarget; b.disabled = true;
-      const ok = await simpanTutor({ email: SP.$('#ft-e', h.el).value, nama: SP.$('#ft-n', h.el).value, nip: SP.$('#ft-i', h.el).value, peran: SP.$('#ft-p', h.el).value, bahasa: SP.$('#ft-b', h.el).value, status: SP.$('#ft-s', h.el).value });
+      const ic = SP.$('#ft-ic', h.el);
+      const ok = await simpanTutor({
+        email: SP.$('#ft-e', h.el).value,
+        nama: SP.$('#ft-n', h.el).value,
+        nip: SP.$('#ft-i', h.el).value,
+        peran: SP.$('#ft-p', h.el).value,
+        bahasa: SP.$('#ft-b', h.el).value,
+        status: SP.$('#ft-s', h.el).value,
+        izin_cetak: ic && ic.checked ? '1' : '0'
+      });
       if (ok) h.tutup(); else b.disabled = false;
     });
   }
@@ -270,8 +288,7 @@
     const tk = u.tujuan ? SP.tutorKelas(u.tujuan, t[0], t[1]) : {};
     const jumlah = function (id) { const q = {}; SP.S.km.forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1] && r.jenis !== 'PENGULANGAN') q[r.nim] = true; }); return Object.keys(q).length; };
     const kel = m ? SP.kelulusan(m.nim) : null;
-    const sem = [[s.tahun_ajaran_aktif + '|' + s.semester_aktif, SP.semLabel(s.semester_aktif) + ' ' + s.tahun_ajaran_aktif]];
-    const lain = s.semester_aktif === 'GANJIL' ? 'GENAP' : 'GANJIL'; sem.push([s.tahun_ajaran_aktif + '|' + lain, SP.semLabel(lain) + ' ' + s.tahun_ajaran_aktif]);
+    const sem = SP.opsiSemester().map(function (o) { return [o.v, o.label]; });
     return '<div class="grid-main" style="grid-template-columns:1fr 1.3fr"><div class="card card-p"><div class="row between mb16"><div class="row gap8"><span class="stepno">1</span><h2 class="h3">Pilih Mahasiswa</h2></div><span class="cap">Identitas target</span></div>' +
       '<div class="field" style="position:relative"><label for="pd-q">Pencarian mahasiswa aktif</label><input id="pd-q" class="input" placeholder="Ketik NIM atau nama…" data-in="pindQ" autocomplete="off" value="' + esc(m ? m.nim + ' - ' + m.nama : u.q) + '"><div id="pd-sug"></div></div>' +
       (m ? '<div class="card card-p20 mt16" style="background:var(--callout);border-color:var(--callout-bd)"><div class="row top"><span class="avatar" style="width:52px;height:52px">' + esc(SP.inisial(m.nama)) + '</span><div><span class="badge b-solid">Mahasiswa terpilih</span><h3 class="h2 mt8">' + esc(m.nama) + '</h3><div class="muted" style="font-size:13px"><span class="mono">NIM ' + esc(m.nim) + '</span> · Angkatan ' + esc(m.angkatan || '—') + '</div></div></div>' +
@@ -359,7 +376,7 @@
     return '<div class="grid-main" style="grid-template-columns:1.7fr 1fr"><div class="stack">' +
       '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--primary)">' + SP.icon('building', 'lg') + '</span><h2 class="h2">1. Informasi Lembaga &amp; Status Penilaian</h2></div><span class="tagx">MODUL INTI</span></div><div class="stack">' +
       inp('nama_lembaga', 'Nama lembaga akademik', { help: 'Dicantumkan pada sertifikat dan email.' }) +
-      '<div class="grid2"><div class="field"><label for="s-ta">Tahun akademik aktif</label><input id="s-ta" class="input" data-in="setF" data-k="tahun_ajaran_aktif" value="' + esc(f.tahun_ajaran_aktif) + '" placeholder="2026/2027"></div><div class="field"><label for="s-sm">Semester aktif</label><select id="s-sm" class="select" data-ch="setF" data-k="semester_aktif">' + opt([['GANJIL', 'Ganjil'], ['GENAP', 'Genap']], f.semester_aktif) + '</select></div></div>' +
+      '<div class="grid2"><div class="field"><label for="s-ta">Tahun akademik aktif</label><select id="s-ta" class="select" data-ch="setF" data-k="tahun_ajaran_aktif">' + opt(SP.daftarTahunAjaran().map(function (ta) { return [ta, ta + (ta === f.tahun_ajaran_aktif ? ' (Aktif)' : '')]; }), f.tahun_ajaran_aktif) + '</select><div class="help">Pilih tahun ajaran aktif atau tahun-tahun sebelumnya.</div></div><div class="field"><label for="s-sm">Semester aktif</label><select id="s-sm" class="select" data-ch="setF" data-k="semester_aktif">' + opt([['GANJIL', 'Ganjil'], ['GENAP', 'Genap']], f.semester_aktif) + '</select></div></div>' +
       '<div class="grid2">' + inp('batas_penilaian', 'Batas akhir finalisasi nilai', { type: 'date' }) + '<div class="field"><label>Status penguncian nilai</label><div class="seg lg"><button class="' + (f.mode_penilaian === 'AKTIF' ? 'on' : '') + '" data-act="setMode" data-v="AKTIF">' + SP.icon('lock', 'sm') + ' Penilaian aktif / terbuka</button><button class="' + (f.mode_penilaian === 'TERKUNCI' ? 'on' : '') + '" data-act="setMode" data-v="TERKUNCI">Terkunci</button></div></div></div>' +
       '<div class="grid2">' + inp('target_kelulusan', 'Target kelulusan institusi (%)', { type: 'number' }) + inp('kontak_bantuan', 'Kontak bantuan (ditampilkan di halaman login)', { ph: 'email / WhatsApp admin' }) + '</div></div></div>' +
       '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--accent)">' + SP.icon('award', 'lg') + '</span><h2 class="h2">2. Template Sertifikat &amp; Tanda Tangan Digital</h2></div><span class="tagx">DRIVE SYNC</span></div><div class="stack">' +

@@ -143,13 +143,12 @@
   SP.penugasanAktifSaya = function () { return SP.daftarPenugasanSaya().filter(SP.pgAktif); };
   SP.bolehCetakUI = function () {
     if (SP.isAdmin()) return true;
-    return SP.S.penugasan.some(function (p) { return p.semester === 'GENAP' && SP.milikSaya(p); });
+    const m = SP.S.me;
+    return !!(m && (m.izin_cetak === '1' || m.izin_cetak === 'YA' || m.izin_cetak === true));
   };
   SP.kelasCetak = function () {
-    if (SP.isAdmin()) return SP.S.kelas;
-    const ids = {};
-    SP.S.penugasan.forEach(function (p) { if (p.semester === 'GENAP' && SP.milikSaya(p)) ids[p.kelas_id] = true; });
-    return SP.S.kelas.filter(function (k) { return ids[k.id]; });
+    if (SP.isAdmin() || SP.bolehCetakUI()) return SP.S.kelas;
+    return [];
   };
 
   // ---------- Pengulangan ----------
@@ -215,14 +214,58 @@
   };
 
   // ---------- Helper tampilan data ----------
+  SP.daftarTahunAjaran = function () {
+    const s = {};
+    const cfg = SP.set();
+    const taAktif = (cfg && cfg.tahun_ajaran_aktif) || '';
+    if (taAktif) s[taAktif] = true;
+    (SP.S.penugasan || []).forEach(function (p) { if (p.tahun_ajaran) s[p.tahun_ajaran] = true; });
+    (SP.S.km || []).forEach(function (r) { if (r.tahun_ajaran) s[r.tahun_ajaran] = true; });
+    (SP.S.nilai || []).forEach(function (r) { if (r.tahun_ajaran) s[r.tahun_ajaran] = true; });
+    (SP.S.mutasi || []).forEach(function (r) { if (r.tahun_ajaran) s[r.tahun_ajaran] = true; });
+    (SP.S.sert || []).forEach(function (r) { if (r.tahun_ajaran) s[r.tahun_ajaran] = true; });
+    (SP.S.pengulangan || []).forEach(function (r) { if (r.ta_asal) s[r.ta_asal] = true; if (r.ta_target) s[r.ta_target] = true; });
+
+    let base = new Date().getFullYear();
+    if (/^(\d{4})\/\d{4}$/.test(taAktif)) {
+      base = Math.max(base, parseInt(RegExp.$1, 10));
+    }
+    // Sediakan hingga 10 tahun ke belakang dan 1 tahun ke depan
+    for (let y = base + 1; y >= base - 10; y--) {
+      s[y + '/' + (y + 1)] = true;
+    }
+    return Object.keys(s).sort().reverse();
+  };
   SP.opsiSemester = function () {
     const s = {};
-    SP.S.penugasan.forEach(function (p) { s[p.tahun_ajaran + '|' + p.semester] = true; });
-    const a = SP.set(); s[a.tahun_ajaran_aktif + '|' + a.semester_aktif] = true;
-    return Object.keys(s).sort().reverse().map(function (k) { const t = k.split('|'); return { v: k, label: SP.semLabel(t[1]) + ' ' + t[0] }; });
+    const taList = SP.daftarTahunAjaran();
+    taList.forEach(function (ta) {
+      s[ta + '|GENAP'] = true;
+      s[ta + '|GANJIL'] = true;
+    });
+    (SP.S.penugasan || []).forEach(function (p) { if (p.tahun_ajaran && p.semester) s[p.tahun_ajaran + '|' + p.semester] = true; });
+    const a = SP.set();
+    if (a.tahun_ajaran_aktif && a.semester_aktif) s[a.tahun_ajaran_aktif + '|' + a.semester_aktif] = true;
+
+    return Object.keys(s).sort(function (a, b) {
+      const pa = a.split('|'), pb = b.split('|');
+      if (pa[0] !== pb[0]) return pa[0] < pb[0] ? 1 : -1;
+      return pa[1] === 'GENAP' ? -1 : 1;
+    }).map(function (k) {
+      const t = k.split('|');
+      return { v: k, label: SP.semLabel(t[1]) + ' ' + t[0] };
+    });
   };
   SP.angkatanList = function () {
-    const s = {}; SP.S.mahasiswa.forEach(function (m) { if (m.angkatan) s[m.angkatan] = true; }); SP.S.kelas.forEach(function (k) { if (k.angkatan) s[k.angkatan] = true; });
+    const s = {};
+    SP.S.mahasiswa.forEach(function (m) { if (m.angkatan) s[m.angkatan] = true; });
+    SP.S.kelas.forEach(function (k) { if (k.angkatan) s[k.angkatan] = true; });
+    let base = new Date().getFullYear();
+    const cfg = SP.set();
+    if (cfg && cfg.tahun_ajaran_aktif && /^(\d{4})/.test(cfg.tahun_ajaran_aktif)) {
+      base = Math.max(base, parseInt(RegExp.$1, 10));
+    }
+    for (let y = base; y >= base - 10; y--) s[String(y)] = true;
     return Object.keys(s).sort().reverse();
   };
   SP.prodiList = function () {

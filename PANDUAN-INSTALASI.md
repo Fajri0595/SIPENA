@@ -243,20 +243,23 @@ Berhasil jika muncul `Writing objects: 100%` dan `* [new branch] main -> main`.
 
 1. Buka `https://USERNAME.github.io/sipena/` → klik **Lanjutkan dengan Google** → pilih akun Superadmin (akun yang menjalankan setup).
 2. **Pengaturan & Log** (menu Superadmin):
-   - Isi **Nama lembaga**, **Tahun akademik aktif** (mis. `2026/2027`), **Semester aktif**, **Batas finalisasi nilai**.
+   - Isi **Nama lembaga**, **Tahun akademik aktif** (tersedia pilihan dropdown tahun berjalan dan tahun-tahun sebelumnya, mis. `2026/2027`, `2025/2026`, dst.), **Semester aktif**, **Batas finalisasi nilai**.
    - Di bagian **Template Sertifikat** klik **Buat template bawaan** (jika belum otomatis). Isi nama & jabatan **dua pejabat**, unggah **tanda tangan (PNG transparan)** dan **logo** (opsional).
    - Isi **URL aplikasi** (`https://USERNAME.github.io/sipena`) agar QR verifikasi muncul di sertifikat.
    - **Simpan Pengaturan Sistem**. Coba **Kirim Email Uji Coba ke Saya**.
 3. **Kelola Pengguna & Kelas:**
    - **Daftarkan Tutor Baru** (email Google, rumpun Arab/Inggris). Tutor hanya bisa masuk jika emailnya terdaftar di sini.
+   - **Izin Cetak Sertifikat**: Berikan hak akses cetak sertifikat hanya kepada tutor tertentu yang ditugaskan melalui toggle switch di tabel tutor atau form edit tutor.
    - **Tambah Kelas Baru** (PAI A, PBA B, …).
-   - Tab **Matriks Penugasan** → atur **1 tutor Arab + 1 tutor Inggris** per kelas.
+   - Tab **Matriks Penugasan** → atur **1 tutor Arab + 1 tutor Inggris** per kelas (bisa memilih semester aktif maupun tahun akademik sebelumnya).
 4. Tutor masuk → **Impor Mahasiswa** (unduh template CSV, isi, unggah) → **Input Nilai** (Lulus / Tidak Lulus per mahasiswa) → **Simpan & Publikasikan**.
 5. Saat semester berganti ke **Genap**: Superadmin ubah **Semester aktif** di Pengaturan → daftar mahasiswa **otomatis diteruskan** ke semester genap. Lalu atur penugasan tutor genap.
-6. Mahasiswa yang lulus semua 4 program muncul di **Cetak Sertifikat** (khusus tutor semester genap & Superadmin) → pilih → **Cetak Terpilih** → **Kirim Email**.
+6. Mahasiswa yang lulus semua 4 program muncul di **Cetak Sertifikat** (khusus Superadmin dan tutor yang telah diberikan hak akses cetak oleh Admin) → pilih → **Cetak Terpilih** → **Kirim Email**.
 
 ### Aturan penting yang dijalankan sistem
 - Lulus = **4 program** (Arab Ganjil, Inggris Ganjil, Arab Genap, Inggris Genap) semuanya Lulus.
+- **Hak Akses Cetak Sertifikat**: Hanya Superadmin dan tutor yang secara eksplisit diberikan izin oleh Superadmin yang dapat membuka modul Cetak Sertifikat dan mengunduh berkas PDF.
+- **Pilihan Tahun Akademik**: Sistem menyediakan riwayat pilihan tahun akademik sebelumnya pada seluruh modul filter (Dasbor, Kelas Saya, Matriks Penugasan, Pindah Kelas, dan Cetak Sertifikat).
 - Tidak lulus di satu program → **wajib mengulang program itu saja** pada semester sejenis tahun berikutnya (notifikasi muncul otomatis). Superadmin menjadwalkan lewat **Wajib Mengulang → Atur Kelas Ulang**.
 - Pindah kelas (Superadmin): nilai ikut mahasiswa karena terikat **NIM + program**, bukan kelas.
 - Tutor semester genap **tidak input ulang** data mahasiswa; langsung melanjutkan nilai.
@@ -266,7 +269,7 @@ Berhasil jika muncul `Writing objects: 100%` dan `* [new branch] main -> main`.
 
 ## Cara Memperbarui di Kemudian Hari
 
-**Frontend** (mengubah file tampilan): ganti file di folder `sipena-frontend`, lalu dari folder itu:
+**Frontend** (mengubah file tampilan): ganti file di folder kode ini, lalu lakukan commit dan push:
 ```bash
 git add .
 git commit -m "Deskripsi singkat perubahan"
@@ -274,7 +277,11 @@ git push
 ```
 Tunggu 1–2 menit. Jika masih tampil versi lama: **Ctrl+Shift+R** atau buka di jendela Incognito.
 
-**Backend** (mengubah file `.gs`): tempel kode baru → simpan → **Deploy → Kelola deployment → ✏ → Versi baru → Deploy**.
+**Backend** (mengubah file `.gs` di folder `Back/`):
+1. Buka editor Google Apps Script proyek Anda di [script.google.com](https://script.google.com).
+2. Salin isi file yang diperbarui dari folder `Back/` (`Data.gs`, `Logika.gs`, `Sertifikat.gs`, `Aksi.gs`, `Kode.gs`) ke file masing-masing di editor Apps Script.
+3. Jalankan fungsi `periksaDanPerbaruiSkema()` sekali di editor Apps Script untuk menyinkronkan kolom baru `izin_cetak` pada sheet `Pengguna` (data lama tetap aman).
+4. Klik **Deploy > Kelola deployment (Manage deployments) > ikon Pensil (Edit) > Versi: Versi Baru (New version) > Deploy**.
 
 ---
 
