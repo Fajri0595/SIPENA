@@ -1,0 +1,26 @@
+# Backend / Apps Script / Data
+Back/
+back/
+backend/
+data/
+
+# Environment and local configs
+.env
+.env.*
+*.local
+
+# Logs & temp files
+*.log
+*.tmp
+*.temp
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
