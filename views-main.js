@@ -298,7 +298,7 @@
     const u = SP.ui.nilai, dapat = SP.bolehTulis(pg);
     const semua = barisTersaring(), pgn = SP.paginate(semua, u.page, u.per);
     u.page = pgn.page;
-    if (!pgn.total) return '<div class="card">' + SP.kosong('users', SP.kemajuan(pg).total ? 'Tidak ada data yang cocok' : 'Belum ada mahasiswa pada kelas ini', SP.kemajuan(pg).total ? 'Ubah filter atau kata kunci pencarian.' : 'Impor daftar mahasiswa melalui menu Impor Mahasiswa.', SP.kemajuan(pg).total ? '' : '<a class="btn btn-primary" href="#/impor">' + SP.icon('upload') + ' Impor Mahasiswa</a>') + '</div>';
+    if (!pgn.total) return '<div class="card">' + SP.kosong('users', SP.kemajuan(pg).total ? 'Tidak ada data yang cocok' : 'Belum ada mahasiswa pada kelas ini', SP.kemajuan(pg).total ? 'Ubah filter atau kata kunci pencarian.' : 'Tambahkan mahasiswa secara manual atau impor dari berkas CSV.', SP.kemajuan(pg).total ? '' : '<div class="row gap8 wrap" style="justify-content:center"><button class="btn btn-outline" data-act="bukaTambahMhsManual" data-kelas="' + esc(pg.kelas_id) + '">' + SP.icon('plus') + ' Tambah Mahasiswa Manual</button><a class="btn btn-primary" href="#/impor">' + SP.icon('upload') + ' Impor CSV</a></div>') + '</div>';
     const btn = function (r, st, label, kls, ikon) {
       const on = r.status === st;
       return '<button ' + (dapat ? '' : 'disabled') + ' class="' + (on ? kls : '') + '" data-act="nilaiSet" data-nim="' + esc(r.nim) + '" data-st="' + st + '" aria-pressed="' + on + '">' + (on ? SP.icon(ikon, 'sm') : '') + label + '</button>';
@@ -351,7 +351,7 @@
         '<div class="card card-p mb16" data-part="nilaiProgres">' + SP.parts.nilaiProgres() + '</div>' +
         SP.callout({ ikon: 'info', judul: 'Ketentuan Penilaian Status Akhir Program', teks: 'Nilai yang diinput berupa status akhir program (<b>LULUS</b> / <b style="color:var(--danger)">TIDAK LULUS</b>). Mahasiswa yang berstatus “Tidak Lulus” otomatis wajib mengulang program tersebut pada semester ' + esc(SP.semLabel(pg.semester).toLowerCase()) + ' berikutnya. Nilai semester sebelumnya bersifat <b>hanya-baca</b> bagi tutor.' }) +
         '<div class="row between wrap mt16 mb16"><div class="filters" style="margin:0" data-part="nilaiFilter">' + SP.parts.nilaiFilter() + '</div><div class="row wrap"><div class="sch" style="position:relative;min-width:240px"><span style="position:absolute;left:12px;top:11px;color:var(--text3)">' + SP.icon('search') + '</span><input class="input" style="padding-left:38px" placeholder="Cari NIM atau Nama…" data-in="nilaiQ" value="' + esc(SP.ui.nilai.q) + '" aria-label="Cari mahasiswa"></div>' +
-        (SP.bolehTulis(pg) ? '<button class="btn btn-outline" data-act="nilaiIsiCepat">' + SP.icon('zap') + ' Isi Cepat: Semua Lulus</button>' : '') + '<button class="btn btn-outline" data-act="nilaiEkspor">' + SP.icon('download') + ' Ekspor Draf</button></div></div>' +
+        (SP.bolehTulis(pg) ? '<button class="btn btn-outline" data-act="bukaTambahMhsManual" data-kelas="' + esc(pg.kelas_id) + '">' + SP.icon('plus') + ' Tambah Mahasiswa</button><button class="btn btn-outline" data-act="nilaiIsiCepat">' + SP.icon('zap') + ' Isi Cepat: Semua Lulus</button>' : '') + '<button class="btn btn-outline" data-act="nilaiEkspor">' + SP.icon('download') + ' Ekspor Draf</button></div></div>' +
         '<div data-part="nilaiTabel">' + SP.parts.nilaiTabel() + '</div><div class="savebar" data-part="nilaiBar">' + SP.parts.nilaiBar() + '</div>';
     },
     after: function () { SP.setSinkron(SP.sinkron.status); }

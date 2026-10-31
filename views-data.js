@@ -80,7 +80,7 @@
         return '<div class="step ' + st + '"><div class="no">' + (st === 'done' ? SP.icon('check') : no) + '</div><div><div class="cp">LANGKAH 0' + no + (st === 'on' ? ' • AKTIF' : '') + '</div><div class="tt">' + tt + '</div><div class="sb2">' + sb + '</div></div></div>';
       };
       const kol = [['NIM', 'Nomor induk mahasiswa, angka 5–20 digit.', '2310601001'], ['NAMA_LENGKAP', 'Nama lengkap sesuai data resmi (maks. 120 karakter).', 'MUHAMMAD RIDWAN MALIK'], ['EMAIL_MAHASISWA', 'Email aktif mahasiswa — dipakai untuk mengirim sertifikat.', 'ridwan@mhs.ac.id'], ['KELAS', 'Nama kelas yang sudah terdaftar di sistem.', 'PAI A'], ['ANGKATAN', 'Tahun masuk, 4 digit.', '2026']];
-      return SP.header({ crumbs: [['Dasbor', '#/dasbor'], ['Impor Mahasiswa']], judul: 'Impor Data Mahasiswa Baru', desc: 'Unggah berkas CSV untuk mendaftarkan mahasiswa semester ganjil ke dalam sistem penugasan kelas.' }) +
+      return SP.header({ crumbs: [['Dasbor', '#/dasbor'], ['Impor Mahasiswa']], judul: 'Impor Data Mahasiswa Baru', desc: 'Unggah berkas CSV untuk mendaftarkan mahasiswa semester ganjil ke dalam sistem penugasan kelas.', aksi: '<button class="btn btn-outline" data-act="bukaTambahMhsManual">' + SP.icon('plus') + ' Tambah Mahasiswa Manual</button>' }) +
         SP.callout({ ikon: 'info', judul: 'Pemberitahuan Kelanjutan Semester', tag: 'OTOMATISASI SISTEM', teks: 'Untuk <b>semester genap</b>, daftar mahasiswa per kelas otomatis diteruskan dari semester ganjil sehingga tutor tidak perlu mengimpor ulang. Impor CSV hanya diperlukan untuk angkatan baru atau penambahan mahasiswa susulan.' }) +
         '<div class="steps mt16">' + langkah(1, '', 'Unduh Format Template', 'Skema CSV baku SIPENA', u.templateDiunduh || ada ? 'done' : 'on') + langkah(2, '', 'Unggah Berkas CSV', ada ? 'Berkas terunggah: ' + (u.ukuran / 1024).toFixed(1) + ' KB' : 'Pilih atau seret berkas', ada ? 'done' : (u.templateDiunduh ? 'on' : '')) + langkah(3, '', 'Pratinjau &amp; Validasi', ada ? 'Verifikasi ' + c.total + ' baris data' : 'Menunggu berkas', ada ? 'on' : '') + '</div>' +
         '<div class="grid-main"><div class="card"><div class="card-h"><h2 class="h3">' + SP.icon('file') + ' Struktur Kolom CSV yang Diwajibkan</h2><span class="chip">5 Parameter</span></div><div class="card-b"><p class="muted mb16" style="font-size:13px">Pastikan nama header kolom di baris pertama berkas CSV Anda persis seperti format berikut:</p>' +
@@ -164,7 +164,7 @@
         '<h3 class="h3 mb16">Riwayat penilaian</h3>' + (hist.length ? '<div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>Program</th><th>Siklus</th><th>Semester</th><th>Kelas</th><th>Status</th><th>Diperbarui</th></tr></thead><tbody>' +
           hist.map(function (r) { return '<tr><td>' + esc(SP.PROG_SHORT[r.program]) + '</td><td class="num">' + (r.siklus > 1 ? 'Pengulangan ke-' + (r.siklus - 1) : 'Reguler') + '</td><td>' + esc(SP.semLabel(r.semester) + ' ' + r.tahun_ajaran) + '</td><td>' + esc(SP.kelasNama(r.kelas_id)) + '</td><td>' + SP.badge(r.status) + '</td><td class="muted" style="font-size:12.5px">' + SP.waktu(r.waktu_ubah) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="muted">Belum ada nilai tercatat.</p>') +
         (sert && sert.file_id ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">Sertifikat diterbitkan</div><div class="tx"><span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) + '</div></div>' + (SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button>' : '') + '</div>' : ''),
-      footer: '<button class="btn btn-outline" data-act="editMhs" data-nim="' + esc(nim) + '">' + SP.icon('pencil') + ' Ubah data</button><label class="btn btn-outline" style="cursor:pointer">' + SP.icon('image') + ' Unggah foto<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="fotoMhs" data-nim="' + esc(nim) + '"></label><button class="btn btn-primary" data-act="tutupModal">Tutup</button>'
+      footer: '<button class="btn btn-outline" data-act="editMhs" data-nim="' + esc(nim) + '">' + SP.icon('pencil') + ' Ubah data</button><label class="btn btn-outline" style="cursor:pointer">' + SP.icon('image') + ' Unggah foto<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="fotoMhs" data-nim="' + esc(nim) + '"></label><button class="btn btn-outline" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="konfirmasiHapusMhs" data-nim="' + esc(nim) + '">' + SP.icon('trash') + ' Hapus Mahasiswa</button><button class="btn btn-primary" data-act="tutupModal">Tutup</button>'
     });
     SP.api('ambilFoto', { nim: nim }).then(function (r) {
       const f = h.el.querySelector('#dm-foto'); if (f && r.dataUrl) f.innerHTML = '<img src="' + r.dataUrl + '" alt="" style="width:100%;height:100%;object-fit:cover">';
@@ -199,14 +199,120 @@
     el.disabled = false;
   };
 
+  // ------------------------------------------------------------
+  // TAMBAH & HAPUS MAHASISWA MANUAL (TUNGGAL)
+  // ------------------------------------------------------------
+  SP.actions.bukaTambahMhsManual = function (el) {
+    const s = SP.set();
+    const taAktif = s.tahun_ajaran_aktif || '';
+    const thDefault = taAktif ? taAktif.slice(0, 4) : String(new Date().getFullYear());
+    const kelasTerpilih = (el && el.dataset && el.dataset.kelas) || '';
+
+    let daftarKelas = [];
+    if (SP.isAdmin()) {
+      daftarKelas = SP.S.kelas.filter(function (k) { return k.status !== 'ARSIP'; });
+    } else {
+      const penugasan = SP.penugasanAktifSaya();
+      const kIds = {};
+      penugasan.forEach(function (p) { if (SP.peran(p)) kIds[p.kelas_id] = true; });
+      daftarKelas = SP.S.kelas.filter(function (k) { return kIds[k.id]; });
+    }
+
+    if (!daftarKelas.length) {
+      return SP.toast('Tidak ada kelas aktif yang tersedia untuk penambahan mahasiswa.', 'warn');
+    }
+
+    const opsiKelas = daftarKelas.map(function (k) {
+      return '<option value="' + esc(k.id) + '" ' + (k.id === kelasTerpilih ? 'selected' : '') + '>' + esc(k.nama) + (k.prodi ? ' (' + esc(k.prodi) + ')' : '') + '</option>';
+    }).join('');
+
+    SP.modal({
+      judul: 'Tambah Mahasiswa Manual', lebar: 520,
+      isi: '<div class="stack gap12">' +
+        '<div class="callout" style="margin-bottom:8px;padding:10px 14px"><div class="ic">' + SP.icon('info') + '</div><div class="tx" style="font-size:12.5px">Mendaftarkan 1 mahasiswa langsung ke kelas tanpa berkas CSV. Mahasiswa didaftarkan pada <b>Semester ' + esc(SP.semLabel(s.semester_aktif)) + ' ' + esc(taAktif) + '</b>.</div></div>' +
+        '<div class="field"><label for="tm-nim">NIM Mahasiswa <span style="color:var(--danger)">*</span></label><input id="tm-nim" class="input mono" placeholder="Contoh: 2310601001" maxlength="20" required></div>' +
+        '<div class="field"><label for="tm-nama">Nama Lengkap <span style="color:var(--danger)">*</span></label><input id="tm-nama" class="input" placeholder="Nama lengkap mahasiswa" maxlength="120" required></div>' +
+        '<div class="field"><label for="tm-email">Email Mahasiswa <span style="color:var(--danger)">*</span></label><input id="tm-email" type="email" class="input" placeholder="contoh@mhs.ac.id" required></div>' +
+        '<div class="grid2 gap12">' +
+          '<div class="field"><label for="tm-angkatan">Angkatan (Tahun) <span style="color:var(--danger)">*</span></label><input id="tm-angkatan" class="input num" placeholder="YYYY" value="' + esc(thDefault) + '" maxlength="4" required></div>' +
+          '<div class="field"><label for="tm-kelas">Kelas Tujuan <span style="color:var(--danger)">*</span></label><select id="tm-kelas" class="select">' + opsiKelas + '</select></div>' +
+        '</div>' +
+        '</div>',
+      footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button><button class="btn btn-primary" data-act="simpanMhsManual">' + SP.icon('check') + ' Simpan Mahasiswa</button>'
+    });
+  };
+
+  SP.actions.simpanMhsManual = async function (el) {
+    const nim = (SP.$('#tm-nim').value || '').trim();
+    const nama = (SP.$('#tm-nama').value || '').trim();
+    const email = (SP.$('#tm-email').value || '').trim().toLowerCase();
+    const angkatan = (SP.$('#tm-angkatan').value || '').trim();
+    const kelas_id = SP.$('#tm-kelas').value;
+
+    if (!/^\d{5,20}$/.test(nim)) return SP.toast('Format NIM tidak valid (harus 5–20 digit angka).', 'err');
+    if (!nama || nama.length > 120) return SP.toast('Nama mahasiswa wajib diisi (maks. 120 karakter).', 'err');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return SP.toast('Format email tidak valid.', 'err');
+    if (!/^\d{4}$/.test(angkatan)) return SP.toast('Angkatan harus 4 digit tahun (contoh: 2026).', 'err');
+    if (!kelas_id) return SP.toast('Silakan pilih kelas tujuan.', 'err');
+
+    el.disabled = true;
+    el.innerHTML = '<span class="spin"></span> Menyimpan…';
+    try {
+      const res = await SP.api('mahasiswaTambah', {
+        nim: nim, nama: nama, email: email, angkatan: angkatan, kelas_id: kelas_id
+      });
+      SP.terapkanHasil(res);
+      SP.simpanCache();
+      SP.tutupModal();
+      const kNama = SP.kelasNama(kelas_id);
+      SP.toast('Mahasiswa <b>' + esc(nama) + '</b> (' + esc(nim) + ') berhasil ditambahkan ke kelas <b>' + esc(kNama) + '</b>.', 'ok');
+      SP.renderUlang();
+    } catch (e) {
+      el.disabled = false;
+      el.innerHTML = SP.icon('check') + ' Simpan Mahasiswa';
+      SP.toast(esc(e.message), 'err', 8000);
+    }
+  };
+
+  SP.actions.konfirmasiHapusMhs = async function (el) {
+    const nim = el.dataset.nim;
+    const m = SP.X.mhs[nim];
+    if (!m) return;
+    const ya = await SP.konfirmasi({
+      judul: 'Hapus Data Mahasiswa',
+      pesan: 'Apakah Anda yakin ingin menghapus data mahasiswa <b>' + esc(m.nama) + ' (' + esc(m.nim) + ')</b>?<br><br><span style="color:var(--danger);font-size:13px">Peringatan: Seluruh data pendaftaran kelas dan riwayat nilai terkait mahasiswa ini akan dihapus dari sistem.</span>',
+      bahaya: true,
+      ya: 'Ya, Hapus Data',
+      batal: 'Batal'
+    });
+    if (!ya) return;
+    SP.tutupModal();
+    try {
+      await SP.api('mahasiswaHapus', { nim: nim });
+      SP.S.mahasiswa = SP.S.mahasiswa.filter(function (x) { return x.nim !== nim; });
+      SP.S.km = SP.S.km.filter(function (x) { return x.nim !== nim; });
+      SP.S.nilai = SP.S.nilai.filter(function (x) { return x.nim !== nim; });
+      SP.S.pengulangan = SP.S.pengulangan.filter(function (x) { return x.nim !== nim; });
+      SP.S.sert = SP.S.sert.filter(function (x) { return x.nim !== nim; });
+      SP.indeks();
+      SP.simpanCache();
+      SP.toast('Data mahasiswa <b>' + esc(m.nama) + '</b> berhasil dihapus.', 'ok');
+      SP.renderUlang();
+    } catch (e) {
+      SP.toast(esc(e.message), 'err', 8000);
+    }
+  };
+
   // ============================================================
   // STATUS KELULUSAN
   // ============================================================
-  SP.ui.kel = SP.ui.kel || { q: '', angkatan: '', kelas: '', prodi: '', status: '', page: 1, per: 10, aturan: true };
+  SP.ui.kel = SP.ui.kel || { q: '', angkatan: '', kelas: '', prodi: '', status: '', mhsStatus: 'AKTIF', page: 1, per: 10, aturan: true };
 
   function kelBaris() {
     const u = SP.ui.kel, q = u.q.toLowerCase();
     return SP.barisKelulusan().filter(function (b) {
+      if (u.mhsStatus === 'AKTIF' && b.m.status === 'NONAKTIF') return false;
+      if (u.mhsStatus === 'NONAKTIF' && b.m.status !== 'NONAKTIF') return false;
       if (u.angkatan && b.m.angkatan !== u.angkatan) return false;
       if (u.kelas && !(b.kelas && b.kelas.id === u.kelas)) return false;
       if (u.prodi && !(b.kelas && b.kelas.prodi === u.prodi)) return false;
@@ -218,7 +324,7 @@
   SP.parts.kelStat = function () {
     const semua = SP.barisKelulusan(), f = kelBaris();
     const c = { l: 0, w: 0, b: 0 }; f.forEach(function (b) { if (b.akhir === 'LULUS') c.l++; else if (b.akhir === 'WAJIB_MENGULANG') c.w++; else c.b++; });
-    return SP.stat({ label: 'Total mahasiswa terdaftar', nilai: SP.n(f.length), satuan: f.length === semua.length ? 'Semua angkatan' : 'Hasil filter', ikon: 'users', progress: 100 }) +
+    return SP.stat({ label: 'Total mahasiswa terdaftar', nilai: SP.n(f.length), satuan: f.length === semua.length ? 'Semua mahasiswa' : 'Hasil filter', ikon: 'users', progress: 100 }) +
       SP.stat({ label: 'Lulus penuh (yudisium)', nilai: SP.n(c.l), ikon: 'checkCircle', warna: 'g', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.l, f.length)) + '</b>', progress: SP.pct(c.l, f.length) || 0 }) +
       SP.stat({ label: 'Wajib mengulang', nilai: SP.n(c.w), ikon: 'rotate', warna: 'o', kelas: 'warn', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.w, f.length)) + '</b>', progress: SP.pct(c.w, f.length) || 0, progWarna: 'o' }) +
       SP.stat({ label: 'Nilai belum lengkap', nilai: SP.n(c.b), ikon: 'clock', warna: 'n', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.b, f.length)) + '</b>', progress: SP.pct(c.b, f.length) || 0, progWarna: 'g' });
@@ -243,7 +349,7 @@
       '<div class="tbl-wrap" style="border:0;border-radius:0"><table class="tbl cards compact"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama mahasiswa</th><th>Kelas</th><th>Arab Ganjil</th><th>Inggris Ganjil</th><th>Arab Genap</th><th>Inggris Genap</th><th>Status akhir</th><th>Aksi</th></tr></thead><tbody>' +
       pg.items.map(function (b, i) {
         return '<tr class="' + (b.akhir === 'WAJIB_MENGULANG' ? 'rowbad' : '') + '"><td data-l="No" class="col-no num muted">' + String(pg.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b style="' + (b.akhir === 'WAJIB_MENGULANG' ? 'color:var(--danger)' : '') + '">' + esc(b.m.nim) + '</b></td>' +
-          '<td data-l="Nama" class="nm"><b>' + esc(b.m.nama) + '</b><small>' + esc(b.kelas ? b.kelas.prodi || '' : '') + '</small></td><td data-l="Kelas">' + esc(b.kelas ? b.kelas.nama : '—') + '</td>' +
+          '<td data-l="Nama" class="nm"><b>' + esc(b.m.nama) + '</b>' + (b.m.status === 'NONAKTIF' ? ' <span class="chip nul" style="font-size:10.5px;padding:1px 6px">Nonaktif</span>' : '') + '<small>' + esc(b.kelas ? b.kelas.prodi || '' : '') + '</small></td><td data-l="Kelas">' + esc(b.kelas ? b.kelas.nama : '—') + '</td>' +
           SP.PROGRAM.map(function (p) { return '<td data-l="' + esc(SP.PROG_SHORT[p]) + '">' + sel(p, b) + '</td>'; }).join('') + '<td data-l="Status akhir">' + SP.badge(b.akhir) + '</td>' +
           '<td><button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(b.m.nim) + '">' + SP.icon('eye') + ' Detail</button></td></tr>';
       }).join('') + '</tbody></table></div><div class="tbl-foot" style="border-top:1px solid var(--border)"><span>Menampilkan ' + pg.dari + ' – ' + pg.sampai + ' dari <b class="num">' + SP.n(pg.total) + '</b> data mahasiswa <select class="select" style="width:auto;height:30px;margin-left:8px" data-ch="kelPer" aria-label="Baris per halaman">' + [10, 25, 50, 100].map(function (n) { return '<option ' + (n === u.per ? 'selected' : '') + '>' + n + '</option>'; }).join('') + '</select></span>' + SP.pagerHtml('kelHal', pg) + '</div></div>';
@@ -251,6 +357,7 @@
   SP.parts.kelFilterAktif = function () {
     const u = SP.ui.kel, ch = [];
     const tambah = function (k, label) { ch.push('<span class="chip">' + esc(label) + ' <button class="btn btn-ghost btn-sm" style="height:20px;padding:0 2px" data-act="kelHapusFilter" data-k="' + k + '" aria-label="Hapus filter">' + SP.icon('x', 'sm') + '</button></span>'); };
+    if (u.mhsStatus && u.mhsStatus !== 'AKTIF') tambah('mhsStatus', 'Status Data: ' + (u.mhsStatus === 'NONAKTIF' ? 'Arsip / Nonaktif' : 'Semua Data'));
     if (u.angkatan) tambah('angkatan', 'Angkatan: ' + u.angkatan); if (u.kelas) tambah('kelas', 'Kelas: ' + SP.kelasNama(u.kelas)); if (u.prodi) tambah('prodi', 'Prodi: ' + u.prodi);
     if (u.status) tambah('status', 'Status: ' + ({ LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[u.status]));
     if (!ch.length) return '';
@@ -261,14 +368,19 @@
     render: function () {
       const u = SP.ui.kel;
       const op = function (arr, sel, all) { return '<option value="">' + all + '</option>' + arr.map(function (x) { return '<option value="' + esc(x[0]) + '" ' + (x[0] === sel ? 'selected' : '') + '>' + esc(x[1]) + '</option>'; }).join(''); };
+      const aksiHeader = '<div class="row wrap gap8">' +
+        '<button class="btn btn-outline" data-act="bukaTambahMhsManual">' + SP.icon('plus') + ' Tambah Mahasiswa</button>' +
+        (SP.isAdmin() ? '<button class="btn btn-outline" data-act="bukaModalArsipMhs">' + SP.icon('archive') + ' Arsip &amp; Pembersihan Data</button>' : '') +
+        '<div style="position:relative"><button class="btn btn-primary" data-act="menuUnduh">' + SP.icon('download') + ' Unduh Rekapitulasi ' + SP.icon('chevronDown', 'sm') + '</button><div class="dd hide" id="menu-unduh" style="min-width:230px"><button class="dd-i" data-act="kelXlsx">' + SP.icon('file') + ' Excel (.xlsx)</button><button class="dd-i" data-act="kelCsv">' + SP.icon('download') + ' CSV</button><button class="dd-i" data-act="kelPdf">' + SP.icon('printer') + ' Cetak / Simpan PDF</button></div></div></div>';
       return SP.header({
         crumbs: [['Dasbor', '#/dasbor'], ['Status Kelulusan']], judul: 'Status Kelulusan 4 Program', desc: 'Rekapitulasi penetapan kelulusan mahasiswa Bahasa Arab &amp; Bahasa Inggris (Semester Ganjil &amp; Genap).',
-        aksi: '<div style="position:relative"><button class="btn btn-primary" data-act="menuUnduh">' + SP.icon('download') + ' Unduh Rekapitulasi ' + SP.icon('chevronDown', 'sm') + '</button><div class="dd hide" id="menu-unduh" style="min-width:230px"><button class="dd-i" data-act="kelXlsx">' + SP.icon('file') + ' Excel (.xlsx)</button><button class="dd-i" data-act="kelCsv">' + SP.icon('download') + ' CSV</button><button class="dd-i" data-act="kelPdf">' + SP.icon('printer') + ' Cetak / Simpan PDF</button></div></div>'
+        aksi: aksiHeader
       }) +
         '<div class="callout mb16"><div class="ic">' + SP.icon('shieldCheck', 'lg') + '</div><div class="grow"><div class="row between"><div><div class="cap" style="color:var(--primary)">MATRIKS VALIDASI AKADEMIK</div><div class="h3">Aturan Kelulusan Komprehensif 4 Gerbang Program</div></div><button class="btn btn-ghost btn-sm" data-act="kelAturan" aria-label="Lipat">' + SP.icon(u.aturan ? 'chevronUp' : 'chevronDown') + '</button></div>' +
         (u.aturan ? '<div class="row wrap gap8 mt16" style="background:#fff;border-radius:10px;padding:12px">' + SP.PROGRAM.map(function (p, i) { return (i ? '<span class="muted3">+</span>' : '') + '<span class="chip ok">' + SP.icon('checkCircle', 'sm') + ' ' + esc(SP.PROG_SHORT[p]) + ': Lulus</span>'; }).join('') + SP.icon('arrowRight') + '<span class="badge b-solid" style="height:30px;padding:0 12px">' + SP.icon('award') + ' STATUS AKHIR: LULUS (BERHAK SERTIFIKAT)</span></div><p class="tx mt8" style="color:var(--text2);font-size:13px">Mahasiswa <b>hanya dinyatakan LULUS</b> apabila memenuhi ketuntasan di seluruh 4 program tanpa terkecuali. <b style="color:var(--danger)">1 program saja yang tidak lulus</b> menyebabkan penetapan status <b style="color:var(--accent-d)">Wajib Mengulang</b> pada program tersebut di semester berikutnya.</p>' : '') + '</div></div>' +
         '<div class="grid4 mb16" data-part="kelStat">' + SP.parts.kelStat() + '</div>' +
         '<div class="toolbar"><div class="sch">' + SP.icon('search') + '<input class="input" placeholder="Cari NIM, nama mahasiswa…" data-in="kelQ" value="' + esc(u.q) + '" aria-label="Cari"></div>' +
+        '<div class="field"><select class="select" data-ch="kelMhsStatus" aria-label="Status Data"><option value="AKTIF" ' + (u.mhsStatus === 'AKTIF' ? 'selected' : '') + '>Data Aktif</option><option value="NONAKTIF" ' + (u.mhsStatus === 'NONAKTIF' ? 'selected' : '') + '>Data Arsip/Nonaktif</option><option value="SEMUA" ' + (u.mhsStatus === 'SEMUA' ? 'selected' : '') + '>Semua Data</option></select></div>' +
         '<div class="field"><select class="select" data-ch="kelAngkatan" aria-label="Angkatan">' + op(SP.angkatanList().map(function (a) { return [a, 'Angkatan ' + a]; }), u.angkatan, 'Semua Angkatan') + '</select></div>' +
         '<div class="field"><select class="select" data-ch="kelKelas" aria-label="Kelas">' + op(SP.S.kelas.map(function (k) { return [k.id, k.nama]; }), u.kelas, 'Semua Kelas') + '</select></div>' +
         '<div class="field"><select class="select" data-ch="kelProdi" aria-label="Prodi">' + op(SP.prodiList().map(function (x) { return [x, x]; }), u.prodi, 'Semua Prodi') + '</select></div>' +
@@ -279,15 +391,20 @@
   function kelUlang() { SP.ui.kel.page = 1; SP.refresh('kelStat'); SP.refresh('kelTabel'); SP.refresh('kelFilterAktif'); }
   SP.inputs.kelQ = SP.debounce(function (el) { SP.ui.kel.q = el.value; kelUlang(); }, 150);
   ['Angkatan', 'Kelas', 'Prodi', 'Status'].forEach(function (k) { SP.changes['kel' + k] = function (el) { SP.ui.kel[k.toLowerCase()] = el.value; kelUlang(); }; });
+  SP.changes.kelMhsStatus = function (el) { SP.ui.kel.mhsStatus = el.value; kelUlang(); };
   SP.changes.kelPer = function (el) { SP.ui.kel.per = Number(el.value); SP.ui.kel.page = 1; SP.refresh('kelTabel'); };
   SP.actions.kelHal = function (el) { SP.ui.kel.page = Number(el.dataset.p); SP.refresh('kelTabel'); };
   SP.actions.kelAturan = function () { SP.ui.kel.aturan = !SP.ui.kel.aturan; SP.renderUlang(); };
-  SP.actions.kelHapusFilter = function (el) { SP.ui.kel[el.dataset.k] = ''; SP.renderUlang(); };
-  SP.actions.kelReset = function () { Object.assign(SP.ui.kel, { angkatan: '', kelas: '', prodi: '', status: '', q: '' }); SP.renderUlang(); };
+  SP.actions.kelHapusFilter = function (el) {
+    if (el.dataset.k === 'mhsStatus') SP.ui.kel.mhsStatus = 'AKTIF';
+    else SP.ui.kel[el.dataset.k] = '';
+    SP.renderUlang();
+  };
+  SP.actions.kelReset = function () { Object.assign(SP.ui.kel, { angkatan: '', kelas: '', prodi: '', status: '', mhsStatus: 'AKTIF', q: '' }); SP.renderUlang(); };
   SP.actions.menuUnduh = function () { const m = SP.$('#menu-unduh'); if (m) m.classList.toggle('hide'); };
   function dataEkspor() {
     const kkm = Number((SP.set() && SP.set().kkm) || 75);
-    return { h: ['NIM', 'Nama', 'Kelas', 'Angkatan', 'Arab Ganjil', 'Inggris Ganjil', 'Arab Genap', 'Inggris Genap', 'Status Akhir'], r: kelBaris().map(function (b) {
+    return { h: ['NIM', 'Nama', 'Kelas', 'Angkatan', 'Status Data', 'Arab Ganjil', 'Inggris Ganjil', 'Arab Genap', 'Inggris Genap', 'Status Akhir'], r: kelBaris().map(function (b) {
       const t = function (p) {
         const st = b.kel.program[p];
         const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(b.m.nim, p) : '';
@@ -295,13 +412,215 @@
         if (st === 'TIDAK_LULUS') return angka ? String(angka) : 'Tidak Lulus';
         return 'Belum Diisi';
       };
-      return [b.m.nim, b.m.nama, b.kelas ? b.kelas.nama : '', b.m.angkatan].concat(SP.PROGRAM.map(function (p) { return t(p); })).concat([{ LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir]]);
+      return [b.m.nim, b.m.nama, b.kelas ? b.kelas.nama : '', b.m.angkatan, b.m.status === 'NONAKTIF' ? 'Nonaktif' : 'Aktif'].concat(SP.PROGRAM.map(function (p) { return t(p); })).concat([{ LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir]]);
     }) };
   }
   SP.actions.kelXlsx = function () { const d = dataEkspor(); if (!d.r.length) return SP.toast('Tidak ada data.', 'warn'); SP.eksporXlsx('Status Kelulusan', d.h, d.r); };
   SP.actions.kelCsv = function () { const d = dataEkspor(); if (!d.r.length) return SP.toast('Tidak ada data.', 'warn'); SP.unduhCsv('status-kelulusan.csv', d.h, d.r); };
   SP.actions.kelPdf = function () { const d = dataEkspor(); if (!d.r.length) return SP.toast('Tidak ada data.', 'warn'); SP.cetakTabel('Status Kelulusan 4 Program', d.h, d.r, SP.set().nama_lembaga + ' · dicetak ' + SP.tgl(SP.hariIni(), true)); };
   document.addEventListener('click', function (e) { const m = SP.$('#menu-unduh'); if (m && !m.classList.contains('hide') && !e.target.closest('#menu-unduh') && !e.target.closest('[data-act="menuUnduh"]')) m.classList.add('hide'); });
+
+  // ============================================================
+  // ARSIP & PEMBERSIHAN DATA MAHASISWA (Superadmin)
+  // ============================================================
+  SP.ui.arsip = SP.ui.arsip || {
+    angkatan: '',
+    kriteria: 'LULUS_SAJA',
+    backupDiunduh: false,
+    sedang: false
+  };
+
+  function arsipKandidat() {
+    const u = SP.ui.arsip;
+    return SP.barisKelulusan().filter(function (b) {
+      if (u.angkatan && b.m.angkatan !== u.angkatan) return false;
+      if (u.kriteria === 'LULUS_SAJA' && b.akhir !== 'LULUS') return false;
+      return true;
+    });
+  }
+
+  function isiModalArsip() {
+    const u = SP.ui.arsip;
+    const angkatanList = SP.angkatanList();
+    if (!u.angkatan && angkatanList.length) u.angkatan = angkatanList[0];
+    const kandidat = arsipKandidat();
+    const nLulus = kandidat.filter(function (b) { return b.akhir === 'LULUS'; }).length;
+    const nBelum = kandidat.length - nLulus;
+
+    return '<div class="stack gap16">' +
+      '<div class="callout edge" style="padding:12px 16px"><div class="ic">' + SP.icon('shieldCheck', 'lg') + '</div><div class="grow">' +
+        '<div class="ct">Manajemen Siklus Hidup &amp; Arsip Data</div>' +
+        '<div class="tx" style="font-size:13px">Nonaktifkan atau bersihkan data mahasiswa yang telah selesai/lulus dari kampus agar database tidak terbebani. <b>Wajib mengunduh berkas cadangan (backup)</b> sebelum melakukan pembersihan data.</div>' +
+      '</div></div>' +
+      '<div class="grid2 gap12">' +
+        '<div class="field"><label for="ar-ang">Pilih Angkatan</label><select id="ar-ang" class="select" data-ch="arsipAngkatan">' +
+          angkatanList.map(function (a) { return '<option value="' + esc(a) + '" ' + (a === u.angkatan ? 'selected' : '') + '>Angkatan ' + esc(a) + '</option>'; }).join('') +
+        '</select></div>' +
+        '<div class="field"><label for="ar-kri">Kriteria Mahasiswa</label><select id="ar-kri" class="select" data-ch="arsipKriteria">' +
+          '<option value="LULUS_SAJA" ' + (u.kriteria === 'LULUS_SAJA' ? 'selected' : '') + '>Hanya yang Lulus 4 Program (Direkomendasikan)</option>' +
+          '<option value="SEMUA" ' + (u.kriteria === 'SEMUA' ? 'selected' : '') + '>Semua Mahasiswa pada Angkatan Tersebut</option>' +
+        '</select></div>' +
+      '</div>' +
+      '<div class="card card-p20 row between wrap gap12" style="background:var(--callout);border-color:var(--callout-bd)">' +
+        '<div><div class="cap">Ringkasan Data Terpilih</div><div class="h2 mt4">' + SP.n(kandidat.length) + ' <small style="font-size:14px;font-weight:400;color:var(--text2)">Mahasiswa Angkatan ' + esc(u.angkatan) + '</small></div></div>' +
+        '<div class="row wrap gap8"><span class="chip ok">' + SP.icon('checkCircle', 'sm') + ' ' + nLulus + ' Lulus 4 Program</span>' + (nBelum ? '<span class="chip warn">' + SP.icon('alert', 'sm') + ' ' + nBelum + ' Belum Lengkap / Mengulang</span>' : '') + '</div>' +
+      '</div>' +
+      '<div class="card card-p20" style="border:1.5px solid var(--border)">' +
+        '<div class="row between mb8"><div><span class="stepno" style="width:24px;height:24px;font-size:12px;background:' + (u.backupDiunduh ? 'var(--primary)' : 'var(--text3)') + '">1</span> <b style="font-size:14px">Langkah 1: Unduh Berkas Cadangan (Backup Wajib)</b></div>' + (u.backupDiunduh ? '<span class="chip ok">' + SP.icon('check', 'sm') + ' Berkas Cadangan Terunduh</span>' : '<span class="chip bad">Wajib Diunduh</span>') + '</div>' +
+        '<p class="muted" style="font-size:12.5px;margin-bottom:12px">Simpan berkas CSV cadangan ke komputer lembaga sebagai arsip permanen nilai dan sertifikat mahasiswa sebelum data diubah.</p>' +
+        '<button class="btn btn-outline" style="width:100%" data-act="arsipUnduhBackup" ' + (kandidat.length ? '' : 'disabled') + '>' + SP.icon('download') + ' Unduh Berkas Cadangan (.csv)</button>' +
+      '</div>' +
+      '<div class="card card-p20" style="border:1.5px solid var(--border)">' +
+        '<div class="mb8"><span class="stepno" style="width:24px;height:24px;font-size:12px;background:var(--text3)">2</span> <b style="font-size:14px">Langkah 2: Pilih Tindakan Pembersihan Database</b></div>' +
+        '<p class="muted" style="font-size:12.5px;margin-bottom:12px">Pilih opsi pembersihan di bawah ini. Tombol akan aktif setelah berkas cadangan pada Langkah 1 diunduh.</p>' +
+        '<div class="grid2 gap12">' +
+          '<button class="btn btn-outline" data-act="arsipEksekusi" data-tipe="NONAKTIF" ' + (kandidat.length && u.backupDiunduh && !u.sedang ? '' : 'disabled') + ' title="Ubah status jadi Nonaktif">' + SP.icon('archive') + ' Nonaktifkan (Arsip Data)</button>' +
+          '<button class="btn btn-danger" data-act="arsipEksekusi" data-tipe="HAPUS" ' + (kandidat.length && u.backupDiunduh && !u.sedang ? '' : 'disabled') + ' title="Hapus permanen dari database Spreadsheet">' + SP.icon('trash') + ' Hapus Permanen dari Database</button>' +
+        '</div>' +
+        '<div class="row between mt8 muted" style="font-size:11.5px"><span><b>Opsi Nonaktif:</b> Sembunyikan dari tabel harian, tetap tersimpan di sheet.</span><span style="color:var(--danger)"><b>Opsi Hapus:</b> Hapus baris dari Spreadsheet untuk menghemat kuota.</span></div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  let modalArsipRef = null;
+  SP.actions.bukaModalArsipMhs = function () {
+    if (!SP.isAdmin()) return;
+    SP.ui.arsip.backupDiunduh = false;
+    SP.ui.arsip.sedang = false;
+    modalArsipRef = SP.modal({
+      judul: 'Arsip & Pembersihan Data Mahasiswa',
+      lebar: 640,
+      isi: isiModalArsip(),
+      footer: '<button class="btn btn-outline" data-act="tutupModal">Tutup</button>'
+    });
+  };
+
+  function segarkanModalArsip() {
+    if (modalArsipRef && modalArsipRef.body) {
+      modalArsipRef.body.innerHTML = isiModalArsip();
+    }
+  }
+
+  SP.changes.arsipAngkatan = function (el) {
+    SP.ui.arsip.angkatan = el.value;
+    SP.ui.arsip.backupDiunduh = false;
+    segarkanModalArsip();
+  };
+
+  SP.changes.arsipKriteria = function (el) {
+    SP.ui.arsip.kriteria = el.value;
+    SP.ui.arsip.backupDiunduh = false;
+    segarkanModalArsip();
+  };
+
+  SP.actions.arsipUnduhBackup = function () {
+    const u = SP.ui.arsip;
+    const kandidat = arsipKandidat();
+    if (!kandidat.length) return SP.toast('Tidak ada data mahasiswa untuk dicadangkan.', 'warn');
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+    const headers = [
+      'NIM', 'NAMA_LENGKAP', 'EMAIL', 'ANGKATAN', 'KELAS_TERAKHIR', 'STATUS_DATA',
+      'NILAI_ARAB_GANJIL', 'NILAI_INGGRIS_GANJIL', 'NILAI_ARAB_GENAP', 'NILAI_INGGRIS_GENAP',
+      'STATUS_KELULUSAN', 'NOMOR_SERTIFIKAT', 'TANGGAL_SERTIFIKAT'
+    ];
+    const rows = kandidat.map(function (b) {
+      const getVal = function (p) {
+        const st = b.kel.program[p];
+        const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(b.m.nim, p) : '';
+        if (st === 'LULUS') return angka || String(kkm);
+        if (st === 'TIDAK_LULUS') return angka ? String(angka) : 'Tidak Lulus';
+        return 'Belum Diisi';
+      };
+      const sert = SP.X.sert[b.m.nim];
+      return [
+        b.m.nim,
+        b.m.nama,
+        b.m.email || '',
+        b.m.angkatan || '',
+        b.kelas ? b.kelas.nama : '',
+        b.m.status === 'NONAKTIF' ? 'Nonaktif' : 'Aktif',
+        getVal('ARB_GJL'),
+        getVal('ING_GJL'),
+        getVal('ARB_GNP'),
+        getVal('ING_GNP'),
+        { LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir] || b.akhir,
+        sert ? sert.nomor : '',
+        sert ? sert.tanggal_cetak : ''
+      ];
+    });
+
+    const namaFile = 'backup-mahasiswa-angkatan-' + (u.angkatan || 'semua') + '-' + SP.hariIni() + '.csv';
+    SP.unduhCsv(namaFile, headers, rows);
+    u.backupDiunduh = true;
+    SP.toast('Berkas cadangan berhasil diunduh: <b>' + esc(namaFile) + '</b>.', 'ok');
+    segarkanModalArsip();
+  };
+
+  SP.actions.arsipEksekusi = async function (el) {
+    const u = SP.ui.arsip;
+    if (!u.backupDiunduh) {
+      return SP.toast('Harap unduh berkas cadangan (backup) pada Langkah 1 terlebih dahulu.', 'warn');
+    }
+    const tipe = el.dataset.tipe;
+    const kandidat = arsipKandidat();
+    if (!kandidat.length) return SP.toast('Tidak ada mahasiswa yang memenuhi kriteria.', 'warn');
+
+    if (tipe === 'HAPUS') {
+      const ya = await SP.konfirmasi({
+        judul: 'Hapus Permanen ' + kandidat.length + ' Mahasiswa?',
+        pesan: '<b style="color:var(--danger)">PERINGATAN KERAS:</b> Anda akan menghapus permanen data <b>' + kandidat.length + ' mahasiswa</b> Angkatan ' + esc(u.angkatan) + ' beserta seluruh riwayat pendaftaran kelas dan nilainya dari Google Sheets.<br><br>Pastikan berkas cadangan (.csv) yang baru saja diunduh sudah tersimpan aman di komputer Anda. Tindakan ini tidak dapat dibatalkan!',
+        bahaya: true,
+        ya: 'Ya, Hapus Permanen dari Spreadsheet',
+        batal: 'Batal'
+      });
+      if (!ya) return;
+    } else {
+      const ya = await SP.konfirmasi({
+        judul: 'Nonaktifkan ' + kandidat.length + ' Mahasiswa?',
+        pesan: 'Apakah Anda yakin ingin menonaktifkan (mengarsipkan) data <b>' + kandidat.length + ' mahasiswa</b> Angkatan ' + esc(u.angkatan) + '?<br><br>Status mereka akan diubah menjadi NONAKTIF dan disembunyikan dari tampilan kerja harian, namun tetap tersimpan di sheet historis.',
+        bahaya: false,
+        ya: 'Ya, Nonaktifkan (Arsip)',
+        batal: 'Batal'
+      });
+      if (!ya) return;
+    }
+
+    u.sedang = true;
+    segarkanModalArsip();
+    try {
+      const res = await SP.api('mahasiswaArsipMassal', {
+        angkatan: u.angkatan,
+        kriteria: u.kriteria,
+        tipe: tipe
+      });
+
+      const nimMap = {};
+      (res.nims || []).forEach(function (n) { nimMap[n] = true; });
+
+      if (tipe === 'NONAKTIF') {
+        SP.S.mahasiswa.forEach(function (m) {
+          if (nimMap[m.nim]) m.status = 'NONAKTIF';
+        });
+        SP.toast('<b>' + res.jumlah + ' mahasiswa</b> Angkatan ' + esc(u.angkatan) + ' berhasil dinonaktifkan (diarsipkan).', 'ok');
+      } else {
+        SP.S.mahasiswa = SP.S.mahasiswa.filter(function (m) { return !nimMap[m.nim]; });
+        SP.S.km = SP.S.km.filter(function (r) { return !nimMap[r.nim]; });
+        SP.S.nilai = SP.S.nilai.filter(function (r) { return !nimMap[r.nim]; });
+        SP.S.pengulangan = SP.S.pengulangan.filter(function (r) { return !nimMap[r.nim]; });
+        SP.S.sert = SP.S.sert.filter(function (s) { return !nimMap[s.nim]; });
+        SP.toast('<b>' + res.jumlah + ' mahasiswa</b> Angkatan ' + esc(u.angkatan) + ' berhasil dihapus permanen dari database.', 'ok');
+      }
+
+      SP.indeks();
+      SP.simpanCache();
+      SP.tutupModal();
+      SP.renderUlang();
+    } catch (e) {
+      u.sedang = false;
+      segarkanModalArsip();
+      SP.toast(esc(e.message), 'err', 8000);
+    }
+  };
 
   // ============================================================
   // CETAK SERTIFIKAT
