@@ -152,7 +152,15 @@
     const h = SP.modal({
       judul: 'Detail Mahasiswa', lebar: 760, tanpaFokus: true,
       isi: '<div class="row top wrap mb16"><div id="dm-foto" class="avatar" style="width:84px;height:84px;border-radius:12px;font-size:26px;overflow:hidden">' + esc(SP.inisial(m.nama)) + '</div><div class="grow"><h3 class="h2">' + esc(m.nama) + '</h3><div class="row wrap gap8 mt8"><span class="chip mono">' + esc(m.nim) + '</span><span class="chip">Angkatan ' + esc(m.angkatan || '—') + '</span><span class="chip">' + esc(kelas ? kelas.nama : '—') + '</span>' + SP.badge(kel.akhir) + '</div><p class="muted mt8">' + SP.icon('mail', 'sm') + ' ' + esc(m.email || '—') + '</p></div></div>' +
-        '<div class="grid2 mb16">' + SP.PROGRAM.map(function (p) { return '<div class="card card-p20 row between"><span><b>' + esc(SP.PROG_LABEL[p]) + '</b></span>' + SP.badge(kel.program[p]) + '</div>'; }).join('') + '</div>' +
+        '<div class="grid2 mb16">' + SP.PROGRAM.map(function (p) {
+          const st = kel.program[p];
+          const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(nim, p) : '';
+          const val = angka || (st === 'LULUS' ? String((SP.set() && SP.set().kkm) || 75) : '');
+          const badgeHtml = st === 'LULUS'
+            ? '<span class="badge b-ok num" style="font-weight:700;padding:0 10px">' + SP.icon('checkCircle', 'sm') + ' Nilai: ' + esc(val) + '</span>'
+            : SP.badge(st);
+          return '<div class="card card-p20 row between"><span><b>' + esc(SP.PROG_LABEL[p]) + '</b></span>' + badgeHtml + '</div>';
+        }).join('') + '</div>' +
         '<h3 class="h3 mb16">Riwayat penilaian</h3>' + (hist.length ? '<div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>Program</th><th>Siklus</th><th>Semester</th><th>Kelas</th><th>Status</th><th>Diperbarui</th></tr></thead><tbody>' +
           hist.map(function (r) { return '<tr><td>' + esc(SP.PROG_SHORT[r.program]) + '</td><td class="num">' + (r.siklus > 1 ? 'Pengulangan ke-' + (r.siklus - 1) : 'Reguler') + '</td><td>' + esc(SP.semLabel(r.semester) + ' ' + r.tahun_ajaran) + '</td><td>' + esc(SP.kelasNama(r.kelas_id)) + '</td><td>' + SP.badge(r.status) + '</td><td class="muted" style="font-size:12.5px">' + SP.waktu(r.waktu_ubah) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="muted">Belum ada nilai tercatat.</p>') +
         (sert && sert.file_id ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">Sertifikat diterbitkan</div><div class="tx"><span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) + '</div></div>' + (SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button>' : '') + '</div>' : ''),
@@ -217,12 +225,24 @@
   };
   SP.parts.kelTabel = function () {
     const u = SP.ui.kel, f = kelBaris(), pg = SP.paginate(f, u.page, u.per); u.page = pg.page;
-    const sel = function (p, b) { const st = b.kel.program[p]; return SP.badge(st, st === 'LULUS' ? 'Lulus' : st === 'TIDAK_LULUS' ? 'Tdk Lulus' : 'Belum'); };
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+    const sel = function (p, b) {
+      const st = b.kel.program[p];
+      const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(b.m.nim, p) : '';
+      if (st === 'LULUS') {
+        const val = angka || String(kkm);
+        return '<span class="badge b-ok num" style="min-width:38px;justify-content:center;font-weight:700;font-size:12.5px" title="Nilai: ' + esc(val) + '">' + esc(val) + '</span>';
+      }
+      if (st === 'TIDAK_LULUS') {
+        return '<span class="badge b-bad num" style="min-width:38px;justify-content:center;font-weight:700;font-size:12.5px" title="Tidak Lulus' + (angka ? ' (Nilai: ' + esc(angka) + ')' : '') + '">' + (angka ? esc(angka) : 'Tdk Lulus') + '</span>';
+      }
+      return '<span class="badge b-null" style="min-width:38px;justify-content:center">—</span>';
+    };
     if (!pg.total) return '<div class="card">' + SP.kosong('search', 'Tidak ada data', 'Tidak ada mahasiswa yang cocok dengan filter saat ini.') + '</div>';
     return '<div class="card"><div class="card-h" style="padding:14px 20px"><div class="row gap8">' + SP.icon('shieldCheck') + '<b>Data Rekap Kelulusan 4 Mata Uji</b></div><div class="row wrap gap8 muted" style="font-size:12.5px"><span><span class="dotp" style="color:var(--primary)"></span> Lulus (4 modul)</span><span><span class="dotp" style="color:#F97316"></span> Wajib mengulang (≥1 gagal)</span><span><span class="dotp" style="color:#6B7280"></span> Belum lengkap</span></div></div>' +
-      '<div class="tbl-wrap" style="border:0;border-radius:0"><table class="tbl cards compact"><thead><tr><th>No</th><th>NIM</th><th>Nama mahasiswa</th><th>Kelas</th><th>Arab Ganjil</th><th>Inggris Ganjil</th><th>Arab Genap</th><th>Inggris Genap</th><th>Status akhir</th><th>Aksi</th></tr></thead><tbody>' +
+      '<div class="tbl-wrap" style="border:0;border-radius:0"><table class="tbl cards compact"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama mahasiswa</th><th>Kelas</th><th>Arab Ganjil</th><th>Inggris Ganjil</th><th>Arab Genap</th><th>Inggris Genap</th><th>Status akhir</th><th>Aksi</th></tr></thead><tbody>' +
       pg.items.map(function (b, i) {
-        return '<tr class="' + (b.akhir === 'WAJIB_MENGULANG' ? 'rowbad' : '') + '"><td data-l="No" class="num muted">' + (pg.dari + i) + '</td><td data-l="NIM" class="mono"><b style="' + (b.akhir === 'WAJIB_MENGULANG' ? 'color:var(--danger)' : '') + '">' + esc(b.m.nim) + '</b></td>' +
+        return '<tr class="' + (b.akhir === 'WAJIB_MENGULANG' ? 'rowbad' : '') + '"><td data-l="No" class="col-no num muted">' + String(pg.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b style="' + (b.akhir === 'WAJIB_MENGULANG' ? 'color:var(--danger)' : '') + '">' + esc(b.m.nim) + '</b></td>' +
           '<td data-l="Nama" class="nm"><b>' + esc(b.m.nama) + '</b><small>' + esc(b.kelas ? b.kelas.prodi || '' : '') + '</small></td><td data-l="Kelas">' + esc(b.kelas ? b.kelas.nama : '—') + '</td>' +
           SP.PROGRAM.map(function (p) { return '<td data-l="' + esc(SP.PROG_SHORT[p]) + '">' + sel(p, b) + '</td>'; }).join('') + '<td data-l="Status akhir">' + SP.badge(b.akhir) + '</td>' +
           '<td><button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(b.m.nim) + '">' + SP.icon('eye') + ' Detail</button></td></tr>';
@@ -266,9 +286,16 @@
   SP.actions.kelReset = function () { Object.assign(SP.ui.kel, { angkatan: '', kelas: '', prodi: '', status: '', q: '' }); SP.renderUlang(); };
   SP.actions.menuUnduh = function () { const m = SP.$('#menu-unduh'); if (m) m.classList.toggle('hide'); };
   function dataEkspor() {
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
     return { h: ['NIM', 'Nama', 'Kelas', 'Angkatan', 'Arab Ganjil', 'Inggris Ganjil', 'Arab Genap', 'Inggris Genap', 'Status Akhir'], r: kelBaris().map(function (b) {
-      const t = function (s) { return s === 'LULUS' ? 'Lulus' : s === 'TIDAK_LULUS' ? 'Tidak Lulus' : 'Belum Diisi'; };
-      return [b.m.nim, b.m.nama, b.kelas ? b.kelas.nama : '', b.m.angkatan].concat(SP.PROGRAM.map(function (p) { return t(b.kel.program[p]); })).concat([{ LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir]]);
+      const t = function (p) {
+        const st = b.kel.program[p];
+        const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(b.m.nim, p) : '';
+        if (st === 'LULUS') return angka || String(kkm);
+        if (st === 'TIDAK_LULUS') return angka ? String(angka) : 'Tidak Lulus';
+        return 'Belum Diisi';
+      };
+      return [b.m.nim, b.m.nama, b.kelas ? b.kelas.nama : '', b.m.angkatan].concat(SP.PROGRAM.map(function (p) { return t(p); })).concat([{ LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir]]);
     }) };
   }
   SP.actions.kelXlsx = function () { const d = dataEkspor(); if (!d.r.length) return SP.toast('Tidak ada data.', 'warn'); SP.eksporXlsx('Status Kelulusan', d.h, d.r); };

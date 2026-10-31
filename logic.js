@@ -26,7 +26,8 @@
     const S = SP.S;
     S.me = d.me; S.pengaturan = d.pengaturan || {}; S.pengguna = d.pengguna || []; S.kelas = d.kelas || [];
     S.penugasan = d.penugasan || []; S.pengganti = d.pengganti || []; S.km = d.kelasMahasiswa || [];
-    S.mahasiswa = d.mahasiswa || []; S.nilai = (d.nilai || []).map(function (r) { return Object.assign({}, r, { siklus: Number(r.siklus) }); });
+    S.mahasiswa = d.mahasiswa || []; S.nilai = (d.nilai || []).map(function (r) { return Object.assign({}, r, { siklus: Number(r.siklus), angka: r.angka !== undefined && r.angka !== null ? String(r.angka) : '' }); });
+    if (S.pengaturan && !S.pengaturan.kkm) S.pengaturan.kkm = '75';
     S.pengulangan = d.pengulangan || []; S.notif = d.notifikasi || []; S.sert = d.sertifikat || []; S.mutasi = d.mutasi || [];
     S.meta = d.meta || {};
     if (S.meta.waktu) { const t = Date.parse(String(S.meta.waktu).replace(' ', 'T') + '+07:00'); if (!isNaN(t)) SP.selisihWaktu = t - Date.now(); }
@@ -56,13 +57,24 @@
   SP.kelasNama = function (id) { const k = SP.X.kelas[id]; return k ? k.nama : '—'; };
 
   // ---------- Kelulusan ----------
-  SP.statusProgram = function (nim, prog) {
+  SP.barisProgramTerbaik = function (nim, prog) {
     let best = null;
     (SP.X.nilai[nim] || []).forEach(function (r) {
       if (r.program !== prog || r.status === 'BELUM' || !r.status) return;
       if (!best || r.siklus > best.siklus) best = r;
     });
+    return best;
+  };
+  SP.statusProgram = function (nim, prog) {
+    const best = SP.barisProgramTerbaik(nim, prog);
     return best ? best.status : 'BELUM';
+  };
+  SP.nilaiAngkaProgram = function (nim, prog) {
+    const row = SP.barisProgramTerbaik(nim, prog);
+    if (!row) return '';
+    if (row.angka !== undefined && row.angka !== null && row.angka !== '') return String(row.angka);
+    if (row.status === 'LULUS') return String((SP.set() && SP.set().kkm) || 75);
+    return '';
   };
   SP.kelulusan = function (nim) {
     const c = SP.X.kel[nim]; if (c) return c;
@@ -106,8 +118,20 @@
       const siklus = SP.siklusUntuk(km.nim, ro.program, pg, km.jenis);
       const row = SP.barisNilai(km.nim, ro.program, siklus);
       const tersimpan = row ? row.status : 'BELUM';
-      const efektif = draft && draft[km.nim] !== undefined ? draft[km.nim] : tersimpan;
-      return { nim: km.nim, mhs: SP.X.mhs[km.nim], jenis: km.jenis, siklus: siklus, row: row, tersimpan: tersimpan, status: efektif, ubah: efektif !== tersimpan };
+      const angkaTersimpan = row && row.angka !== undefined && row.angka !== null ? String(row.angka) : '';
+      const dItem = draft ? draft[km.nim] : undefined;
+      let efektif = tersimpan;
+      let angkaEfektif = angkaTersimpan;
+      if (dItem !== undefined) {
+        if (typeof dItem === 'object' && dItem !== null) {
+          efektif = dItem.status !== undefined ? dItem.status : tersimpan;
+          angkaEfektif = dItem.angka !== undefined && dItem.angka !== null ? String(dItem.angka) : angkaTersimpan;
+        } else {
+          efektif = dItem;
+        }
+      }
+      const ubah = efektif !== tersimpan || String(angkaEfektif) !== String(angkaTersimpan);
+      return { nim: km.nim, mhs: SP.X.mhs[km.nim], jenis: km.jenis, siklus: siklus, row: row, tersimpan: tersimpan, status: efektif, angka: angkaEfektif, ubah: ubah };
     }).sort(function (a, b) { return a.nim < b.nim ? -1 : 1; });
   };
   SP.kemajuan = function (pg, draft) {
@@ -182,9 +206,10 @@
   SP.terapkanHasil = function (res) {
     if (!res) return;
     const S = SP.S;
-    if (res.nilai) gabung(S.nilai, res.nilai.map(function (r) { return Object.assign({}, r, { siklus: Number(r.siklus) }); }), function (x) { return x.id; });
+    if (res.nilai) gabung(S.nilai, res.nilai.map(function (r) { return Object.assign({}, r, { siklus: Number(r.siklus), angka: r.angka !== undefined && r.angka !== null ? String(r.angka) : '' }); }), function (x) { return x.id; });
     if (res.pengulangan) gabung(S.pengulangan, [].concat(res.pengulangan), function (x) { return x.id; });
     if (res.notifikasi) res.notifikasi.forEach(function (n) { if (!S.notif.some(function (x) { return x.id === n.id; })) S.notif.push(n); });
+    if (res.kelas) gabung(S.kelas, [].concat(res.kelas), function (x) { return x.id; });
     if (res.kelasMahasiswa) gabung(S.km, [].concat(res.kelasMahasiswa), function (x) { return x.id; });
     if (res.mahasiswa) gabung(S.mahasiswa, [].concat(res.mahasiswa), function (x) { return x.nim; });
     if (res.mutasi) S.mutasi.push(res.mutasi);
@@ -276,5 +301,85 @@
     const o = { ARAB: null, INGGRIS: null };
     (SP.X.pgKelas[kelasId] || []).forEach(function (p) { if (p.tahun_ajaran === ta && p.semester === sem && p.status === 'AKTIF') o[p.bahasa] = p; });
     return o;
+  };
+
+  // ---------- Normalisasi & pencocokan kelas ----------
+  SP.bersihkanNamaKelas = function (s) {
+    return String(s === undefined || s === null ? '' : s)
+      .replace(/^(kelas|rombel)\s+/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+  SP.kunciKelas = function (s) {
+    return SP.bersihkanNamaKelas(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+  };
+  SP.cariKelasByNama = function (nama, daftar) {
+    const bersih = SP.bersihkanNamaKelas(nama);
+    if (!bersih) return null;
+    const list = daftar || SP.S.kelas || [];
+    const low = bersih.toLowerCase();
+    for (let i = 0; i < list.length; i++) {
+      if (SP.bersihkanNamaKelas(list[i].nama).toLowerCase() === low) return list[i];
+    }
+    const kunci = SP.kunciKelas(bersih);
+    if (!kunci) return null;
+    for (let j = 0; j < list.length; j++) {
+      if (SP.kunciKelas(list[j].nama) === kunci) return list[j];
+    }
+    return null;
+  };
+  const KAMUS_PRODI = {
+    ES: 'Ekonomi Syariah', EKSYAR: 'Ekonomi Syariah',
+    PS: 'Perbankan Syariah', PBS: 'Perbankan Syariah',
+    AKS: 'Akuntansi Syariah', AS: 'Akuntansi Syariah',
+    MBS: 'Manajemen Bisnis Syariah',
+    MZW: 'Manajemen Zakat dan Wakaf', ZAWA: 'Manajemen Zakat dan Wakaf',
+    PAI: 'Pendidikan Agama Islam',
+    PBA: 'Pendidikan Bahasa Arab',
+    TBI: 'Tadris Bahasa Inggris', PBI: 'Pendidikan Bahasa Inggris',
+    TBIN: 'Tadris Bahasa Indonesia', PBIN: 'Pendidikan Bahasa Indonesia',
+    TM: 'Tadris Matematika', TMTK: 'Tadris Matematika', PMA: 'Pendidikan Matematika',
+    TIPA: 'Tadris IPA', TBIO: 'Tadris Biologi', TFIS: 'Tadris Fisika', TKIM: 'Tadris Kimia',
+    TIPS: 'Tadris IPS',
+    MPI: 'Manajemen Pendidikan Islam',
+    PGMI: 'Pendidikan Guru Madrasah Ibtidaiyah',
+    PIAUD: 'Pendidikan Islam Anak Usia Dini', PGRA: 'Pendidikan Guru Raudhatul Athfal',
+    BKPI: 'Bimbingan dan Konseling Pendidikan Islam', BKI: 'Bimbingan dan Konseling Islam',
+    HKI: 'Hukum Keluarga Islam',
+    HES: 'Hukum Ekonomi Syariah',
+    HTN: 'Hukum Tata Negara',
+    HPI: 'Hukum Pidana Islam',
+    KPI: 'Komunikasi dan Penyiaran Islam',
+    MD: 'Manajemen Dakwah',
+    PMI: 'Pengembangan Masyarakat Islam',
+    IAT: 'Ilmu Al-Qur\'an dan Tafsir',
+    ILHA: 'Ilmu Hadis', IH: 'Ilmu Hadis',
+    AFI: 'Aqidah dan Filsafat Islam',
+    SPI: 'Sejarah Peradaban Islam',
+    TP: 'Tasawuf dan Psikoterapi',
+    SAA: 'Studi Agama-Agama',
+    IPII: 'Ilmu Perpustakaan dan Informasi Islam',
+    PSI: 'Psikologi Islam',
+    BSA: 'Bahasa dan Sastra Arab',
+    SI: 'Sistem Informasi', TI: 'Teknologi Informasi'
+  };
+  SP.tebakProdi = function (namaKelas) {
+    const bersih = SP.bersihkanNamaKelas(namaKelas);
+    if (!bersih) return '';
+    const m = bersih.match(/^([A-Za-z]+)/);
+    if (!m) return '';
+    const pref = m[1].toUpperCase();
+    const ada = (SP.S.kelas || []).filter(function (k) {
+      const km = SP.bersihkanNamaKelas(k.nama).match(/^([A-Za-z]+)/);
+      return km && km[1].toUpperCase() === pref && k.prodi;
+    })[0];
+    if (ada) return ada.prodi;
+    return KAMUS_PRODI[pref] || '';
+  };
+  SP.saranProdiList = function () {
+    const s = {};
+    (SP.prodiList() || []).forEach(function (p) { s[p] = true; });
+    Object.keys(KAMUS_PRODI).forEach(function (k) { s[KAMUS_PRODI[k]] = true; });
+    return Object.keys(s).sort();
   };
 })();

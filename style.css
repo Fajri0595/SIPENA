@@ -191,8 +191,9 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 /* ---------- Tabel ---------- */
 .tbl-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--border); border-radius: 12px; }
 .tbl { width: 100%; border-collapse: collapse; min-width: 760px; }
-.tbl th { background: var(--subtle); color: var(--text2); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: left; padding: 0 16px; height: 42px; border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; }
+.tbl th { background: var(--subtle); color: var(--text2); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: left; padding: 0 16px; height: 42px; border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; vertical-align: middle; }
 .tbl td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl th.col-no, .tbl td.col-no { width: 54px; min-width: 54px; max-width: 54px; text-align: center; padding-left: 4px; padding-right: 4px; }
 .tbl tbody tr:hover td { background: #F9FBFA; } .tbl tbody tr:last-child td { border-bottom: 0; }
 .tbl tr.rowbad td { background: #FFF6F4; } .tbl tr.rowwarn td:first-child { box-shadow: inset 3px 0 0 #FB923C; } .tbl tr.rowbad td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
 .tbl td.nm b { display: block; font-weight: 600; } .tbl td.nm small { color: var(--text2); font-size: 12px; }
@@ -349,7 +350,7 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   .savebar { margin: 24px -14px -64px; padding: 12px 14px; } .login { grid-template-columns: 1fr; } .login-l { padding: 28px; } .login-l h2 { font-size: 26px; } .login-r { padding: 28px; }
   .auth-nav { display: none; } .auth-top, .auth-foot { padding-left: 16px; padding-right: 16px; } .deny { padding: 24px 18px; } .card-p { padding: 18px; } .card-h, .card-b { padding-left: 16px; padding-right: 16px; }
   .tbl.cards { min-width: 0; } .tbl.cards thead { display: none; } .tbl.cards, .tbl.cards tbody, .tbl.cards tr, .tbl.cards td { display: block; width: 100%; }
-  .tbl.cards tr { border-bottom: 1px solid var(--border); padding: 10px 6px; } .tbl.cards td { border: 0; padding: 6px 12px; } .tbl.cards td[data-l]::before { content: attr(data-l); display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-bottom: 3px; }
+  .tbl.cards tr { border-bottom: 1px solid var(--border); padding: 10px 6px; } .tbl.cards td { border: 0; padding: 6px 12px; } .tbl.cards td.col-no { width: 100%; max-width: none; text-align: left; padding-left: 12px; padding-right: 12px; } .tbl.cards td[data-l]::before { content: attr(data-l); display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); margin-bottom: 3px; }
   .tbl.cards .seg { width: 100%; } .tbl.cards .seg button { flex: 1; min-height: 44px; justify-content: center; }
   .modal-bg { align-items: end; padding: 0; } .modal { border-radius: 16px 16px 0 0; max-height: 94vh; } .toasts { left: 14px; right: 14px; bottom: 14px; }
   .kv { grid-template-columns: 110px 1fr; }

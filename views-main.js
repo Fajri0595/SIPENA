@@ -303,11 +303,14 @@
       const on = r.status === st;
       return '<button ' + (dapat ? '' : 'disabled') + ' class="' + (on ? kls : '') + '" data-act="nilaiSet" data-nim="' + esc(r.nim) + '" data-st="' + st + '" aria-pressed="' + on + '">' + (on ? SP.icon(ikon, 'sm') : '') + label + '</button>';
     };
-    return '<div class="tbl-wrap has-foot"><table class="tbl cards"><thead><tr><th>No</th><th>NIM</th><th>Nama Mahasiswa</th><th>Status Nilai Akhir</th><th>Riwayat Program Lain</th><th>Keterangan</th><th>Terakhir Diperbarui</th></tr></thead><tbody>' +
+    return '<div class="tbl-wrap has-foot"><table class="tbl cards"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama Mahasiswa</th><th>Status Nilai Akhir</th><th>Riwayat Program Lain</th><th>Keterangan</th><th>Terakhir Diperbarui</th></tr></thead><tbody>' +
       pgn.items.map(function (r, i) {
-        return '<tr class="' + (r.status === 'BELUM' ? 'rowwarn' : '') + '" data-nim="' + esc(r.nim) + '"><td data-l="No" class="num muted">' + String(pgn.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b>' + esc(r.nim) + '</b></td>' +
+        return '<tr class="' + (r.status === 'BELUM' ? 'rowwarn' : '') + '" data-nim="' + esc(r.nim) + '"><td data-l="No" class="col-no num muted">' + String(pgn.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b>' + esc(r.nim) + '</b></td>' +
           '<td data-l="Nama" class="nm"><b>' + esc(r.mhs ? r.mhs.nama : '—') + (r.ubah ? ' <span class="dotp" style="color:var(--accent)" title="Belum disimpan"></span>' : '') + '</b><small>' + esc((SP.X.kelas[pg.kelas_id] || {}).prodi || '') + '</small></td>' +
-          '<td data-l="Status nilai"><div class="seg">' + btn(r, 'LULUS', 'Lulus', 'on-ok', 'check') + btn(r, 'TIDAK_LULUS', 'Tdk Lulus', 'on-bad', 'x') + btn(r, 'BELUM', 'Belum', 'on-null', 'minus') + '</div>' + (dapat ? '' : ' <span class="muted3">' + SP.icon('lock', 'sm') + '</span>') + '</td>' +
+          '<td data-l="Status nilai"><div class="row gap8 wrap" style="align-items:center">' +
+          '<input type="number" min="0" max="100" class="input num" style="width:68px;height:32px;padding:0 6px;text-align:center;font-weight:700" placeholder="0–100" value="' + esc(r.angka !== undefined ? r.angka : '') + '" data-in="nilaiAngka" data-nim="' + esc(r.nim) + '" ' + (dapat ? '' : 'disabled') + ' aria-label="Nilai angka 0-100">' +
+          '<div class="seg">' + btn(r, 'LULUS', 'Lulus', 'on-ok', 'check') + btn(r, 'TIDAK_LULUS', 'Tdk Lulus', 'on-bad', 'x') + btn(r, 'BELUM', 'Belum', 'on-null', 'minus') + '</div>' +
+          (dapat ? '' : ' <span class="muted3">' + SP.icon('lock', 'sm') + '</span>') + '</div></td>' +
           '<td data-l="Riwayat program lain"><div class="row wrap gap4">' + riwayatLain(r, pg) + '</div></td><td data-l="Keterangan">' + tag(r) + '</td>' +
           '<td data-l="Diperbarui" class="muted" style="font-size:12.5px">' + (r.row ? SP.waktu(r.row.waktu_ubah) + '<br>oleh ' + esc(SP.namaUser(r.row.penginput).split(' ')[0]) : '— Belum ada<br>Draf') + '</td></tr>';
       }).join('') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pgn.dari + ' – ' + pgn.sampai + ' dari <b>' + pgn.total + '</b> Mahasiswa <select class="select" style="width:auto;height:30px;margin-left:8px" data-ch="nilaiPer" aria-label="Baris per halaman">' + [10, 25, 50, 100].map(function (n) { return '<option ' + (n === u.per ? 'selected' : '') + '>' + n + '</option>'; }).join('') + '</select></span>' + SP.pagerHtml('nilaiHal', pgn) + '</div>';
@@ -361,11 +364,46 @@
   SP.inputs.nilaiQ = SP.debounce(function (el) { SP.ui.nilai.q = el.value; SP.ui.nilai.page = 1; SP.refresh('nilaiTabel'); }, 150);
   SP.actions.nilaiFilter = function (el) { SP.ui.nilai.filter = el.dataset.v; SP.ui.nilai.page = 1; SP.refresh('nilaiFilter'); SP.refresh('nilaiTabel'); };
   SP.actions.nilaiHal = function (el) { SP.ui.nilai.page = Number(el.dataset.p); SP.refresh('nilaiTabel'); };
+  SP.inputs.nilaiAngka = function (el) {
+    const pg = pgNilaiAktif(); if (!pg || !SP.bolehTulis(pg)) return;
+    const nim = el.dataset.nim, val = el.value.trim();
+    const d = SP.draft.baca(pg.id);
+    const prev = d[nim];
+    const baris = SP.barisRoster(pg).filter(function (r) { return r.nim === nim; })[0];
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+    let cur = typeof prev === 'object' && prev !== null ? Object.assign({}, prev) : { status: (typeof prev === 'string' ? prev : (baris ? baris.tersimpan : 'BELUM')), angka: (baris && baris.angka ? baris.angka : '') };
+    cur.angka = val;
+    if (val !== '') {
+      const n = Number(val);
+      if (!isNaN(n)) cur.status = n >= kkm ? 'LULUS' : 'TIDAK_LULUS';
+    }
+    if (baris && baris.tersimpan === cur.status && String(baris.angka || '') === String(cur.angka || '')) {
+      delete d[nim];
+    } else {
+      d[nim] = cur;
+    }
+    SP.draft.tulis(pg.id, d); segarkanNilai();
+  };
   SP.actions.nilaiSet = function (el) {
     const pg = pgNilaiAktif(); if (!pg || !SP.bolehTulis(pg)) return;
     const d = SP.draft.baca(pg.id), nim = el.dataset.nim, st = el.dataset.st;
+    const prev = d[nim];
     const baris = SP.barisRoster(pg).filter(function (r) { return r.nim === nim; })[0];
-    if (baris && baris.tersimpan === st) delete d[nim]; else d[nim] = st;
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+    let cur = typeof prev === 'object' && prev !== null ? Object.assign({}, prev) : { status: (typeof prev === 'string' ? prev : (baris ? baris.tersimpan : 'BELUM')), angka: (baris && baris.angka ? baris.angka : '') };
+    cur.status = st;
+    if (st === 'LULUS' && (!cur.angka || Number(cur.angka) < kkm)) {
+      cur.angka = String(kkm);
+    } else if (st === 'TIDAK_LULUS' && cur.angka && Number(cur.angka) >= kkm) {
+      cur.angka = String(Math.max(0, kkm - 5));
+    } else if (st === 'BELUM') {
+      cur.angka = '';
+    }
+    if (baris && baris.tersimpan === cur.status && String(baris.angka || '') === String(cur.angka || '')) {
+      delete d[nim];
+    } else {
+      d[nim] = cur;
+    }
     SP.draft.tulis(pg.id, d); segarkanNilai();
   };
   SP.actions.nilaiBatal = async function () {
@@ -377,13 +415,16 @@
     const kosong = SP.barisRoster(pg, SP.draft.baca(pg.id)).filter(function (r) { return r.status === 'BELUM'; });
     if (!kosong.length) return SP.toast('Tidak ada mahasiswa yang belum diisi.', 'info');
     if (!(await SP.konfirmasi({ judul: 'Isi cepat', pesan: 'Tandai <b>' + kosong.length + '</b> mahasiswa yang belum diisi sebagai <b>LULUS</b>? Anda tetap dapat mengubahnya satu per satu sebelum menyimpan.', ya: 'Tandai Lulus' }))) return;
-    const d = SP.draft.baca(pg.id); kosong.forEach(function (r) { d[r.nim] = 'LULUS'; }); SP.draft.tulis(pg.id, d); segarkanNilai();
+    const d = SP.draft.baca(pg.id);
+    const kkm = String(Number((SP.set() && SP.set().kkm) || 75));
+    kosong.forEach(function (r) { d[r.nim] = { status: 'LULUS', angka: kkm }; });
+    SP.draft.tulis(pg.id, d); segarkanNilai();
   };
   SP.actions.nilaiEkspor = function () {
     const pg = pgNilaiAktif(); if (!pg) return;
     const b = SP.barisRoster(pg, draftNow());
-    SP.unduhCsv('draf-nilai-' + SP.kelasNama(pg.kelas_id).replace(/\s+/g, '_') + '-' + SP.kodeProgram(pg.bahasa, pg.semester) + '.csv', ['NIM', 'Nama', 'Status', 'Keterangan'],
-      b.map(function (r) { return [r.nim, r.mhs ? r.mhs.nama : '', r.status, r.jenis]; }));
+    SP.unduhCsv('draf-nilai-' + SP.kelasNama(pg.kelas_id).replace(/\s+/g, '_') + '-' + SP.kodeProgram(pg.bahasa, pg.semester) + '.csv', ['NIM', 'Nama', 'Nilai', 'Status', 'Keterangan'],
+      b.map(function (r) { return [r.nim, r.mhs ? r.mhs.nama : '', r.angka || '', r.status, r.jenis]; }));
   };
   SP.actions.nilaiSimpan = async function () {
     const pg = pgNilaiAktif(); if (!pg || !SP.bolehTulis(pg)) return;
@@ -397,14 +438,14 @@
     // 1) terapkan secara lokal (optimistic) -> UI langsung berubah
     const now = SP.hariIni() + ' ' + SP.sekarang().toLocaleTimeString('sv-SE', { timeZone: 'Asia/Jakarta' });
     const prog = SP.kodeProgram(pg.bahasa, pg.semester);
-    const lokal = ubah.filter(function (r) { return r.row || r.status !== 'BELUM'; }).map(function (r) {
+    const lokal = ubah.filter(function (r) { return r.row || r.status !== 'BELUM' || (r.angka !== undefined && r.angka !== ''); }).map(function (r) {
       return { id: 'N-' + r.nim + '-' + prog + '-' + r.siklus, nim: r.nim, program: prog, siklus: r.siklus, tahun_ajaran: pg.tahun_ajaran, semester: pg.semester,
-        kelas_id: pg.kelas_id, status: r.status, penginput: SP.S.me.email, waktu_input: r.row ? r.row.waktu_input : now, waktu_ubah: now };
+        kelas_id: pg.kelas_id, status: r.status, angka: r.angka !== undefined && r.angka !== null ? String(r.angka) : '', penginput: SP.S.me.email, waktu_input: r.row ? r.row.waktu_input : now, waktu_ubah: now };
     });
     SP.setNilaiLokal(lokal);
     SP.draft.hapus(pg.id);
     // 2) antrekan ke outbox -> disinkronkan di latar belakang
-    SP.Outbox.tambah({ action: 'simpanNilai', data: { penugasanId: pg.id, items: ubah.map(function (r) { return { nim: r.nim, status: r.status }; }) },
+    SP.Outbox.tambah({ action: 'simpanNilai', data: { penugasanId: pg.id, items: ubah.map(function (r) { return { nim: r.nim, status: r.status, angka: r.angka !== undefined && r.angka !== null ? String(r.angka) : '' }; }) },
       label: SP.kelasNama(pg.kelas_id) + ' · ' + labelProgramPg(pg) });
     segarkanNilai();
     SP.toast('<b>' + ubah.length + ' perubahan</b> tersimpan di perangkat. Menyinkronkan ke server…', 'ok', 2500);
