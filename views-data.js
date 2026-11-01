@@ -662,10 +662,15 @@
 
   SP.parts.certKuota = function () {
     const q = SP.S.meta.kuotaEmail || { sisa: 0, total: 1500, terpakai: 0 };
-    const pct = Math.round(q.terpakai / (q.total || 1) * 100);
-    return '<div class="ic">' + SP.icon('mail', 'lg') + '</div><div class="grow"><div class="h3">Kuota Pengiriman Email Hari Ini <span class="badge ' + (pct > 85 ? 'b-bad' : 'b-warn') + '" style="vertical-align:middle">' + pct + '% TERPAKAI</span></div>' +
-      '<p class="muted" style="font-size:13px">Terpakai <b class="num">' + SP.n(q.terpakai) + ' / ' + SP.n(q.total) + '</b> kuota Google Workspace. Sertifikat PDF dibuat otomatis di Google Drive dan dikirim bertahap lewat sistem antrean.</p></div>' +
-      '<div style="min-width:220px"><div class="row between" style="font-size:13px"><span>Sisa kuota: <b>' + SP.n(q.sisa) + ' email</b></span><b style="color:var(--danger)">' + pct + '%</b></div>' + SP.prog(pct, pct > 85 ? 'r' : 'o') + '<div class="muted3 mt8" style="font-size:12px">Reset harian pukul 00:00 WIB</div></div>';
+    const sisa = typeof q.sisa === 'number' ? q.sisa : 0;
+    const terkirim = (SP.S.sert || []).filter(function (s) {
+      return s.status_email === 'TERKIRIM' && String(s.waktu_email || '').indexOf(SP.hariIni()) === 0;
+    }).length;
+    const total = Math.max(q.total || 1500, sisa + terkirim);
+    const pctTersedia = Math.min(100, Math.round((sisa / (total || 1)) * 100));
+    return '<div class="ic">' + SP.icon('mail', 'lg') + '</div><div class="grow"><div class="h3">Kuota Pengiriman Email Hari Ini <span class="badge b-ok" style="vertical-align:middle">' + pctTersedia + '% SIAP KIRIM</span></div>' +
+      '<p class="muted" style="font-size:13px">Tersisa <b class="num" style="color:var(--primary)">' + SP.n(sisa) + ' email</b> siap kirim (' + SP.n(terkirim) + ' terkirim hari ini dari kapasitas ' + SP.n(total) + '). Sertifikat PDF dibuat otomatis di Google Drive dan dikirim bertahap lewat antrean.</p></div>' +
+      '<div style="min-width:220px"><div class="row between" style="font-size:13px"><span>Sisa kuota: <b>' + SP.n(sisa) + ' email</b></span><b style="color:var(--primary)">' + pctTersedia + '%</b></div>' + SP.prog(pctTersedia, '') + '<div class="muted3 mt8" style="font-size:12px">Reset harian pukul 00:00 WIB</div></div>';
   };
   SP.parts.certJob = function () {
     const j = SP.ui.cert.job; if (!j) return '';
