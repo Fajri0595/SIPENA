@@ -390,7 +390,10 @@
       inp('email_subjek', 'Subjek email penerbitan sertifikat') + inp('email_body', 'Isi pesan email (teks biasa, mendukung token)', { area: true, tinggi: 170 }) +
       '<div class="row wrap" style="gap:20px"><label class="chk"><input type="checkbox" data-ch="setChk" data-k="email_otomatis" ' + (f.email_otomatis === '1' ? 'checked' : '') + '><span>Antrekan email otomatis saat sertifikat terbit</span></label><label class="chk"><input type="checkbox" data-ch="setChk" data-k="email_lampirkan_pdf" ' + (f.email_lampirkan_pdf === '1' ? 'checked' : '') + '><span>Lampirkan berkas PDF sertifikat</span></label></div>' +
       '<div class="grid2">' + inp('email_bcc', 'BCC salinan ke arsip Superadmin (opsional)', { type: 'email' }) + inp('kuota_email_harian', 'Kuota email harian akun (Workspace 1500 / gratis 100)', { type: 'number' }) + '</div>' +
-      '<div class="row between wrap callout" style="padding:10px 14px"><span class="muted">Kirim salinan rendering ke email Anda saat ini: <b class="mono">' + esc(SP.S.me.email) + '</b></span><button class="btn btn-outline btn-sm" data-act="setEmailUji">' + SP.icon('send', 'sm') + ' Kirim Email Uji Coba ke Saya</button></div></div></div></div>' +
+      '<div class="row between wrap callout" style="padding:10px 14px"><span class="muted">Kirim salinan rendering ke email Anda saat ini: <b class="mono">' + esc(SP.S.me.email) + '</b></span><button class="btn btn-outline btn-sm" data-act="setEmailUji">' + SP.icon('send', 'sm') + ' Kirim Email Uji Coba ke Saya</button></div></div></div>' +
+      '<div class="card card-p" style="border:1.5px solid rgba(220,38,38,0.35);background:rgba(254,242,242,0.45)"><div class="row between mb16"><div class="row gap8"><span style="color:var(--danger)">' + SP.icon('trash', 'lg') + '</span><div><h2 class="h2" style="color:var(--danger)">4. Pembersihan &amp; Reset Data Sistem (Zona Bahaya)</h2><p class="muted" style="font-size:13px">Pengosongan data mahasiswa, kelas, atau seluruh catatan akademik untuk memulai siklus / kebijakan baru.</p></div></div><span class="chip bad">ZONA BAHAYA</span></div>' +
+      '<div class="stack gap12"><p style="font-size:13px;line-height:1.6;color:var(--text2)">Fitur ini digunakan saat institusi ingin memulai tahun akademik atau kebijakan kurikulum baru dari kondisi bersih tanpa ada data pengujian (dummy). Untuk kepatuhan audit data kampus, <b>sistem mewajibkan pengunduhan Master Backup</b> sebelum proses pengosongan dapat dijalankan.</p>' +
+      '<div class="row wrap gap12"><button class="btn btn-outline" data-act="bukaModalResetSistem" style="color:var(--danger);border-color:rgba(220,38,38,0.4)">' + SP.icon('trash') + ' Buka Opsi Reset &amp; Kosongkan Data…</button></div></div></div></div>' +
       '<div class="stack"><div class="card card-p"><div class="row gap8 mb16"><span style="color:var(--primary)">' + SP.icon('zap', 'lg') + '</span><h2 class="h3">Kuota Google Apps Script</h2></div>' +
       '<div class="callout" style="padding:12px"><div class="grow"><div class="row between"><span>' + SP.icon('mail', 'sm') + ' Gmail / MailApp</span><b class="num">' + SP.n(q.terpakai) + ' / ' + SP.n(q.total) + '</b></div><div class="mt8">' + SP.prog(pct, pct > 85 ? 'r' : 'o') + '</div><div class="muted mt8" style="font-size:12px">Terpakai ' + pct + '% · reset otomatis pukul 00.00 WIB</div></div></div>' +
       '<div class="callout mt8" style="padding:12px"><div class="grow"><div class="row between"><span>' + SP.icon('folder', 'sm') + ' Google Drive PDF</span><b class="num">' + SP.n(nSert) + '</b></div><div class="muted" style="font-size:12px">berkas sertifikat terbit</div></div></div>' +
@@ -474,4 +477,202 @@
   SP.changes.logAksi = function (el) { SP.ui.set.logAksi = el.value; SP.ui.set.logPage = 1; SP.refresh('logIsi'); };
   SP.actions.logHal = function (el) { SP.ui.set.logPage = Number(el.dataset.p); SP.refresh('logIsi'); };
   SP.actions.logMuat = function () { SP.ui.set.log = null; SP.refresh('logIsi'); muatLog(); };
+
+  // ============================================================
+  // RESET SISTEM & PENGOSONGAN DATA (SUPERADMIN)
+  // ============================================================
+  SP.ui.resetSistem = {
+    mode: 'AKADEMIK', // 'AKADEMIK' | 'TOTAL'
+    backupDiunduh: false,
+    konfirmasiKetik: '',
+    sedang: false
+  };
+
+  function masterDataEkspor() {
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+    const headers = [
+      'NIM', 'NAMA_MAHASISWA', 'EMAIL', 'ANGKATAN', 'STATUS_DATA',
+      'KELAS_TERAKHIR', 'PRODI', 'ARAB_GANJIL', 'INGGRIS_GANJIL',
+      'ARAB_GENAP', 'INGGRIS_GENAP', 'STATUS_KELULUSAN',
+      'NOMOR_SERTIFIKAT', 'TANGGAL_SERTIFIKAT'
+    ];
+    const rows = SP.barisKelulusan().map(function (b) {
+      const getVal = function (p) {
+        const st = b.kel.program[p];
+        const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(b.m.nim, p) : '';
+        if (st === 'LULUS') return angka || String(kkm);
+        if (st === 'TIDAK_LULUS') return angka ? String(angka) : 'Tidak Lulus';
+        return 'Belum Diisi';
+      };
+      const sert = SP.X.sert[b.m.nim];
+      return [
+        b.m.nim,
+        b.m.nama,
+        b.m.email || '',
+        b.m.angkatan || '',
+        b.m.status || 'AKTIF',
+        b.kelas ? b.kelas.nama : '',
+        b.kelas ? b.kelas.prodi || '' : '',
+        getVal('ARB_GJL'),
+        getVal('ING_GJL'),
+        getVal('ARB_GNP'),
+        getVal('ING_GNP'),
+        { LULUS: 'Lulus', WAJIB_MENGULANG: 'Wajib Mengulang', BELUM_LENGKAP: 'Belum Lengkap' }[b.akhir] || b.akhir,
+        sert ? sert.nomor : '',
+        sert ? sert.tanggal_cetak : ''
+      ];
+    });
+    return { h: headers, r: rows };
+  }
+
+  function isiModalReset() {
+    const u = SP.ui.resetSistem;
+    const nMahasiswa = SP.S.mahasiswa.length;
+    const nKelas = SP.S.kelas.length;
+    const nNilai = SP.S.nilai.length;
+    const nSert = SP.S.sert.filter(function (s) { return s.file_id; }).length;
+
+    const cocok = u.konfirmasiKetik.trim() === 'KOSONGKAN DATA';
+    const bolehEksekusi = u.backupDiunduh && cocok && !u.sedang;
+
+    return '<div class="stack gap16">' +
+      '<div class="callout bad edge" style="padding:12px 16px"><div class="ic">' + SP.icon('alert', 'lg') + '</div><div class="grow">' +
+        '<div class="ct" style="color:var(--danger)">PERINGATAN PENGOSONGAN DATA SISTEM</div>' +
+        '<div class="tx" style="font-size:13px">Tindakan ini akan mengosongkan rekaman data dari Google Spreadsheet. Sangat disarankan untuk keperluan peralihan kebijakan, tahun ajaran baru, atau pembersihan data simulasi (dummy). <b>Wajib mengunduh Master Backup</b> sebelum eksekusi.</div>' +
+      '</div></div>' +
+
+      '<div class="card card-p20 row between wrap gap12" style="background:#FFF5F5;border-color:rgba(220,38,38,0.25)">' +
+        '<div><div class="cap" style="color:var(--danger)">Volume Data Sistem Saat Ini</div><div class="h3 mt4">Data yang akan terpengaruh pengosongan:</div></div>' +
+        '<div class="row wrap gap8">' +
+          '<span class="chip"><b>' + SP.n(nMahasiswa) + '</b> Mahasiswa</span>' +
+          '<span class="chip"><b>' + SP.n(nKelas) + '</b> Rombel Kelas</span>' +
+          '<span class="chip"><b>' + SP.n(nNilai) + '</b> Rekap Nilai</span>' +
+          '<span class="chip"><b>' + SP.n(nSert) + '</b> Sertifikat Terbit</span>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card card-p20" style="border:1.5px solid var(--border)">' +
+        '<div class="row between mb8"><div><span class="stepno" style="width:24px;height:24px;font-size:12px;background:' + (u.backupDiunduh ? 'var(--primary)' : 'var(--text3)') + '">1</span> <b style="font-size:14px">Langkah 1: Unduh Master Cadangan Data (Wajib)</b></div>' +
+        (u.backupDiunduh ? '<span class="chip ok">' + SP.icon('check', 'sm') + ' Master Backup Terunduh</span>' : '<span class="chip bad">Wajib Diunduh</span>') + '</div>' +
+        '<p class="muted" style="font-size:12.5px;margin-bottom:12px">Simpan salinan cadangan lengkap database ke komputer lembaga Anda sebelum data dikosongkan.</p>' +
+        '<div class="row wrap gap8">' +
+          '<button class="btn btn-outline" data-act="resetUnduhXlsx">' + SP.icon('file') + ' Unduh Master Backup (.xlsx)</button>' +
+          '<button class="btn btn-outline" data-act="resetUnduhCsv">' + SP.icon('download') + ' Unduh Master Backup (.csv)</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card card-p20" style="border:1.5px solid var(--border)">' +
+        '<div class="mb8"><span class="stepno" style="width:24px;height:24px;font-size:12px;background:var(--text3)">2</span> <b style="font-size:14px">Langkah 2: Pilih Tingkat Pengosongan Data</b></div>' +
+        '<div class="stack gap8">' +
+          '<label class="callout" style="padding:10px 14px;cursor:pointer;border-color:' + (u.mode === 'AKADEMIK' ? 'var(--primary)' : 'var(--border)') + ';background:' + (u.mode === 'AKADEMIK' ? 'var(--callout)' : '#fff') + '">' +
+            '<span class="row top gap8"><input type="radio" name="reset-mode" value="AKADEMIK" ' + (u.mode === 'AKADEMIK' ? 'checked' : '') + ' data-ch="resetPilihMode" style="margin-top:3px">' +
+            '<span><b style="color:var(--text)">Opsi A: Kosongkan Data Akademik Saja (Direkomendasikan)</b><br>' +
+            '<small class="muted" style="font-size:12px">Menghapus seluruh Mahasiswa, Pendaftaran Kelas, Nilai, Pengulangan, Mutasi, dan Sertifikat. <b>Tetap mempertahankan:</b> Akun Pengguna/Tutor, Penugasan Kelas, dan Pengaturan Lembaga.</small></span></span>' +
+          '</label>' +
+          '<label class="callout" style="padding:10px 14px;cursor:pointer;border-color:' + (u.mode === 'TOTAL' ? 'var(--danger)' : 'var(--border)') + ';background:' + (u.mode === 'TOTAL' ? '#FFF5F5' : '#fff') + '">' +
+            '<span class="row top gap8"><input type="radio" name="reset-mode" value="TOTAL" ' + (u.mode === 'TOTAL' ? 'checked' : '') + ' data-ch="resetPilihMode" style="margin-top:3px">' +
+            '<span><b style="color:var(--danger)">Opsi B: Reset Total / Pabrik (Factory Reset)</b><br>' +
+            '<small class="muted" style="font-size:12px">Mengosongkan SELURUH tabel database (termasuk Kelas, Penugasan, Pengganti). Hanya menyisakan akun Superadmin yang sedang login saat ini agar Anda tidak terkunci keluar.</small></span></span>' +
+          '</label>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card card-p20" style="border:1.5px solid rgba(220,38,38,0.4);background:#FEF2F2">' +
+        '<div class="mb8"><span class="stepno" style="width:24px;height:24px;font-size:12px;background:var(--danger)">3</span> <b style="font-size:14px;color:var(--danger)">Langkah 3: Konfirmasi Keamanan Frasa</b></div>' +
+        '<p class="muted" style="font-size:12px;margin-bottom:8px">Untuk mencegah ketidaksengajaan, ketik kata kunci <b>KOSONGKAN DATA</b> pada kotak di bawah ini:</p>' +
+        '<input id="inp-konfirmasi-reset" class="input mono" placeholder="Ketik persis: KOSONGKAN DATA" data-in="resetKetikKonfirmasi" value="' + esc(u.konfirmasiKetik) + '" style="background:#fff;border-color:rgba(220,38,38,0.4);font-weight:700">' +
+        '<div class="row between wrap gap12 mt16">' +
+          '<span class="muted" style="font-size:12px">' + (u.backupDiunduh ? (cocok ? '<span style="color:var(--primary)">' + SP.icon('check', 'sm') + ' Siap dieksekusi</span>' : '<span style="color:var(--danger)">Ketik "KOSONGKAN DATA"</span>') : '<span style="color:var(--danger)">Wajib unduh backup dulu (Langkah 1)</span>') + '</span>' +
+          '<button class="btn btn-danger" data-act="eksekusiResetSistem" ' + (bolehEksekusi ? '' : 'disabled') + '>' + (u.sedang ? '<span class="spin"></span> Mengosongkan Database…' : SP.icon('trash') + ' Eksekusi Pengosongan Data') + '</button>' +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  let modalResetRef = null;
+  SP.actions.bukaModalResetSistem = function () {
+    if (!SP.isAdmin()) return;
+    SP.ui.resetSistem = {
+      mode: 'AKADEMIK',
+      backupDiunduh: false,
+      konfirmasiKetik: '',
+      sedang: false
+    };
+    modalResetRef = SP.modal({
+      judul: 'Reset & Pengosongan Data Sistem',
+      lebar: 660,
+      isi: isiModalReset(),
+      footer: '<button class="btn btn-outline" data-act="tutupModal">Tutup</button>'
+    });
+  };
+
+  function segarkanModalReset() {
+    if (modalResetRef && modalResetRef.body) {
+      modalResetRef.body.innerHTML = isiModalReset();
+    }
+  }
+
+  SP.actions.resetUnduhXlsx = function () {
+    const d = masterDataEkspor();
+    SP.eksporXlsx('Master_Backup_SIPENA_' + SP.hariIni(), d.h, d.r);
+    SP.ui.resetSistem.backupDiunduh = true;
+    SP.toast('Master Backup (.xlsx) berhasil dibuat dan diunduh.', 'ok');
+    segarkanModalReset();
+  };
+
+  SP.actions.resetUnduhCsv = function () {
+    const d = masterDataEkspor();
+    SP.unduhCsv('master-backup-sipena-' + SP.hariIni() + '.csv', d.h, d.r);
+    SP.ui.resetSistem.backupDiunduh = true;
+    SP.toast('Master Backup (.csv) berhasil diunduh.', 'ok');
+    segarkanModalReset();
+  };
+
+  SP.changes.resetPilihMode = function (el) {
+    SP.ui.resetSistem.mode = el.value;
+    segarkanModalReset();
+  };
+
+  SP.inputs.resetKetikKonfirmasi = function (el) {
+    SP.ui.resetSistem.konfirmasiKetik = el.value;
+    const cocok = el.value.trim() === 'KOSONGKAN DATA';
+    const btn = modalResetRef ? modalResetRef.el.querySelector('[data-act="eksekusiResetSistem"]') : null;
+    if (btn) btn.disabled = !(SP.ui.resetSistem.backupDiunduh && cocok && !SP.ui.resetSistem.sedang);
+  };
+
+  SP.actions.eksekusiResetSistem = async function (el) {
+    const u = SP.ui.resetSistem;
+    if (!u.backupDiunduh) return SP.toast('Harap unduh Master Backup terlebih dahulu.', 'warn');
+    const inp = SP.$('#inp-konfirmasi-reset');
+    const val = (inp ? inp.value : u.konfirmasiKetik).trim();
+    if (val !== 'KOSONGKAN DATA') return SP.toast('Frasa konfirmasi tidak cocok. Ketik persis "KOSONGKAN DATA".', 'err');
+
+    const ya = await SP.konfirmasi({
+      judul: 'Konfirmasi Terakhir: Kosongkan Database?',
+      pesan: '<b style="color:var(--danger)">PERINGATAN AKHIR:</b> Seluruh data yang dipilih akan dihapus permanen dari Google Spreadsheet sekarang.<br><br>Apakah Anda benar-benar yakin ingin melanjutkan?',
+      bahaya: true,
+      ya: 'Ya, Kosongkan Data Sekarang',
+      batal: 'Batal'
+    });
+    if (!ya) return;
+
+    u.sedang = true;
+    segarkanModalReset();
+    try {
+      await SP.api('sistemReset', {
+        mode: u.mode,
+        konfirmasi: val
+      });
+      SP.Cache.hapus();
+      SP.tutupModal();
+      SP.toast('Database sistem berhasil dikosongkan.', 'ok');
+      await SP.muat();
+      location.hash = '#/dasbor';
+      SP.renderUlang();
+    } catch (e) {
+      u.sedang = false;
+      segarkanModalReset();
+      SP.toast(esc(e.message), 'err', 8000);
+    }
+  };
 })();
