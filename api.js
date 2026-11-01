@@ -40,7 +40,10 @@
       if (!(await this.gis())) return false;
       const self = this;
       google.accounts.id.initialize({
-        client_id: C.GOOGLE_CLIENT_ID, auto_select: true, cancel_on_tap_outside: false,
+        client_id: C.GOOGLE_CLIENT_ID,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: true,
         callback: function (r) { if (r && r.credential) { self.simpan(r.credential); if (SP.onLogin) SP.onLogin(); } }
       });
       this._inited = true; return true;
@@ -50,21 +53,50 @@
         el.innerHTML = '<div class="callout bad"><div class="ic">' + SP.icon('cloudOff') + '</div><div class="tx">Layanan Google Sign-In tidak dapat dimuat. Periksa koneksi internet lalu muat ulang halaman.</div></div>';
         return;
       }
-      google.accounts.id.renderButton(el, Object.assign({ theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'center', locale: 'id', width: Math.max(200, Math.min(400, el.offsetWidth || 360)) }, opsi || {}));
+      const boxW = el.clientWidth || (el.parentElement ? el.parentElement.clientWidth : 320);
+      const w = Math.max(220, Math.min(380, boxW > 40 ? boxW - 12 : 300));
+      google.accounts.id.renderButton(el, Object.assign({
+        theme: 'outline',
+        size: 'large',
+        type: 'standard',
+        text: 'continue_with',
+        shape: 'rectangular',
+        logo_alignment: 'center',
+        locale: 'id',
+        width: w
+      }, opsi || {}));
     },
     // Pembaruan sesi tanpa interaksi (One Tap / auto select)
     diam: async function () {
       if (!(await this.init())) return null;
       const self = this;
       return new Promise(function (res) {
+        let selesai = false;
+        const lepas = function () {
+          if (selesai) return;
+          selesai = true;
+          const i = self._waiters.indexOf(res);
+          if (i >= 0) self._waiters.splice(i, 1);
+          res(null);
+        };
         self._waiters.push(res);
-        const lepas = function () { const i = self._waiters.indexOf(res); if (i >= 0) { self._waiters.splice(i, 1); res(null); } };
         try {
           google.accounts.id.prompt(function (n) {
-            if ((n.isNotDisplayed && n.isNotDisplayed()) || (n.isSkippedMoment && n.isSkippedMoment())) lepas();
+            try {
+              if (!n) { lepas(); return; }
+              const reason = (typeof n.getNotDisplayedReason === 'function' && n.getNotDisplayedReason()) ||
+                             (typeof n.getSkippedReason === 'function' && n.getSkippedReason()) ||
+                             (typeof n.getDismissedReason === 'function' && n.getDismissedReason());
+              if (reason) { lepas(); return; }
+              if (typeof n.isNotDisplayed === 'function' && n.isNotDisplayed()) { lepas(); return; }
+              if (typeof n.isSkippedMoment === 'function' && n.isSkippedMoment()) { lepas(); return; }
+              if (typeof n.isDismissedMoment === 'function' && n.isDismissedMoment()) { lepas(); return; }
+            } catch (e2) { lepas(); }
           });
-        } catch (e) { lepas(); }
-        setTimeout(lepas, 5000);
+        } catch (e) {
+          lepas();
+        }
+        setTimeout(lepas, 4000);
       });
     },
     jadwalkan: function () {

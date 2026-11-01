@@ -367,8 +367,17 @@
     if (SP.Auth.token()) { SP.Auth.jadwalkan(); return mulaiSetelahLogin(); }
     SP.tampilLogin();
     SP.onLogin = function () { SP.onLogin = null; mulaiSetelahLogin(); };
-    SP.Auth.diam();
+    if (!('ontouchstart' in window) && window.innerWidth > 768) {
+      SP.Auth.diam();
+    }
   }
+
+  window.addEventListener('resize', SP.debounce(function () {
+    const g = SP.$('#gbtn');
+    if (g && SP.Auth && !SP.Auth.token()) {
+      SP.Auth.tombol(g);
+    }
+  }, 300));
 
   // Muat ulang berkala & saat tab kembali aktif
   setInterval(function () {
