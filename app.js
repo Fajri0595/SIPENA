@@ -68,6 +68,9 @@
     const v = SP.views[SP.rute.nama], el = SP.$('#view'); if (!v || !el) return;
     el.innerHTML = v.render(SP.rute.params);
     document.title = v.judul + ' — SIPENA';
+    el.classList.remove('view-enter');
+    void el.offsetWidth;
+    el.classList.add('view-enter');
     if (v.after) v.after(SP.rute.params);
     SP.setSinkron(SP.sinkron.status);
   }

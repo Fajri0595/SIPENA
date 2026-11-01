@@ -8,13 +8,32 @@
   SP.views = SP.views || {};
 
   function topbar() {
-    return '<header class="auth-top"><div class="auth-logo"><div class="sq">S</div><div><b>SIPENA</b><small>SISTEM MANAJEMEN NILAI BAHASA</small></div></div>' +
-      '<nav class="auth-nav"><a href="#/" data-act="panduanLogin" data-native>Panduan</a><a href="#/verifikasi">Verifikasi Sertifikat</a><a href="#/" data-act="bantuanLogin" data-native>Bantuan Registrasi</a></nav>' +
-      '<div class="avatar" style="width:40px;height:40px" aria-hidden="true">' + SP.icon('user') + '</div></header>';
+    return '<header class="auth-top">' +
+      '<div class="auth-logo">' +
+        '<div class="sq">S</div>' +
+        '<div><b>SIPENA</b><small>SISTEM PENILAIAN &amp; KELULUSAN BAHASA</small></div>' +
+      '</div>' +
+      '<div class="auth-live-pill">' +
+        '<span class="auth-live-dot"></span>' +
+        '<span>Sistem Aktif &amp; Terpantau</span>' +
+      '</div>' +
+      '<nav class="auth-nav">' +
+        '<a href="#/" data-act="panduanLogin" data-native>' + SP.icon('help', 'sm') + ' Panduan Tutor</a>' +
+        '<a href="#/verifikasi">' + SP.icon('award', 'sm') + ' Verifikasi Sertifikat</a>' +
+        '<a href="#/" data-act="bantuanLogin" data-native>' + SP.icon('mail', 'sm') + ' Bantuan</a>' +
+      '</nav>' +
+    '</header>';
   }
   function footer(info) {
     const nama = (info && info.nama_lembaga) || 'Pusat Pengembangan Bahasa';
-    return '<footer class="auth-foot"><div><b style="color:var(--text)">SIPENA • ' + SP.esc(nama) + '</b><br>Tata Kelola Sertifikasi dan Penilaian Akademik Terpadu</div><div>© ' + new Date().getFullYear() + ' ' + SP.esc(nama) + '</div></footer>';
+    return '<footer class="auth-foot">' +
+      '<div><b style="color:var(--text)">SIPENA • ' + SP.esc(nama) + '</b><br>Tata Kelola Sertifikasi dan Penilaian Akademik Terpadu</div>' +
+      '<div class="row gap8 muted" style="font-size:12px">' +
+        '<span>' + SP.icon('shieldCheck', 'sm') + ' OAuth 2.0 Enkripsi</span>' +
+        '<span>•</span>' +
+        '<span>© ' + new Date().getFullYear() + ' ' + SP.esc(nama) + '</span>' +
+      '</div>' +
+    '</footer>';
   }
   SP.infoPublik = null;
   async function muatInfo() {
@@ -25,24 +44,119 @@
 
   // ---------------- Login ----------------
   SP.tampilLogin = async function (pesan) {
-    document.getElementById('app').innerHTML = topbar() + '<main class="auth-body"><div class="login">' +
-      '<section class="login-l"><div class="row"><div class="sb-logo" style="background:rgba(255,255,255,.16)">' + SP.icon('book', 'lg') + '</div><div><div class="sb-title" style="font-size:24px">SIPENA</div><div class="cap" style="color:var(--primary-l)" id="lg-lembaga">LEMBAGA PENGEMBANGAN BAHASA</div></div></div>' +
-      '<span class="chip" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.2);color:#fff;align-self:flex-start">' + SP.icon('cap', 'sm') + ' PROGRAM BAHASA ARAB &amp; INGGRIS</span>' +
-      '<h2>Portal Penilaian &amp; Kelulusan Terintegrasi</h2><p style="color:rgba(255,255,255,.88)">Pusat tata kelola nilai terpusat, penetapan kelulusan mahir bahasa, dan penerbitan sertifikat elektronik.</p>' +
-      [['layers', 'Sinkronisasi Multi-Tutor Otomatis', 'Nilai semester ganjil &amp; genap dari banyak tutor terkumpul dalam satu sistem.'],
-        ['shieldCheck', 'Penetapan 4 Program Komprehensif', 'Kelulusan dihitung otomatis dari Arab &amp; Inggris selama 2 semester, tanpa rekap manual.'],
-        ['mail', 'Penerbitan Digital &amp; Notifikasi', 'Sertifikat PDF dibuat otomatis dan dikirim ke email mahasiswa yang lulus.']]
-        .map(function (f) { return '<div class="ft"><div class="ic">' + SP.icon(f[0]) + '</div><div><b>' + f[1] + '</b><span>' + f[2] + '</span></div></div>'; }).join('') +
-      '<div class="infra">' + SP.icon('zap', 'lg') + '<div><div class="cap" style="color:var(--primary-l)">INFRASTRUKTUR TERVERIFIKASI</div>Google Workspace &amp; Google Apps Script</div></div></section>' +
-      '<section class="login-r"><div class="cap" style="color:var(--primary)"><span class="dotp" style="color:var(--primary)"></span> SISTEM OTENTIKASI TERPADU</div>' +
-      '<h2 class="h1" style="font-size:30px">Masuk ke Aplikasi</h2><p class="muted">Gunakan akun Google resmi yang telah didaftarkan oleh Superadmin.</p>' +
-      (pesan ? '<div class="callout bad"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + SP.esc(pesan) + '</div></div>' : '') +
-      '<div class="gbtn" id="gbtn"><div class="sk" style="height:44px;width:100%;max-width:400px"></div></div>' +
-      '<div class="divtxt">Kebijakan Hak Akses</div>' +
-      SP.callout({ ikon: 'lock', judul: 'Akses Khusus Pengajar &amp; Pengelola', teks: 'Hanya tutor aktif dan Superadmin yang memiliki akses ke sistem ini. Mahasiswa <b>tidak memiliki akun login</b> — data kelulusan dan sertifikat dikirim otomatis melalui surel.' }) +
-      '<div class="row between callout" style="padding:10px 14px;border-radius:10px"><span class="muted">Pratinjau status server</span><button class="btn btn-outline btn-sm" data-act="ujiServer" id="btn-uji">Uji Respon Server</button></div>' +
-      '<div class="row wrap gap8 muted" style="font-size:13px"><span>' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span><span>•</span><span>' + SP.icon('shieldCheck', 'sm') + ' OAuth 2.0 terenkripsi</span></div>' +
-      '</section></div></main>' + footer(SP.infoPublik);
+    document.getElementById('app').innerHTML = topbar() +
+      '<main class="auth-body">' +
+        '<div class="auth-decor" aria-hidden="true">' +
+          '<div class="auth-orb auth-orb-1"></div>' +
+          '<div class="auth-orb auth-orb-2"></div>' +
+          '<div class="auth-orb auth-orb-3"></div>' +
+          '<div class="auth-grid-pattern"></div>' +
+        '</div>' +
+        '<div class="login">' +
+          '<section class="login-l">' +
+            '<div class="login-l-head">' +
+              '<div class="sb-logo" style="background:rgba(255,255,255,.2);box-shadow:0 8px 20px rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.3)">' + SP.icon('book', 'lg') + '</div>' +
+              '<div>' +
+                '<div class="sb-title" style="font-size:24px;letter-spacing:-.01em">SIPENA</div>' +
+                '<div class="cap" style="color:var(--primary-l);letter-spacing:.08em" id="lg-lembaga">LEMBAGA PENGEMBANGAN BAHASA</div>' +
+              '</div>' +
+            '</div>' +
+            '<span class="login-badge-hero">' +
+              '<span class="auth-live-dot" style="background:var(--primary-l)"></span>' +
+              'PROGRAM INTENSIF BAHASA ARAB &amp; INGGRIS' +
+            '</span>' +
+            '<h2 class="login-hero-title">Portal Penilaian &amp; Sertifikasi Digital Terpadu</h2>' +
+            '<p class="login-hero-sub">Pusat tata kelola nilai komprehensif, evaluasi kelulusan multi-semester berbasis KKM institusi, dan penerbitan sertifikat elektronik resmi.</p>' +
+            '<div class="login-features">' +
+              [
+                ['layers', 'Sinkronisasi Multi-Tutor Real-Time', 'Nilai semester ganjil &amp; genap dari pengajar terintegrasi otomatis dalam satu basis data terpusat.', 'Otomatis'],
+                ['shieldCheck', 'Evaluasi Kelulusan 4 Program', 'Perhitungan otomatis status kelulusan Arab &amp; Inggris 2 semester sesuai ambang batas KKM.', 'Standar KKM'],
+                ['award', 'Penerbitan Sertifikat &amp; Surel Digital', 'Sertifikat resmi berseri dengan QR Code validasi langsung terdistribusi ke email mahasiswa.', 'QR Verifikasi']
+              ].map(function (f) {
+                return '<div class="ft-card">' +
+                  '<div class="ic">' + SP.icon(f[0]) + '</div>' +
+                  '<div class="ft-card-body">' +
+                    '<div class="ft-card-head">' +
+                      '<b>' + f[1] + '</b>' +
+                      '<span class="ft-card-tag">' + f[3] + '</span>' +
+                    '</div>' +
+                    '<div class="ft-card-desc">' + f[2] + '</div>' +
+                  '</div>' +
+                '</div>';
+              }).join('') +
+            '</div>' +
+            '<div class="login-pills">' +
+              '<span class="login-pill-item">' + SP.icon('check', 'sm') + ' 2 Bahasa Asing</span>' +
+              '<span class="login-pill-item">' + SP.icon('calendar', 'sm') + ' 2 Semester</span>' +
+              '<span class="login-pill-item">' + SP.icon('award', 'sm') + ' Sertifikat QR</span>' +
+              '<span class="login-pill-item">' + SP.icon('zap', 'sm') + ' Cloud Apps Script</span>' +
+            '</div>' +
+            '<div class="infra">' +
+              SP.icon('zap', 'lg') +
+              '<div>' +
+                '<div class="cap" style="color:var(--primary-l)">INFRASTRUKTUR RESMI TERVERIFIKASI</div>' +
+                'Google Cloud Workspace &amp; Google Apps Script' +
+              '</div>' +
+            '</div>' +
+          '</section>' +
+          '<section class="login-r">' +
+            '<div class="login-eyebrow">' +
+              '<span class="auth-live-dot" style="background:var(--primary)"></span>' +
+              'AUTENTIKASI AKSES AKADEMIK' +
+            '</div>' +
+            '<div>' +
+              '<h1 class="login-title">Masuk ke Portal</h1>' +
+              '<p class="login-sub">Silakan autentikasi menggunakan akun Google resmi yang telah didaftarkan oleh Superadmin.</p>' +
+            '</div>' +
+            (pesan ? '<div class="callout bad"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + SP.esc(pesan) + '</div></div>' : '') +
+            '<div class="login-auth-box">' +
+              '<div class="login-auth-box-head">' +
+                '<div class="login-auth-box-title">' +
+                  SP.icon('lock', 'sm') +
+                  '<span>Lanjutkan dengan Akun Google</span>' +
+                '</div>' +
+                '<span class="badge b-ok" style="font-size:10px;padding:2px 7px">OAuth 2.0</span>' +
+              '</div>' +
+              '<div class="gbtn" id="gbtn">' +
+                '<div class="sk" style="height:44px;width:100%;max-width:380px;border-radius:8px"></div>' +
+              '</div>' +
+              '<div class="login-auth-box-foot">' +
+                SP.icon('shieldCheck', 'sm') +
+                '<span>Akses aman langsung via Google Identity Services</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="login-server-card" id="card-server-status">' +
+              '<div class="login-server-info">' +
+                '<span class="auth-live-dot" id="server-dot"></span>' +
+                '<div>' +
+                  '<b id="server-status-label">Status Server Cloud</b>' +
+                  '<small id="server-status-desc">Google Apps Script API siap merespons</small>' +
+                '</div>' +
+              '</div>' +
+              '<button class="btn btn-outline btn-sm" data-act="ujiServer" id="btn-uji" title="Klik untuk menguji latensi server">' +
+                SP.icon('zap', 'sm') + ' <span id="btn-uji-tx">Uji Respon</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="login-guide-card">' +
+              SP.icon('lock') +
+              '<div>' +
+                '<b>Akses Khusus Pendidik &amp; Administrator</b>' +
+                '<p>Hanya Tutor aktif dan Superadmin yang memiliki hak akses ke sistem. Mahasiswa tidak memiliki akun login — seluruh rekapan nilai dan sertifikat dikirim otomatis melalui surel resmi.</p>' +
+              '</div>' +
+            '</div>' +
+            '<div class="row between wrap gap8 muted" style="font-size:12.5px;padding-top:4px">' +
+              '<span class="row gap4">' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span>' +
+              '<span class="row gap8">' +
+                '<button class="btn btn-ghost btn-sm" data-act="panduanLogin" style="padding:0 4px;height:auto">' + SP.icon('help', 'sm') + ' Panduan</button>' +
+                '<span>•</span>' +
+                '<button class="btn btn-ghost btn-sm" data-act="bantuanLogin" style="padding:0 4px;height:auto">' + SP.icon('mail', 'sm') + ' Bantuan</button>' +
+              '</span>' +
+            '</div>' +
+          '</section>' +
+        '</div>' +
+      '</main>' +
+      footer(SP.infoPublik);
+
     const info = await muatInfo();
     if (info) {
       const l = SP.$('#lg-lembaga'); if (l) l.textContent = String(info.nama_lembaga).toUpperCase();
@@ -52,17 +166,32 @@
   };
 
   SP.actions.ujiServer = async function (el) {
-    const t0 = Date.now(); el.disabled = true; el.innerHTML = '<span class="spin"></span> Menguji…';
-    try { await SP.apiGet('ping'); SP.toast('Server merespons dalam <b>' + (Date.now() - t0) + ' ms</b>.', 'ok'); }
-    catch (e) { SP.toast('Server tidak merespons: ' + SP.esc(e.message), 'err'); }
-    el.disabled = false; el.textContent = 'Uji Respon Server';
+    const t0 = Date.now(); el.disabled = true;
+    const tx = SP.$('#btn-uji-tx'); if (tx) tx.innerHTML = '<span class="spin" style="width:12px;height:12px"></span>';
+    try {
+      await SP.apiGet('ping');
+      const ms = Date.now() - t0;
+      SP.toast('Server merespons dalam <b>' + ms + ' ms</b>.', 'ok');
+      const desc = SP.$('#server-status-desc');
+      if (desc) desc.innerHTML = 'Latensi: <b style="color:var(--ok-tx)">' + ms + ' ms</b> (Optimal)';
+      const dot = SP.$('#server-dot');
+      if (dot) dot.style.background = ms < 900 ? '#22C55E' : '#F59E0B';
+    } catch (e) {
+      SP.toast('Server tidak merespons: ' + SP.esc(e.message), 'err');
+      const desc = SP.$('#server-status-desc');
+      if (desc) desc.innerHTML = '<span style="color:var(--danger)">Gagal terhubung</span>';
+      const dot = SP.$('#server-dot');
+      if (dot) dot.style.background = '#EF4444';
+    }
+    el.disabled = false;
+    if (tx) tx.textContent = 'Uji Respon';
   };
   SP.actions.panduanLogin = function () {
-    SP.modal({ judul: 'Panduan Login Tutor', isi: '<ol style="padding-left:20px;line-height:1.8"><li>Klik <b>Lanjutkan dengan Google</b>.</li><li>Pilih akun Google yang <b>didaftarkan Superadmin</b> (email lembaga).</li><li>Jika muncul “Akses Ditolak”, hubungi Superadmin agar email Anda didaftarkan atau diaktifkan.</li></ol>', footer: '<button class="btn btn-primary" data-act="tutupModal">Mengerti</button>' });
+    SP.modal({ judul: 'Panduan Login Tutor & Admin', isi: '<ol style="padding-left:20px;line-height:1.8"><li>Klik <b>Lanjutkan dengan Google</b>.</li><li>Pilih akun Google yang <b>didaftarkan Superadmin</b> (email lembaga).</li><li>Jika muncul “Akses Ditolak”, hubungi Superadmin agar email Anda didaftarkan atau diaktifkan.</li></ol>', footer: '<button class="btn btn-primary" data-act="tutupModal">Mengerti</button>' });
   };
   SP.actions.bantuanLogin = function () {
     const k = SP.infoPublik && SP.infoPublik.kontak_bantuan;
-    SP.modal({ judul: 'Bantuan Registrasi', isi: '<p>Registrasi akun dilakukan oleh <b>Superadmin</b> lembaga.' + (k ? '<br>Kontak bantuan: <b>' + SP.esc(k) + '</b>' : '') + '</p>', footer: '<button class="btn btn-primary" data-act="tutupModal">Tutup</button>' });
+    SP.modal({ judul: 'Bantuan Registrasi Akun', isi: '<p>Registrasi akun dilakukan oleh <b>Superadmin</b> lembaga.' + (k ? '<br>Kontak bantuan: <b>' + SP.esc(k) + '</b>' : '') + '</p>', footer: '<button class="btn btn-primary" data-act="tutupModal">Tutup</button>' });
   };
   SP.actions.tutupModal = function () { SP.tutupModal(); };
 
