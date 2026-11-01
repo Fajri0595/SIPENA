@@ -10,7 +10,7 @@
   function topbar() {
     return '<header class="auth-top">' +
       '<div class="auth-logo">' +
-        '<div class="sq">S</div>' +
+        '<img src="logo.png" alt="SIPENA Logo" class="auth-brand-logo">' +
         '<div><b>SIPENA</b><small>SISTEM PENILAIAN &amp; KELULUSAN BAHASA</small></div>' +
       '</div>' +
       '<div class="auth-live-pill">' +
@@ -55,7 +55,9 @@
         '<div class="login">' +
           '<section class="login-l">' +
             '<div class="login-l-head">' +
-              '<div class="sb-logo" style="background:rgba(255,255,255,.2);box-shadow:0 8px 20px rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.3)">' + SP.icon('book', 'lg') + '</div>' +
+              '<div class="sb-logo-wrap" style="width:50px;height:50px;padding:4px;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.2)">' +
+                '<img src="logo.png" alt="SIPENA Logo" style="width:100%;height:100%;object-fit:contain;display:block">' +
+              '</div>' +
               '<div>' +
                 '<div class="sb-title" style="font-size:24px;letter-spacing:-.01em">SIPENA</div>' +
                 '<div class="cap" style="color:var(--primary-l);letter-spacing:.08em" id="lg-lembaga">LEMBAGA PENGEMBANGAN BAHASA</div>' +

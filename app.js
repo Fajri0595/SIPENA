@@ -43,14 +43,14 @@
   function renderShell() {
     const m = SP.S.me;
     document.getElementById('app').innerHTML =
-      '<aside class="sb" aria-label="Navigasi utama"><div class="sb-brand"><div class="sb-logo">' + SP.icon('book', 'lg') + '</div><div><div class="sb-title">SIPENA</div><div class="sb-sub">Nilai Bahasa Arab &amp; Inggris</div></div></div>' +
-      '<nav class="sb-nav" id="sb-nav"></nav><div class="sb-user"><span class="avatar sm" style="background:#fff;color:var(--primary-d)">' + esc(SP.inisial(m.nama)) + '</span><div class="ut grow"><div class="nm trunc" style="max-width:130px">' + esc(m.nama) + '</div><span class="rl">' + esc(rolLabel()) + '</span></div>' +
-      '<button class="sb-out" data-act="keluar" title="Keluar" aria-label="Keluar">' + SP.icon('logout') + '</button></div></aside><div class="sb-ovl" data-act="tutupSb"></div>' +
+      '<aside class="sb" aria-label="Navigasi utama"><div class="sb-brand"><div class="sb-logo-wrap"><img src="logo.png" alt="SIPENA Logo" class="sb-brand-logo"></div><div><div class="sb-title">SIPENA</div><div class="sb-sub">Nilai Bahasa Arab &amp; Inggris</div></div></div>' +
+      '<nav class="sb-nav" id="sb-nav"></nav><div class="sb-user" data-act="bukaModalAkun" role="button" tabindex="0" title="Klik untuk Pengaturan Akun &amp; Profil">' + SP.avatarHtml(m.nama, m.email, 'sm') + '<div class="ut grow"><div class="nm trunc" style="max-width:125px">' + esc(m.nama) + '</div><span class="rl">' + esc(rolLabel()) + '</span></div>' +
+      '<div class="sb-user-gear" title="Pengaturan Profil">' + SP.icon('settings', 'sm') + '</div></div></aside><div class="sb-ovl" data-act="tutupSb"></div>' +
       '<div class="main"><header class="tb"><button class="tb-menu" data-act="bukaSb" aria-label="Menu">' + SP.icon('menu', 'lg') + '</button>' +
       '<div class="tb-crumb">SIPENA ' + SP.icon('chevronRight', 'sm') + ' <b>Portal Akademik</b></div><span class="pill-ta" id="pill-ta"></span>' +
       '<div class="tb-search">' + SP.icon('search') + '<input class="input" id="gsearch" placeholder="Cari NIM, Nama, Kelas…" autocomplete="off" aria-label="Pencarian global"><div id="gsr"></div></div>' +
       '<div style="position:relative"><button class="tb-btn" data-act="toggleNotif" aria-label="Notifikasi">' + SP.icon('bell', 'lg') + '<span class="tb-badge hide" id="bell-n">0</span></button><div id="dd-notif"></div></div>' +
-      '<div style="position:relative"><button class="tb-user" data-act="toggleUser"><span class="avatar">' + esc(SP.inisial(m.nama)) + '</span><span class="tx2"><div class="nm trunc" style="max-width:150px">' + esc(m.nama) + '</div><div class="rl">' + esc(rolLabel()) + '</div></span>' + SP.icon('chevronDown', 'sm') + '</button><div id="dd-user"></div></div></header>' +
+      '<div style="position:relative"><button class="tb-user" data-act="toggleUser">' + SP.avatarHtml(m.nama, m.email) + '<span class="tx2"><div class="nm trunc" style="max-width:150px">' + esc(m.nama) + '</div><div class="rl">' + esc(rolLabel()) + '</div></span>' + SP.icon('chevronDown', 'sm') + '</button><div id="dd-user"></div></div></header>' +
       '<main class="page" id="view" tabindex="-1"></main></div>';
     SP.updateChrome();
   }
@@ -111,8 +111,194 @@
   };
   SP.actions.toggleUser = function () {
     const el = SP.$('#dd-user'), buka = !el.innerHTML; SP.tutupMenu();
-    if (buka) el.innerHTML = '<div class="dd"><div class="dd-h"><div><div>' + esc(SP.S.me.nama) + '</div><div class="muted" style="font-size:12px;font-weight:400">' + esc(SP.S.me.email) + '</div></div></div><div class="dd-i" style="cursor:default"><span class="cap">Peran</span> <b>' + esc(rolLabel()) + '</b></div>' +
-      '<button class="dd-i" data-act="muatPaksa">' + SP.icon('refresh') + ' Muat ulang data</button><button class="dd-i" data-act="keluar" style="color:var(--danger)">' + SP.icon('logout') + ' Keluar</button></div>';
+    if (!buka) return;
+    const m = SP.S.me;
+    el.innerHTML = '<div class="dd">' +
+      '<div class="dd-h">' +
+        SP.avatarHtml(m.nama, m.email, 'sm') +
+        '<div style="min-width:0;flex:1">' +
+          '<div class="trunc" style="font-weight:700;font-size:13.5px">' + esc(m.nama) + '</div>' +
+          '<div class="muted trunc" style="font-size:11.5px;font-weight:400">' + esc(m.email) + '</div>' +
+        '</div>' +
+        '<span class="badge b-solid" style="background:var(--primary);color:#fff;font-size:10px">' + esc(rolLabel()) + '</span>' +
+      '</div>' +
+      '<button class="dd-i" data-act="bukaModalAkun">' + SP.icon('settings') + ' Pengaturan Profil &amp; Akun</button>' +
+      '<button class="dd-i" data-act="muatPaksa">' + SP.icon('refresh') + ' Muat Ulang Data Sinkronisasi</button>' +
+      '<button class="dd-i danger" data-act="keluar">' + SP.icon('logout') + ' Keluar dari Aplikasi</button>' +
+    '</div>';
+  };
+
+  // ---------------- Pengaturan Akun & Profil ----------------
+  SP.bukaModalAkun = function () {
+    SP.tutupMenu();
+    const m = SP.S.me;
+    const gInfo = SP.Auth && SP.Auth.info ? SP.Auth.info() : null;
+    const punyaFotoGoogle = !!(gInfo && gInfo.picture);
+    window._akunFotoPending = undefined;
+
+    function updatePreviewAvatar(url) {
+      const box = SP.$('#akun-avatar-preview');
+      if (!box) return;
+      if (url) {
+        box.innerHTML = '<span class="avatar lg has-img"><img src="' + SP.esc(url) + '" alt="' + esc(m.nama) + '" onerror="this.remove()"></span><div class="akun-avatar-btn" title="Ganti foto">' + SP.icon('camera', 'sm') + '</div>';
+      } else if (url === '') {
+        box.innerHTML = '<span class="avatar lg">' + esc(SP.inisial(m.nama)) + '</span><div class="akun-avatar-btn" title="Ganti foto">' + SP.icon('camera', 'sm') + '</div>';
+      } else {
+        box.innerHTML = SP.avatarHtml(m.nama, m.email, 'lg') + '<div class="akun-avatar-btn" title="Ganti foto">' + SP.icon('camera', 'sm') + '</div>';
+      }
+    }
+    SP._updatePreviewAvatarAkun = updatePreviewAvatar;
+
+    SP.modal({
+      judul: 'Pengaturan Akun &amp; Profil',
+      lebar: 540,
+      isi:
+        '<div class="akun-hero">' +
+          '<div class="akun-avatar-wrap" id="akun-avatar-preview" data-act="pilihFotoAkun" title="Klik untuk mengubah foto profil">' +
+            SP.avatarHtml(m.nama, m.email, 'lg') +
+            '<div class="akun-avatar-btn" title="Ganti foto">' + SP.icon('camera', 'sm') + '</div>' +
+          '</div>' +
+          '<div style="min-width:0;flex:1">' +
+            '<div style="font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.01em" class="trunc">' + esc(m.nama) + '</div>' +
+            '<div style="font-size:12.5px;color:var(--text2);margin-top:2px" class="trunc">' + esc(m.email) + '</div>' +
+            '<div class="row gap8" style="margin-top:8px;flex-wrap:wrap">' +
+              '<span class="badge b-solid" style="background:var(--primary);color:#fff;font-size:11px">' + esc(rolLabel()) + '</span>' +
+              (m.bahasa ? '<span class="badge b-soft" style="background:#E0E7FF;color:#3730A3;font-size:11px">Bahasa ' + esc(m.bahasa === 'ARAB' ? 'Arab' : 'Inggris') + '</span>' : '') +
+              '<span class="badge b-soft" style="background:#DCFCE7;color:#166534;font-size:11px">Status Aktif</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="margin-bottom:18px">' +
+          '<div class="akun-section-title">' + SP.icon('camera', 'sm') + ' Foto Profil Pengguna</div>' +
+          '<div class="akun-photo-actions">' +
+            '<input type="file" id="akun-foto-file" accept="image/jpeg,image/png,image/webp" style="display:none" data-ch="unggahFotoAkun">' +
+            '<button type="button" class="btn btn-sm btn-outline" data-act="pilihFotoAkun">' + SP.icon('uploadCloud', 'sm') + ' Unggah Foto Baru</button>' +
+            (punyaFotoGoogle ? '<button type="button" class="btn btn-sm btn-outline" data-act="pakaiFotoGoogle">' + SP.icon('shieldCheck', 'sm') + ' Gunakan Foto Google</button>' : '') +
+            '<button type="button" class="btn btn-sm btn-outline" style="color:var(--danger);border-color:rgba(220,38,38,0.3)" data-act="hapusFotoAkun">' + SP.icon('trash', 'sm') + ' Hapus Foto</button>' +
+          '</div>' +
+          '<div class="help" style="margin-top:6px;font-size:11.5px">Format didukung: JPG, PNG, atau WebP. Gambar otomatis dioptimalkan agar ringan dan cepat.</div>' +
+        '</div>' +
+
+        '<div style="margin-bottom:16px">' +
+          '<div class="akun-section-title">' + SP.icon('user', 'sm') + ' Informasi Data Diri</div>' +
+          '<div class="field" style="margin-bottom:12px">' +
+            '<label for="akun-nama">Nama Lengkap &amp; Gelar <span style="color:var(--danger)">*</span></label>' +
+            '<input class="input" id="akun-nama" value="' + esc(m.nama) + '" placeholder="Masukkan nama lengkap dengan gelar">' +
+          '</div>' +
+          '<div class="field" style="margin-bottom:12px">' +
+            '<label for="akun-nip">NIP / NIDN (Opsional)</label>' +
+            '<input class="input" id="akun-nip" value="' + esc(m.nip || '') + '" placeholder="Contoh: 198501012010011001">' +
+          '</div>' +
+          '<div class="field">' +
+            '<label>Email Google Terautentikasi</label>' +
+            '<div class="akun-field-ro">' +
+              '<span class="mono" style="font-size:13px">' + esc(m.email) + '</span>' +
+              '<span class="badge b-soft" style="background:#E0F2FE;color:#0369A1;font-size:10.5px">' + SP.icon('shieldCheck', 'sm') + ' Terverifikasi OAuth</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="akun-logout-card">' +
+          '<div class="tx">' +
+            '<b>Sesi Masuk Pengguna</b>' +
+            '<span>Keluar dari aplikasi dengan aman dan bersihkan sesi aktif.</span>' +
+          '</div>' +
+          '<button type="button" class="btn btn-danger btn-sm" data-act="keluarDariAkun">' + SP.icon('logout', 'sm') + ' Keluar Sesi</button>' +
+        '</div>',
+      footer:
+        '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' +
+        '<button class="btn btn-primary" data-act="simpanProfilAkun">' + SP.icon('check', 'sm') + ' Simpan Profil</button>'
+    });
+  };
+
+  SP.actions.bukaModalAkun = function () { SP.bukaModalAkun(); };
+  SP.actions.pilihFotoAkun = function () {
+    const f = SP.$('#akun-foto-file');
+    if (f) { f.value = ''; f.click(); }
+  };
+  SP.changes.unggahFotoAkun = async function (el) {
+    const file = el.files && el.files[0];
+    if (!file) return;
+    if (!/^image\//i.test(file.type)) {
+      SP.toast('File harus berupa gambar (JPG, PNG, atau WebP).', 'warn');
+      return;
+    }
+    const t = SP.toast('Memproses foto…', 'info', 10000);
+    try {
+      const dataUrl = await SP.kecilkanGambar(file, 256, 'image/jpeg');
+      window._akunFotoPending = dataUrl;
+      if (SP._updatePreviewAvatarAkun) SP._updatePreviewAvatarAkun(dataUrl);
+      t.remove();
+      SP.toast('Foto profil dipilih. Klik "Simpan Profil" untuk menerapkan.', 'ok');
+    } catch (e) {
+      t.remove();
+      SP.toast('Gagal memproses gambar: ' + esc(e.message), 'err');
+    }
+  };
+  SP.actions.pakaiFotoGoogle = function () {
+    const gInfo = SP.Auth && SP.Auth.info ? SP.Auth.info() : null;
+    if (gInfo && gInfo.picture) {
+      window._akunFotoPending = gInfo.picture;
+      if (SP._updatePreviewAvatarAkun) SP._updatePreviewAvatarAkun(gInfo.picture);
+      SP.toast('Foto dari akun Google dipilih. Klik "Simpan Profil" untuk menerapkan.', 'ok');
+    } else {
+      SP.toast('Foto profil Google tidak tersedia.', 'warn');
+    }
+  };
+  SP.actions.hapusFotoAkun = function () {
+    window._akunFotoPending = '';
+    if (SP._updatePreviewAvatarAkun) SP._updatePreviewAvatarAkun('');
+    SP.toast('Foto dihapus. Klik "Simpan Profil" untuk menerapkan.', 'info');
+  };
+  SP.actions.keluarDariAkun = async function () {
+    SP.tutupModal();
+    await SP.actions.keluar();
+  };
+  SP.actions.simpanProfilAkun = async function () {
+    const namaIn = SP.$('#akun-nama'), nipIn = SP.$('#akun-nip');
+    const nama = (namaIn ? namaIn.value : '').trim();
+    const nip = (nipIn ? nipIn.value : '').trim();
+    if (!nama) {
+      SP.toast('Nama lengkap tidak boleh kosong.', 'warn');
+      if (namaIn) namaIn.focus();
+      return;
+    }
+
+    const payload = { nama: nama, nip: nip };
+    if (window._akunFotoPending !== undefined) {
+      payload.foto = window._akunFotoPending;
+    }
+
+    SP.S.me.nama = nama;
+    SP.S.me.nip = nip;
+    if (payload.foto !== undefined) {
+      SP.S.me.foto = payload.foto;
+      if (payload.foto) {
+        localStorage.setItem('sipena_foto_' + SP.S.me.email.toLowerCase(), payload.foto);
+      } else {
+        localStorage.removeItem('sipena_foto_' + SP.S.me.email.toLowerCase());
+      }
+    }
+    if (Array.isArray(SP.S.pengguna)) {
+      const u = SP.S.pengguna.find(function (x) { return (x.email || '').toLowerCase() === SP.S.me.email.toLowerCase(); });
+      if (u) {
+        u.nama = nama;
+        u.nip = nip;
+        if (payload.foto !== undefined) u.foto = payload.foto;
+      }
+    }
+    SP.Cache.simpan();
+    SP.tutupModal();
+    renderShell();
+    SP.renderUlang();
+    SP.toast('Profil berhasil diperbarui.', 'ok');
+
+    try {
+      await SP.api('profilSimpan', payload);
+    } catch (e) {
+      console.warn('Sinkronisasi profil ke server tertunda:', e);
+    }
   };
   SP.actions.muatPaksa = async function () {
     SP.tutupMenu(); const t = SP.toast('Memuat ulang data…', 'info', 30000);
