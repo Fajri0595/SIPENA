@@ -29,7 +29,7 @@
     return '<footer class="auth-foot">' +
       '<div><b style="color:var(--text)">SIPENA • ' + SP.esc(nama) + '</b><br>Tata Kelola Sertifikasi dan Penilaian Akademik Terpadu</div>' +
       '<div class="row gap8 muted" style="font-size:12px">' +
-        '<span>' + SP.icon('shieldCheck', 'sm') + ' OAuth 2.0 Enkripsi</span>' +
+        '<span>' + SP.icon('shieldCheck', 'sm') + ' Terenkripsi &amp; Aman</span>' +
         '<span>•</span>' +
         '<span>© ' + new Date().getFullYear() + ' ' + SP.esc(nama) + '</span>' +
       '</div>' +
@@ -91,14 +91,7 @@
               '<span class="login-pill-item">' + SP.icon('check', 'sm') + ' 2 Bahasa Asing</span>' +
               '<span class="login-pill-item">' + SP.icon('calendar', 'sm') + ' 2 Semester</span>' +
               '<span class="login-pill-item">' + SP.icon('award', 'sm') + ' Sertifikat QR</span>' +
-              '<span class="login-pill-item">' + SP.icon('zap', 'sm') + ' Cloud Apps Script</span>' +
-            '</div>' +
-            '<div class="infra">' +
-              SP.icon('zap', 'lg') +
-              '<div>' +
-                '<div class="cap" style="color:var(--primary-l)">INFRASTRUKTUR RESMI TERVERIFIKASI</div>' +
-                'Google Cloud Workspace &amp; Google Apps Script' +
-              '</div>' +
+              '<span class="login-pill-item">' + SP.icon('shieldCheck', 'sm') + ' Basis Data Terpusat</span>' +
             '</div>' +
           '</section>' +
           '<section class="login-r">' +
@@ -117,7 +110,6 @@
                   SP.icon('lock', 'sm') +
                   '<span>Lanjutkan dengan Akun Google</span>' +
                 '</div>' +
-                '<span class="badge b-ok" style="font-size:10px;padding:2px 7px">OAuth 2.0</span>' +
               '</div>' +
               '<div class="gbtn" id="gbtn">' +
                 '<div class="sk" style="height:44px;width:100%;max-width:380px;border-radius:8px"></div>' +
@@ -127,18 +119,6 @@
                 '<span>Akses aman langsung via Google Identity Services</span>' +
               '</div>' +
             '</div>' +
-            '<div class="login-server-card" id="card-server-status">' +
-              '<div class="login-server-info">' +
-                '<span class="auth-live-dot" id="server-dot"></span>' +
-                '<div>' +
-                  '<b id="server-status-label">Status Server Cloud</b>' +
-                  '<small id="server-status-desc">Google Apps Script API siap merespons</small>' +
-                '</div>' +
-              '</div>' +
-              '<button class="btn btn-outline btn-sm" data-act="ujiServer" id="btn-uji" title="Klik untuk menguji latensi server">' +
-                SP.icon('zap', 'sm') + ' <span id="btn-uji-tx">Uji Respon</span>' +
-              '</button>' +
-            '</div>' +
             '<div class="login-guide-card">' +
               SP.icon('lock') +
               '<div>' +
@@ -146,13 +126,12 @@
                 '<p>Hanya Tutor aktif dan Superadmin yang memiliki hak akses ke sistem. Mahasiswa tidak memiliki akun login — seluruh rekapan nilai dan sertifikat dikirim otomatis melalui surel resmi.</p>' +
               '</div>' +
             '</div>' +
-            '<div class="row between wrap gap8 muted" style="font-size:12.5px;padding-top:4px">' +
-              '<span class="row gap4">' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span>' +
-              '<span class="row gap8">' +
-                '<button class="btn btn-ghost btn-sm" data-act="panduanLogin" style="padding:0 4px;height:auto">' + SP.icon('help', 'sm') + ' Panduan</button>' +
-                '<span>•</span>' +
-                '<button class="btn btn-ghost btn-sm" data-act="bantuanLogin" style="padding:0 4px;height:auto">' + SP.icon('mail', 'sm') + ' Bantuan</button>' +
-              '</span>' +
+            '<div class="login-footer-meta muted">' +
+              '<span class="row gap4" style="justify-content:center">' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span>' +
+              '<span>•</span>' +
+              '<button class="btn btn-ghost btn-sm" data-act="panduanLogin" style="padding:0 4px;height:auto">' + SP.icon('help', 'sm') + ' Panduan</button>' +
+              '<span>•</span>' +
+              '<button class="btn btn-ghost btn-sm" data-act="bantuanLogin" style="padding:0 4px;height:auto">' + SP.icon('mail', 'sm') + ' Bantuan</button>' +
             '</div>' +
           '</section>' +
         '</div>' +
@@ -167,27 +146,6 @@
     const g = SP.$('#gbtn'); if (g) { g.innerHTML = ''; SP.Auth.tombol(g); }
   };
 
-  SP.actions.ujiServer = async function (el) {
-    const t0 = Date.now(); el.disabled = true;
-    const tx = SP.$('#btn-uji-tx'); if (tx) tx.innerHTML = '<span class="spin" style="width:12px;height:12px"></span>';
-    try {
-      await SP.apiGet('ping');
-      const ms = Date.now() - t0;
-      SP.toast('Server merespons dalam <b>' + ms + ' ms</b>.', 'ok');
-      const desc = SP.$('#server-status-desc');
-      if (desc) desc.innerHTML = 'Latensi: <b style="color:var(--ok-tx)">' + ms + ' ms</b> (Optimal)';
-      const dot = SP.$('#server-dot');
-      if (dot) dot.style.background = ms < 900 ? '#22C55E' : '#F59E0B';
-    } catch (e) {
-      SP.toast('Server tidak merespons: ' + SP.esc(e.message), 'err');
-      const desc = SP.$('#server-status-desc');
-      if (desc) desc.innerHTML = '<span style="color:var(--danger)">Gagal terhubung</span>';
-      const dot = SP.$('#server-dot');
-      if (dot) dot.style.background = '#EF4444';
-    }
-    el.disabled = false;
-    if (tx) tx.textContent = 'Uji Respon';
-  };
   SP.actions.panduanLogin = function () {
     SP.modal({ judul: 'Panduan Login Tutor & Admin', isi: '<ol style="padding-left:20px;line-height:1.8"><li>Klik <b>Lanjutkan dengan Google</b>.</li><li>Pilih akun Google yang <b>didaftarkan Superadmin</b> (email lembaga).</li><li>Jika muncul “Akses Ditolak”, hubungi Superadmin agar email Anda didaftarkan atau diaktifkan.</li></ol>', footer: '<button class="btn btn-primary" data-act="tutupModal">Mengerti</button>' });
   };

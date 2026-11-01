@@ -194,7 +194,7 @@
             '<label>Email Google Terautentikasi</label>' +
             '<div class="akun-field-ro">' +
               '<span class="mono" style="font-size:13px">' + esc(m.email) + '</span>' +
-              '<span class="badge b-soft" style="background:#E0F2FE;color:#0369A1;font-size:10.5px">' + SP.icon('shieldCheck', 'sm') + ' Terverifikasi OAuth</span>' +
+              '<span class="badge b-soft" style="background:#E0F2FE;color:#0369A1;font-size:10.5px">' + SP.icon('shieldCheck', 'sm') + ' Akun Terverifikasi</span>' +
             '</div>' +
           '</div>' +
         '</div>' +

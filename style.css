@@ -662,18 +662,22 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
   gap: 18px;
   background: #fff;
 }
 .login-eyebrow {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--primary);
+  margin: 0 auto;
 }
 .login-title {
   font-size: 28px;
@@ -681,22 +685,29 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   font-weight: 700;
   letter-spacing: -.02em;
   color: var(--text);
+  text-align: center;
 }
 .login-sub {
   color: var(--text2);
   font-size: 14px;
   line-height: 1.45;
+  text-align: center;
+  max-width: 420px;
+  margin: 6px auto 0;
 }
 
 /* Auth Action Box */
 .login-auth-box {
-  padding: 18px 20px;
+  width: 100%;
+  max-width: 440px;
+  padding: 20px 22px;
   border-radius: 14px;
   background: linear-gradient(180deg, #FBFDFB 0%, #F3F8F5 100%);
   border: 1px solid #D6E6DC;
   box-shadow: 0 4px 14px rgba(22, 101, 52, 0.05);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 14px;
   transition: border-color .2s, box-shadow .2s;
 }
@@ -706,26 +717,31 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 }
 .login-auth-box-head {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
+  width: 100%;
 }
 .login-auth-box-title {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 13.5px;
   font-weight: 700;
   color: var(--text);
+  text-align: center;
 }
 .login-auth-box-foot {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 12px;
   color: var(--text2);
   border-top: 1px dashed #D6E6DC;
   padding-top: 10px;
+  width: 100%;
+  text-align: center;
 }
 .login-r .gbtn {
   display: flex;
@@ -768,17 +784,21 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 
 /* Guide Notice Card */
 .login-guide-card {
+  width: 100%;
+  max-width: 440px;
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 13px 15px;
-  border-radius: 10px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 12px;
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
 }
 .login-guide-card svg.i {
-  color: var(--text3);
-  margin-top: 2px;
+  color: var(--primary);
+  margin-top: 0;
   flex: none;
 }
 .login-guide-card b {
@@ -786,11 +806,28 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   font-size: 12.5px;
   color: var(--text);
   margin-bottom: 2px;
+  text-align: center;
 }
 .login-guide-card p {
   font-size: 12px;
   line-height: 1.45;
   color: var(--text2);
+  text-align: center;
+  margin: 0;
+}
+.login-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12.5px;
+  padding-top: 4px;
+  width: 100%;
+  text-align: center;
+}
+.login-footer-meta span, .login-footer-meta button {
+  text-align: center;
 }
 
 .auth-foot {
