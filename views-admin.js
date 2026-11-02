@@ -164,6 +164,7 @@
     const taAngkatan = t[0].slice(0, 4);
     const u = SP.ui.pgu;
     if (u.angkatan === undefined) u.angkatan = taAngkatan;
+    const semOps = SP.opsiSemester();
 
     const semuaAngkatan = {};
     SP.S.kelas.forEach(function (k) { if (k.angkatan) semuaAngkatan[k.angkatan] = true; });
@@ -177,13 +178,19 @@
     rows.sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
     const jml = function (id) { const s = {}; SP.S.km.forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1] && r.jenis !== 'PENGULANGAN') s[r.nim] = true; }); return Object.keys(s).length; };
 
-    const toolbarAngkatan = '<div class="row between wrap mb12 gap8" style="align-items:center">' +
-      '<div class="row gap8" style="align-items:center"><label style="font-size:13px;font-weight:600">Filter Angkatan:</label><select class="select" style="width:auto;height:34px;padding:0 12px" data-ch="pguAngkatan">' +
+    const toolbarKelas = '<div class="toolbar mb16">' +
+      '<div class="field" style="min-width:240px;max-width:320px"><label for="pg-sem">Semester Roster</label><select id="pg-sem" class="select" data-ch="pguSem">' +
+      semOps.map(function (o) { return '<option value="' + o.v + '" ' + (o.v === (t[0] + '|' + t[1]) ? 'selected' : '') + '>' + esc(o.label) + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="field" style="min-width:220px;max-width:300px"><label for="pg-angkatan">Filter Angkatan</label><select id="pg-angkatan" class="select" data-ch="pguAngkatan">' +
       '<option value="" ' + (!u.angkatan ? 'selected' : '') + '>Semua Angkatan</option>' +
       listAngkatan.map(function (a) { return '<option value="' + a + '" ' + (String(u.angkatan) === String(a) ? 'selected' : '') + '>Angkatan ' + a + (a === taAngkatan ? ' (Tahun Ini)' : '') + '</option>'; }).join('') +
-      '</select></div><span class="muted" style="font-size:12.5px">Menampilkan <b>' + rows.length + '</b> kelas' + (u.angkatan ? ' Angkatan ' + esc(u.angkatan) : '') + '</span></div>';
+      '</select></div>' +
+      '<div class="grow"></div>' +
+      '<div class="muted" style="font-size:13px;align-self:flex-end;padding-bottom:10px">Menampilkan <b>' + rows.length + '</b> kelas' + (u.angkatan ? ' (Angkatan ' + esc(u.angkatan) + ')' : '') + '</div>' +
+      '</div>';
 
-    return toolbarAngkatan + '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th class="right">Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+    return toolbarKelas + '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th class="right">Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
       (rows.length ? rows.map(function (k) { return '<tr><td data-l="Kelas"><b>' + esc(k.nama) + '</b></td><td data-l="Prodi">' + esc(k.prodi || '—') + '</td><td data-l="Angkatan" class="num">' + esc(k.angkatan) + '</td><td data-l="Mahasiswa" class="right num">' + jml(k.id) + '</td><td data-l="Status">' + SP.badge(k.status === 'ARSIP' ? 'ARSIP' : 'AKTIF') + '</td><td><div class="row gap4"><button class="btn btn-outline btn-sm" data-act="pguEditKelas" data-id="' + esc(k.id) + '">' + SP.icon('pencil', 'sm') + ' Edit</button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="pguHapusKelas" data-id="' + esc(k.id) + '" title="Hapus Kelas ' + esc(k.nama) + '">' + SP.icon('trash', 'sm') + ' Hapus</button></div></td></tr>'; }).join('') : '<tr><td colspan="6">' + SP.kosong('book', 'Belum ada kelas untuk angkatan ini', 'Klik “Tambah Kelas Baru” untuk membuat kelas pada angkatan ini.') + '</td></tr>') + '</tbody></table></div>';
   };
   SP.parts.pguMatriks = function () {
@@ -212,7 +219,8 @@
         SP.stat({ label: 'Validasi penugasan tutor', nilai: slotTerisi + ' / ' + m.length * 2, satuan: 'Slot terisi', ikon: 'checkCircle', warna: pct === 100 ? 'g' : 'o', foot: '<span>' + valid + ' dari ' + m.length + ' kelas valid (1 Arab + 1 Inggris)</span>' }) + '</div>' +
         SP.callout({ ikon: 'shieldCheck', judul: 'Validasi Mandatori Konsorsium Bahasa', teks: 'Setiap kelas wajib memiliki tepat <b>1 Tutor Bahasa Arab dan 1 Tutor Bahasa Inggris</b> per semester. Sistem memvalidasi saat penugasan dibuat dan menandai kelas yang berstatus timpang.' }) +
         '<div class="mt16">' + (u.tab === 'tutor' ? '<div class="toolbar"><div class="sch">' + SP.icon('search') + '<input class="input" placeholder="Cari nama tutor, surel Google, NIP…" data-in="pguQ" value="' + esc(u.q) + '"></div><div class="field"><select class="select" data-ch="pguBahasa" aria-label="Rumpun"><option value="">Rumpun: Semua</option>' + opt([['ARAB', 'Bahasa Arab'], ['INGGRIS', 'Bahasa Inggris']], u.bahasa) + '</select></div><div class="field"><select class="select" data-ch="pguStatus" aria-label="Status"><option value="">Status: Semua</option>' + opt([['AKTIF', 'Aktif'], ['NONAKTIF', 'Nonaktif']], u.status) + '</select></div><div class="field"><select class="select" data-ch="pguUrut" aria-label="Urutkan">' + opt([['login', 'Urutkan: Login terakhir'], ['nama', 'Urutkan: Nama']], u.urut) + '</select></div><button class="btn btn-outline" data-act="pguUnduh">' + SP.icon('download') + ' Unduh Data</button></div><div data-part="pguTabel">' + SP.parts.pguTabel() + '</div>' :
-        '<div class="field mb16" style="max-width:300px"><label for="pg-sem">Semester</label><select id="pg-sem" class="select" data-ch="pguSem">' + semOps.map(function (o) { return '<option value="' + o.v + '" ' + (o.v === (t[0] + '|' + t[1]) ? 'selected' : '') + '>' + esc(o.label) + '</option>'; }).join('') + '</select></div>' + (u.tab === 'kelas' ? '<div data-part="pguKelas">' + SP.parts.pguKelas() + '</div>' : '<div data-part="pguMatriks">' + SP.parts.pguMatriks() + '</div>')) + '</div>';
+        (u.tab === 'kelas' ? '<div data-part="pguKelas">' + SP.parts.pguKelas() + '</div>' :
+        '<div class="toolbar mb16"><div class="field" style="min-width:240px;max-width:320px"><label for="pg-sem">Semester Penugasan</label><select id="pg-sem" class="select" data-ch="pguSem">' + semOps.map(function (o) { return '<option value="' + o.v + '" ' + (o.v === (t[0] + '|' + t[1]) ? 'selected' : '') + '>' + esc(o.label) + '</option>'; }).join('') + '</select></div><div class="grow"></div><div class="muted" style="font-size:13px;align-self:flex-end;padding-bottom:10px">Semester: <b>' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + '</b></div></div><div data-part="pguMatriks">' + SP.parts.pguMatriks() + '</div>')) + '</div>';
     }
   };
   SP.actions.pguTab = function (el) { SP.ui.pgu.tab = el.dataset.v; SP.renderUlang(); };
