@@ -170,7 +170,7 @@
         }).join('') + '</div>' +
         '<h3 class="h3 mb16">Riwayat penilaian</h3>' + (hist.length ? '<div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>Program</th><th>Siklus</th><th>Semester</th><th>Kelas</th><th>Status</th><th>Diperbarui</th></tr></thead><tbody>' +
           hist.map(function (r) { return '<tr><td>' + esc(SP.PROG_SHORT[r.program]) + '</td><td class="num">' + (r.siklus > 1 ? 'Pengulangan ke-' + (r.siklus - 1) : 'Reguler') + '</td><td>' + esc(SP.semLabel(r.semester) + ' ' + r.tahun_ajaran) + '</td><td>' + esc(SP.kelasNama(r.kelas_id)) + '</td><td>' + SP.badge(r.status) + '</td><td class="muted" style="font-size:12.5px">' + SP.waktu(r.waktu_ubah) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="muted">Belum ada nilai tercatat.</p>') +
-        (sert && sert.file_id ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">Sertifikat diterbitkan</div><div class="tx"><span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) + '</div></div>' + (SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button>' : '') + '</div>' : ''),
+        (kel.akhir === 'LULUS' ? '<div class="callout ok mt16"><div class="ic">' + SP.icon('award', 'lg') + '</div><div class="grow"><div class="ct">' + (sert && sert.file_id ? 'Sertifikat diterbitkan' : 'Lulus 4 Program (Berhak Sertifikat 2 Sisi)') + '</div><div class="tx">' + (sert && sert.file_id ? '<span class="mono">' + esc(sert.nomor) + '</span> · ' + SP.tgl(sert.tanggal_cetak) : 'Sisi Depan (Keterangan Lulus) &amp; Sisi Belakang (Transkrip Skor 4 Program)') + '</div></div><div class="row gap8">' + (SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="certCetak2Sisi" data-nim="' + esc(nim) + '">' + SP.icon('printer') + ' Cetak 2 Sisi</button>' : '') + (sert && sert.file_id && SP.bolehCetakUI() ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(nim) + '">' + SP.icon('download') + ' Unduh PDF</button>' : '') + '</div></div>' : ''),
       footer: '<button class="btn btn-outline" data-act="editMhs" data-nim="' + esc(nim) + '">' + SP.icon('pencil') + ' Ubah data</button><label class="btn btn-outline" style="cursor:pointer">' + SP.icon('image') + ' Unggah foto<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="fotoMhs" data-nim="' + esc(nim) + '"></label><button class="btn btn-outline" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="konfirmasiHapusMhs" data-nim="' + esc(nim) + '">' + SP.icon('trash') + ' Hapus Mahasiswa</button><button class="btn btn-primary" data-act="tutupModal">Tutup</button>'
     });
     SP.api('ambilFoto', { nim: nim }).then(function (r) {
@@ -638,9 +638,175 @@
   };
 
   // ============================================================
-  // CETAK SERTIFIKAT
+  // CETAK SERTIFIKAT (2 SISI: DEPAN & BELAKANG)
   // ============================================================
-  SP.ui.cert = SP.ui.cert || { kelas: '', angkatan: '', tab: 'siap', sel: {}, q: '', page: 1, job: null };
+  SP.ui.cert = SP.ui.cert || { kelas: '', angkatan: '', tab: 'siap', sel: {}, q: '', page: 1, job: null, sisi: 'dua', previewNim: '' };
+  if (!SP.ui.cert.sisi) SP.ui.cert.sisi = 'dua';
+
+  SP.renderSertifikatDepanHtml = function (info, aset) {
+    aset = aset || {};
+    const logoSrc = aset.logo || 'logo.png';
+    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=' + encodeURIComponent(info.urlVerifikasi || info.nomor);
+    return '<div class="cert-sheet cert-front">' +
+      '<div class="cert-frame">' +
+        '<div class="cert-head">' +
+          '<img class="cert-logo" src="' + esc(logoSrc) + '" alt="Logo" onerror="this.style.display=\'none\'">' +
+          '<div class="cert-lb">' + esc(info.lembaga) + '</div>' +
+          '<div class="cert-tt">SERTIFIKAT KEMAHIRAN BAHASA</div>' +
+          '<div class="cert-sub">Program Intensif Bahasa Arab &amp; Bahasa Inggris</div>' +
+          '<div class="cert-divider"></div>' +
+          '<div class="cert-no">Nomor: ' + esc(info.nomor) + '</div>' +
+        '</div>' +
+        '<div class="cert-body-front">' +
+          '<div class="cert-foto-box">' +
+            (aset.foto ? '<img src="' + esc(aset.foto) + '" alt="Foto">' : '<span>PASFOTO<br>3 × 4</span>') +
+          '</div>' +
+          '<div class="cert-recipient">' +
+            '<div class="cert-gv">Diberikan dengan penuh kehormatan kepada:</div>' +
+            '<div class="cert-nm">' + esc(String(info.m.nama || '').toUpperCase()) + '</div>' +
+            '<div class="cert-ni">NIM: <b>' + esc(info.m.nim) + '</b> &nbsp;·&nbsp; Program Studi: <b>' + esc(info.prodi) + '</b> &nbsp;·&nbsp; Kelas: <b>' + esc(info.kelas) + '</b> &nbsp;·&nbsp; Angkatan: <b>' + esc(info.angkatan) + '</b></div>' +
+            '<div class="cert-st">Telah mengikuti dan dinyatakan <b>LULUS</b> pada seluruh <b>4 (Empat) Program Kemahiran Bahasa Arab dan Bahasa Inggris</b> (Semester Ganjil dan Semester Genap) sesuai standar Kriteria Ketuntasan Minimal (KKM ' + esc(info.kkm) + ') yang ditetapkan lembaga.</div>' +
+            '<div class="cert-score-pill">Rata-rata Skor: ' + esc(info.rataAngka) + ' &nbsp;•&nbsp; Predikat: ' + esc(info.predikatAkhir) + ' (' + esc(info.hurufAkhir) + ') &nbsp;•&nbsp; Rincian Skor di Halaman Belakang</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cert-foot">' +
+          '<div class="cert-sig">' +
+            '<div>' + esc(info.ttd1.jabatan) + '</div>' +
+            '<div class="cert-sig-space">' + (aset.ttd1 ? '<img src="' + esc(aset.ttd1) + '" alt="TTD 1">' : '') + '</div>' +
+            '<div class="cert-sig-line"></div>' +
+            '<div class="cert-sig-name">' + esc(info.ttd1.nama) + '</div>' +
+            (info.ttd1.nip ? '<div class="cert-sig-nip">' + esc(info.ttd1.nip) + '</div>' : '') +
+          '</div>' +
+          '<div class="cert-center-qr">' +
+            '<div class="cert-tg">Diterbitkan pada ' + esc(info.tanggalLabel) + '</div>' +
+            '<div class="cert-qr-box"><img src="' + esc(qrUrl) + '" alt="QR" onerror="this.outerHTML=\'<div class=cert-qr-fallback></div>\'"></div>' +
+            '<div class="cert-qr-cap">Verifikasi Keaslian</div>' +
+          '</div>' +
+          '<div class="cert-sig">' +
+            '<div>' + esc(info.ttd2.jabatan) + '</div>' +
+            '<div class="cert-sig-space">' + (aset.ttd2 ? '<img src="' + esc(aset.ttd2) + '" alt="TTD 2">' : '') + '</div>' +
+            '<div class="cert-sig-line"></div>' +
+            '<div class="cert-sig-name">' + esc(info.ttd2.nama) + '</div>' +
+            (info.ttd2.nip ? '<div class="cert-sig-nip">' + esc(info.ttd2.nip) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  };
+
+  SP.renderSertifikatBelakangHtml = function (info, aset) {
+    aset = aset || {};
+    return '<div class="cert-sheet cert-back">' +
+      '<div class="cert-frame">' +
+        '<div class="cert-back-head">' +
+          '<div class="cert-lb">' + esc(info.lembaga) + '</div>' +
+          '<div class="cert-back-tt">DAFTAR NILAI KELULUSAN (TRANSKRIP SKOR 4 PROGRAM)</div>' +
+          '<div class="cert-back-sub">Rincian Capaian Evaluasi Kemahiran Bahasa Arab &amp; Bahasa Inggris (Semester Ganjil dan Semester Genap)</div>' +
+        '</div>' +
+        '<div class="cert-id-grid">' +
+          '<div class="cert-id-row"><span class="k">Nama Mahasiswa</span><span>:</span><b class="v">' + esc(String(info.m.nama || '').toUpperCase()) + '</b></div>' +
+          '<div class="cert-id-row"><span class="k">Kelas / Prodi</span><span>:</span><b class="v">' + esc(info.kelas + ' / ' + info.prodi) + '</b></div>' +
+          '<div class="cert-id-row"><span class="k">NIM / Angkatan</span><span>:</span><b class="v">' + esc(info.m.nim + ' (Angkatan ' + info.angkatan + ')') + '</b></div>' +
+          '<div class="cert-id-row"><span class="k">Nomor Sertifikat</span><span>:</span><b class="v mono">' + esc(info.nomor) + '</b></div>' +
+        '</div>' +
+        '<table class="cert-score-tbl">' +
+          '<thead><tr>' +
+            '<th class="c" style="width:5%">No</th>' +
+            '<th class="c" style="width:11%">Kode</th>' +
+            '<th style="width:32%">Program Kemahiran Bahasa</th>' +
+            '<th class="c" style="width:11%">Semester</th>' +
+            '<th class="c" style="width:8%">KKM</th>' +
+            '<th class="c" style="width:10%">Skor Angka</th>' +
+            '<th class="c" style="width:8%">Huruf</th>' +
+            '<th class="c" style="width:15%">Predikat / Status</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            info.programRows.map(function (r) {
+              return '<tr>' +
+                '<td class="c">' + r.no + '</td>' +
+                '<td class="c mono" style="font-weight:700">' + esc(r.kodeLabel) + '</td>' +
+                '<td><span class="prog-nm">' + esc(r.nama) + '</span><span class="prog-sub">' + esc(r.sub) + '</span></td>' +
+                '<td class="c">' + esc(r.semester) + '</td>' +
+                '<td class="c mono">' + esc(r.kkm) + '</td>' +
+                '<td class="c sc-num">' + esc(r.angka) + '</td>' +
+                '<td class="c sc-grd">' + esc(r.huruf) + '</td>' +
+                '<td class="c"><span class="sc-pass">' + esc(r.predikat) + ' · ' + esc(r.status) + '</span></td>' +
+              '</tr>';
+            }).join('') +
+          '</tbody>' +
+          '<tfoot><tr>' +
+            '<td colspan="4" style="text-align:right;padding-right:1.2cqw">RATA-RATA SKOR KELULUSAN KEEMPAT PROGRAM :</td>' +
+            '<td class="c mono">' + esc(info.kkm) + '</td>' +
+            '<td class="c sc-num">' + esc(info.rataAngka) + '</td>' +
+            '<td class="c sc-grd">' + esc(info.hurufAkhir) + '</td>' +
+            '<td class="c">' + esc(info.predikatAkhir) + ' (LULUS)</td>' +
+          '</tr></tfoot>' +
+        '</table>' +
+        '<div class="cert-back-foot">' +
+          '<div class="cert-scale-box">' +
+            '<b class="hd">Pedoman Konversi Skor &amp; Kualifikasi Kelulusan (Standar KKM: ' + esc(info.kkm) + ')</b>' +
+            '<div class="cert-scale-grid">' +
+              '<span><b>85 – 100</b> : A (Sangat Memuaskan / Mumtaz)</span>' +
+              '<span><b>60 – ' + esc(Math.max(60, info.kkm - 1)) + '</b> : C (Cukup / Belum Tuntas)</span>' +
+              '<span><b>' + esc(info.kkm) + ' – 84</b> : B (Memuaskan / Jayyid Jiddan)</span>' +
+              '<span><b>&lt; 60</b> : D (Kurang / Wajib Mengulang)</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="cert-back-sig">' +
+            '<div>Diterbitkan pada ' + esc(info.tanggalLabel) + '</div>' +
+            '<div>' + esc(info.ttd2.jabatan) + '</div>' +
+            '<div class="cert-sig-space" style="height:3.2cqw">' + (aset.ttd2 ? '<img src="' + esc(aset.ttd2) + '" alt="TTD 2">' : '') + '</div>' +
+            '<div class="cert-sig-line"></div>' +
+            '<div class="cert-sig-name">' + esc(info.ttd2.nama) + '</div>' +
+            (info.ttd2.nip ? '<div class="cert-sig-nip">' + esc(info.ttd2.nip) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  };
+
+  SP.cetakSertifikat2Sisi = async function (nim, cfgOverride) {
+    const info = SP.rincianSertifikatMhs(nim, cfgOverride);
+    const aset = Object.assign({}, (SP.ui.set && SP.ui.set.aset) || {});
+    ['logo', 'ttd1', 'ttd2'].forEach(function (k) {
+      if (aset[k] === undefined) {
+        SP.api('ambilAset', { kunci: k }).then(function (r) { if (r && r.dataUrl) aset[k] = r.dataUrl; }).catch(function () {});
+      }
+    });
+    if (nim && !info.isContoh) {
+      try {
+        const rf = await SP.api('ambilFoto', { nim: nim });
+        if (rf && rf.dataUrl) aset.foto = rf.dataUrl;
+      } catch (e) { /* foto opsional */ }
+    }
+    const depanHtml = SP.renderSertifikatDepanHtml(info, aset);
+    const belakangHtml = SP.renderSertifikatBelakangHtml(info, aset);
+    const cssHref = new URL('style.css', location.href).href;
+    const f = document.createElement('iframe');
+    f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    document.body.appendChild(f);
+    const d = f.contentWindow.document;
+    d.open();
+    d.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Sertifikat_' + esc(info.m.nim) + '_' + esc(info.m.nama) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">' +
+      '<link rel="stylesheet" href="' + esc(cssHref) + '">' +
+      '<style>' +
+        '@page { size: A4 landscape; margin: 8mm; }' +
+        'html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+        '.print-page { width: 100%; container-type: inline-size; page-break-after: always; break-after: page; display: flex; align-items: center; justify-content: center; }' +
+        '.print-page:last-child { page-break-after: auto; break-after: auto; }' +
+        '.print-page .cert-sheet { width: 100%; box-shadow: none; }' +
+      '</style></head><body>' +
+      '<div class="print-page">' + depanHtml + '</div>' +
+      '<div class="print-page">' + belakangHtml + '</div>' +
+      '</body></html>');
+    d.close();
+    setTimeout(function () {
+      f.contentWindow.focus();
+      f.contentWindow.print();
+      setTimeout(function () { f.remove(); }, 3000);
+    }, 650);
+  };
 
   function certData() {
     const izin = {}; SP.kelasCetak().forEach(function (k) { izin[k.id] = true; });
@@ -697,16 +863,46 @@
       (j.gagal.length ? '<div class="callout bad mt16"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + j.gagal.slice(0, 5).map(function (g) { return '<span class="mono">' + esc(g.nim) + '</span>: ' + esc(g.pesan); }).join('<br>') + '</div></div>' : '') + '</div>';
   };
   SP.parts.certPreview = function () {
-    const s = SP.set(), d = certData();
-    const pilih = Object.keys(SP.ui.cert.sel).filter(function (n) { return SP.ui.cert.sel[n]; })[0];
+    const u = SP.ui.cert, d = certData();
+    const pilih = u.previewNim || Object.keys(u.sel).filter(function (n) { return u.sel[n]; })[0];
     const b = d.filter(function (x) { return x.m.nim === pilih; })[0] || d[0];
-    const m = b ? b.m : { nama: 'NAMA MAHASISWA', nim: '0000000000', angkatan: '----' };
-    const sert = b ? SP.X.sert[m.nim] : null;
-    return '<div class="cert-wrap"><div class="cert"><div class="cert-in"><div class="lb">' + esc(s.nama_lembaga || 'NAMA LEMBAGA') + '</div><div class="tt">SERTIFIKAT KEMAHIRAN BAHASA</div><div class="ar">ARAB &amp; INGGRIS</div><div class="ln"></div>' +
-      '<div class="no">Nomor: ' + esc(sert && sert.nomor ? sert.nomor : 'CERT/ARB-ENG/____/___') + '</div><div class="gv">Diberikan dengan penuh kehormatan kepada:</div><div class="nm">' + esc(m.nama.toUpperCase()) + '</div>' +
-      '<div class="ni">NIM ' + esc(m.nim) + ' · Kelas ' + esc(b && b.kelas ? b.kelas.nama : '—') + ' · Angkatan ' + esc(m.angkatan || '—') + '</div><div class="st">Telah dinyatakan <b>LULUS</b> pada seluruh 4 program Kemahiran Bahasa Arab dan Bahasa Inggris (Semester Ganjil dan Genap).</div>' +
-      '<div class="tg">Diterbitkan pada ' + esc(SP.tgl(sert && sert.tanggal_cetak ? sert.tanggal_cetak : SP.hariIni(), true)) + '</div>' +
-      '<div class="sg l">' + esc(s.ttd1_jabatan || '') + '<div class="ln2"></div><b>' + esc(s.ttd1_nama || '(nama pejabat 1)') + '</b></div><div class="sg r">' + esc(s.ttd2_jabatan || '') + '<div class="ln2"></div><b>' + esc(s.ttd2_nama || '(nama pejabat 2)') + '</b></div><div class="qr"></div></div></div></div>';
+    const targetNim = b ? b.m.nim : '';
+    const info = SP.rincianSertifikatMhs(targetNim);
+    const aset = (SP.ui.set && SP.ui.set.aset) || {};
+    const sisi = u.sisi || 'dua';
+
+    const tabSisi = '<div class="row between wrap gap8 mb12">' +
+      '<div class="seg">' +
+        '<button class="' + (sisi === 'dua' ? 'on' : '') + '" data-act="certSisi" data-v="dua">2 Sisi (Depan &amp; Belakang)</button>' +
+        '<button class="' + (sisi === 'depan' ? 'on' : '') + '" data-act="certSisi" data-v="depan">Sisi Depan</button>' +
+        '<button class="' + (sisi === 'belakang' ? 'on' : '') + '" data-act="certSisi" data-v="belakang">Sisi Belakang (Skor)</button>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-sm" data-act="certCetak2Sisi" data-nim="' + esc(targetNim) + '">' + SP.icon('printer', 'sm') + ' Cetak / PDF 2 Sisi</button>' +
+    '</div>';
+
+    const pilihMhsHtml = d.length > 1
+      ? '<div class="field mb12"><label for="cp-mhs" style="font-size:11.5px">Mahasiswa pada Pratinjau</label><select id="cp-mhs" class="select" style="height:34px;font-size:12.5px" data-ch="certPreviewMhs">' +
+        d.map(function (x) {
+          return '<option value="' + esc(x.m.nim) + '"' + (x.m.nim === targetNim ? ' selected' : '') + '>' + esc(x.m.nama + ' (' + x.m.nim + ') — ' + (x.kelas ? x.kelas.nama : '')) + '</option>';
+        }).join('') +
+        '</select></div>'
+      : '';
+
+    let lembarHtml = '';
+    if (sisi === 'depan' || sisi === 'dua') {
+      lembarHtml += '<div class="cert-side-block">' +
+        '<div class="cert-side-label"><span>Halaman 1 — Sisi Depan (Keterangan Lulus &amp; Pengesahan)</span><span>A4 Landscape</span></div>' +
+        SP.renderSertifikatDepanHtml(info, aset) +
+      '</div>';
+    }
+    if (sisi === 'belakang' || sisi === 'dua') {
+      lembarHtml += '<div class="cert-side-block">' +
+        '<div class="cert-side-label back"><span>Halaman 2 — Sisi Belakang (Transkrip Skor 4 Program)</span><span>Rata-rata: ' + esc(info.rataAngka) + ' (' + esc(info.hurufAkhir) + ')</span></div>' +
+        SP.renderSertifikatBelakangHtml(info, aset) +
+      '</div>';
+    }
+
+    return tabSisi + pilihMhsHtml + '<div class="cert-wrap">' + lembarHtml + '</div>';
   };
 
   SP.parts.certTabel = function () {
@@ -718,13 +914,21 @@
     const tabBtn = function (v, label, n, kls) { return '<button class="fchip ' + (u.tab === v ? 'on' : '') + '" data-act="certTab" data-v="' + v + '">' + label + ' <span class="n ' + (kls || '') + '">' + n + '</span></button>'; };
     return '<div class="filters">' + tabBtn('siap', 'Siap Cetak', certTab(all, 'siap').length) + tabBtn('terbit', 'Sudah Diterbitkan', certTab(all, 'terbit').length) + tabBtn('antre', 'Antrean Email', certTab(all, 'antre').length) + tabBtn('gagal', 'Gagal Kirim', certTab(all, 'gagal').length, certTab(all, 'gagal').length ? 'bad' : '') + '</div>' +
       '<div class="callout" style="padding:12px 16px;margin-bottom:16px"><label class="chk"><input type="checkbox" data-ch="certSemua" ' + (semuaTerpilih ? 'checked' : '') + '> <b>Pilih Semua</b></label><span class="muted">•</span><b style="color:var(--primary)">' + nSel + ' Terpilih</b><span class="grow"></span>' +
-      '<button class="btn btn-accent btn-sm" data-act="certCetak" ' + (nSel ? '' : 'disabled') + '>' + SP.icon('printer') + ' Cetak Terpilih (' + nSel + ')</button><button class="btn btn-primary btn-sm" data-act="certKirim" ' + (nSel ? '' : 'disabled') + '>' + SP.icon('send') + ' Kirim Email</button></div>' +
-      (pg.total ? '<div class="tbl-wrap has-foot"><table class="tbl cards compact"><thead><tr><th></th><th>Mahasiswa</th><th>No. sertifikat</th><th>Status terbit</th><th>Status email</th><th>Aksi</th></tr></thead><tbody>' +
+      '<button class="btn btn-accent btn-sm" data-act="certCetak" ' + (nSel ? '' : 'disabled') + '>' + SP.icon('printer') + ' Terbitkan ke Drive (' + nSel + ')</button><button class="btn btn-primary btn-sm" data-act="certKirim" ' + (nSel ? '' : 'disabled') + '>' + SP.icon('send') + ' Kirim Email</button></div>' +
+      (pg.total ? '<div class="tbl-wrap has-foot"><table class="tbl cards compact"><thead><tr><th></th><th>Mahasiswa</th><th>Skor 4 Program</th><th>No. sertifikat</th><th>Status terbit</th><th>Status email</th><th>Aksi</th></tr></thead><tbody>' +
         pg.items.map(function (b) {
           const c = certStatus(b);
+          const info = SP.rincianSertifikatMhs(b.m.nim);
+          const ringkasSkor = info.programRows.map(function (r) {
+            return '<span class="chip ok" style="font-size:10.5px;padding:1px 6px" title="' + esc(r.nama + ': ' + r.angka + ' (' + r.predikat + ')') + '">' + esc(r.kodeLabel.split('-')[0] + ' ' + r.semester[0] + ': ' + r.angka) + '</span>';
+          }).join(' ');
           return '<tr><td><label class="chk"><input type="checkbox" data-ch="certPilih" data-nim="' + esc(b.m.nim) + '" ' + (u.sel[b.m.nim] ? 'checked' : '') + ' aria-label="Pilih ' + esc(b.m.nama) + '"></label></td><td data-l="Mahasiswa" class="nm"><b>' + esc(b.m.nama) + '</b><small><span class="mono">' + esc(b.m.nim) + '</span> · ' + esc(b.kelas ? b.kelas.nama : '') + '</small></td>' +
+            '<td data-l="Skor 4 Program"><div class="row wrap gap4">' + ringkasSkor + '</div><small class="muted">Rata-rata: <b>' + esc(info.rataAngka) + ' (' + esc(info.predikatAkhir) + ')</b></small></td>' +
             '<td data-l="No. sertifikat" class="mono" style="font-size:12px">' + esc(c.sert ? c.sert.nomor : '—') + '</td><td data-l="Status terbit">' + SP.badge(c.terbit ? 'DITERBITKAN' : 'SIAP_CETAK') + '</td><td data-l="Status email">' + badgeEmail(c.sert) + '</td>' +
-            '<td>' + (c.terbit ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(b.m.nim) + '">' + SP.icon('download') + ' PDF</button> <button class="btn btn-ghost btn-sm" data-act="certUlang" data-nim="' + esc(b.m.nim) + '" title="Cetak ulang">' + SP.icon('refresh') + '</button>' : '<button class="btn btn-accent btn-sm" data-act="certSatu" data-nim="' + esc(b.m.nim) + '">' + SP.icon('printer') + ' Cetak</button>') + '</td></tr>';
+            '<td><div class="row gap4">' +
+              '<button class="btn btn-outline btn-sm" data-act="certCetak2Sisi" data-nim="' + esc(b.m.nim) + '" title="Cetak / Simpan PDF 2 Sisi (Depan &amp; Belakang)">' + SP.icon('printer') + ' 2 Sisi</button>' +
+              (c.terbit ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(b.m.nim) + '" title="Unduh PDF Drive">' + SP.icon('download') + ' Drive</button> <button class="btn btn-ghost btn-sm" data-act="certUlang" data-nim="' + esc(b.m.nim) + '" title="Terbitkan ulang ke Drive">' + SP.icon('refresh') + '</button>' : '<button class="btn btn-accent btn-sm" data-act="certSatu" data-nim="' + esc(b.m.nim) + '" title="Terbitkan PDF ke Google Drive">' + SP.icon('uploadCloud') + ' Drive</button>') +
+            '</div></td></tr>';
         }).join('') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pg.dari + '–' + pg.sampai + ' dari ' + pg.total + ' mahasiswa berhak sertifikat</span>' + SP.pagerHtml('certHal', pg) + '</div>'
         : '<div class="card">' + SP.kosong('award', u.tab === 'siap' ? 'Tidak ada sertifikat yang siap dicetak' : 'Belum ada data', u.tab === 'siap' ? 'Mahasiswa yang lulus pada keempat program akan muncul di sini.' : 'Tidak ada baris pada tab ini.') + '</div>');
   };
@@ -737,26 +941,44 @@
       }
       const u = SP.ui.cert, s = SP.set();
       return SP.header({
-        crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], eyebrow: 'Modul Registrar & Kelulusan', judul: 'Penerbitan & Pencetakan Sertifikat', desc: 'Khusus Superadmin &amp; tutor yang telah diberikan hak akses cetak oleh Administrator untuk mahasiswa berstatus Lulus 4 Program.',
-        aksi: '<button class="btn btn-outline" data-act="certContoh">' + SP.icon('eye') + ' Contoh PDF</button>' + (SP.isAdmin() ? '<a class="btn btn-outline" href="#/pengaturan">' + SP.icon('sliders') + ' Ubah Template</a>' : '')
+        crumbs: [['Dasbor', '#/dasbor'], ['Cetak Sertifikat']], eyebrow: 'Modul Registrar & Kelulusan', judul: 'Penerbitan & Pencetakan Sertifikat (2 Sisi)', desc: 'Sertifikat resmi 2 sisi: <b>Sisi Depan</b> (Keterangan Kelulusan &amp; Pengesahan) dan <b>Sisi Belakang</b> (Transkrip Skor 4 Program Bahasa Arab &amp; Inggris).',
+        aksi: '<button class="btn btn-outline" data-act="certCetak2Sisi">' + SP.icon('printer') + ' Cetak Contoh 2 Sisi</button><button class="btn btn-outline" data-act="certContoh">' + SP.icon('download') + ' Contoh PDF Drive</button>' + (SP.isAdmin() ? '<a class="btn btn-outline" href="#/pengaturan">' + SP.icon('sliders') + ' Pengaturan Template</a>' : '')
       }) +
-        (s.template_slides_id || !SP.isAdmin() ? '' : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Template sertifikat belum diatur', teks: 'Buka <a href="#/pengaturan"><b>Pengaturan</b></a> lalu buat template bawaan sebelum mencetak.' })) +
+        (s.template_slides_id || !SP.isAdmin() ? '' : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Template sertifikat Google Slides belum diatur', teks: 'Buka <a href="#/pengaturan"><b>Pengaturan</b></a> lalu klik <b>Buat template bawaan</b> untuk membuat template 2 sisi di Google Drive.' })) +
         '<div class="card kuota" data-part="certKuota" style="background:var(--callout)">' + SP.parts.certKuota() + '</div>' +
-        '<div class="grid-main" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div><div class="toolbar"><div class="field" style="min-width:200px"><label for="cs-k">Kelas</label><select id="cs-k" class="select" data-ch="certKelas"><option value="">Semua kelas (' + SP.kelasCetak().length + ')</option>' + SP.kelasCetak().map(function (k) { return '<option value="' + esc(k.id) + '" ' + (u.kelas === k.id ? 'selected' : '') + '>' + esc(k.nama) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="grid-main" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1.1fr)"><div><div class="toolbar"><div class="field" style="min-width:200px"><label for="cs-k">Kelas</label><select id="cs-k" class="select" data-ch="certKelas"><option value="">Semua kelas (' + SP.kelasCetak().length + ')</option>' + SP.kelasCetak().map(function (k) { return '<option value="' + esc(k.id) + '" ' + (u.kelas === k.id ? 'selected' : '') + '>' + esc(k.nama) + '</option>'; }).join('') + '</select></div>' +
         '<div class="field" style="min-width:160px"><label for="cs-a">Angkatan</label><select id="cs-a" class="select" data-ch="certAngkatan"><option value="">Semua Angkatan</option>' + SP.angkatanList().map(function (a) { return '<option value="' + a + '" ' + (u.angkatan === a ? 'selected' : '') + '>Angkatan ' + a + '</option>'; }).join('') + '</select></div>' +
         '<div class="sch" style="align-self:flex-end"><span style="position:absolute;left:12px;top:11px;color:var(--text3)">' + SP.icon('search') + '</span><input class="input" style="padding-left:38px" placeholder="Cari NIM atau nama…" data-in="certQ" value="' + esc(u.q) + '"></div></div>' +
         '<div data-part="certTabel">' + SP.parts.certTabel() + '</div></div>' +
-        '<div class="card card-p" style="position:sticky;top:84px"><div class="row between mb16"><h2 class="h3">' + SP.icon('file') + ' Pratinjau Lembar Sertifikat PDF</h2><span class="chip">A4 Landscape</span></div><div data-part="certPreview">' + SP.parts.certPreview() + '</div>' +
-        '<p class="muted mt16" style="font-size:12.5px">Pratinjau mengikuti template bawaan. Berkas PDF akhir dibuat dari Google Slides template Anda dan disimpan di Google Drive.</p></div></div>' +
+        '<div class="card card-p" style="position:sticky;top:84px"><div class="row between mb12"><h2 class="h3">' + SP.icon('award') + ' Pratinjau Sertifikat 2 Sisi (Depan &amp; Belakang)</h2><span class="chip ok">2 Halaman A4</span></div><div data-part="certPreview">' + SP.parts.certPreview() + '</div>' +
+        '<p class="muted mt12" style="font-size:12px">Sertifikat terdiri atas <b>Halaman 1 (Sisi Depan)</b> berisi keterangan lulus &amp; pengesahan, serta <b>Halaman 2 (Sisi Belakang)</b> berisi transkrip nilai/skor keempat program.</p></div></div>' +
         '<div data-part="certJob">' + SP.parts.certJob() + '</div>';
+    },
+    after: function () {
+      SP.ui.set = SP.ui.set || { tab: 'set', f: null, aset: {}, log: null, logQ: '', logAksi: '', logPage: 1 };
+      ['logo', 'ttd1', 'ttd2'].forEach(function (k) {
+        if (SP.ui.set.aset[k] !== undefined) return;
+        SP.ui.set.aset[k] = '';
+        SP.api('ambilAset', { kunci: k }).then(function (r) {
+          SP.ui.set.aset[k] = (r && r.dataUrl) || '';
+          if (SP.rute && SP.rute.nama === 'sertifikat') SP.refresh('certPreview');
+        }).catch(function () {});
+      });
     }
   };
   SP.actions.certTab = function (el) { SP.ui.cert.tab = el.dataset.v; SP.ui.cert.page = 1; SP.refresh('certTabel'); };
   SP.actions.certHal = function (el) { SP.ui.cert.page = Number(el.dataset.p); SP.refresh('certTabel'); };
-  SP.changes.certKelas = function (el) { SP.ui.cert.kelas = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.refresh('certTabel'); SP.refresh('certPreview'); };
-  SP.changes.certAngkatan = function (el) { SP.ui.cert.angkatan = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.refresh('certTabel'); SP.refresh('certPreview'); };
+  SP.actions.certSisi = function (el) { SP.ui.cert.sisi = el.dataset.v; SP.refresh('certPreview'); };
+  SP.changes.certPreviewMhs = function (el) { SP.ui.cert.previewNim = el.value; SP.refresh('certPreview'); };
+  SP.actions.certCetak2Sisi = function (el) {
+    const u = SP.ui.cert;
+    const nim = (el && el.dataset && el.dataset.nim) || u.previewNim || Object.keys(u.sel).filter(function (n) { return u.sel[n]; })[0] || '';
+    SP.cetakSertifikat2Sisi(nim);
+  };
+  SP.changes.certKelas = function (el) { SP.ui.cert.kelas = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.ui.cert.previewNim = ''; SP.refresh('certTabel'); SP.refresh('certPreview'); };
+  SP.changes.certAngkatan = function (el) { SP.ui.cert.angkatan = el.value; SP.ui.cert.page = 1; SP.ui.cert.sel = {}; SP.ui.cert.previewNim = ''; SP.refresh('certTabel'); SP.refresh('certPreview'); };
   SP.inputs.certQ = SP.debounce(function (el) { SP.ui.cert.q = el.value; SP.ui.cert.page = 1; SP.refresh('certTabel'); }, 150);
-  SP.changes.certPilih = function (el) { SP.ui.cert.sel[el.dataset.nim] = el.checked; SP.refresh('certTabel'); SP.refresh('certPreview'); };
+  SP.changes.certPilih = function (el) { SP.ui.cert.sel[el.dataset.nim] = el.checked; if (el.checked) SP.ui.cert.previewNim = el.dataset.nim; SP.refresh('certTabel'); SP.refresh('certPreview'); };
   SP.changes.certSemua = function (el) {
     const u = SP.ui.cert, q = u.q.toLowerCase();
     const daftar = certTab(certData(), u.tab).filter(function (b) { return !q || (b.m.nim + ' ' + b.m.nama).toLowerCase().indexOf(q) >= 0; });
@@ -769,7 +991,7 @@
   SP.actions.certContoh = async function (el) {
     el.disabled = true;
     try {
-      const pilih = Object.keys(SP.ui.cert.sel).filter(function (n) { return SP.ui.cert.sel[n]; })[0];
+      const pilih = SP.ui.cert.previewNim || Object.keys(SP.ui.cert.sel).filter(function (n) { return SP.ui.cert.sel[n]; })[0];
       const r = await SP.api('contohSertifikat', { nim: pilih || '' }, { timeout: 90000 }); SP.unduhBase64(r.nama, r.base64, 'application/pdf');
     } catch (e) { SP.toast(esc(e.message), 'err'); }
     el.disabled = false;

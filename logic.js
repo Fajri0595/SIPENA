@@ -165,6 +165,110 @@
     return (SP.X.kel[nim] = { program: per, akhir: akhir });
   };
 
+  SP.infoPredikatNilai = function (angka, kkm) {
+    const n = Number(angka);
+    const batas = Number(kkm) || 75;
+    if (angka === '' || angka === null || angka === undefined || isNaN(n)) {
+      return { angka: '—', huruf: '—', predikat: '—' };
+    }
+    const fmt = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+    if (n >= 85) return { angka: fmt, huruf: 'A', predikat: 'Sangat Memuaskan' };
+    if (n >= batas) return { angka: fmt, huruf: 'B', predikat: 'Memuaskan' };
+    if (n >= 60) return { angka: fmt, huruf: 'C', predikat: 'Cukup' };
+    return { angka: fmt, huruf: 'D', predikat: 'Kurang' };
+  };
+
+  SP.rincianSertifikatMhs = function (nim, cfgOverride) {
+    const s = Object.assign({}, SP.set() || {}, cfgOverride || {});
+    const kkm = Number(s.kkm) || 75;
+    const mAsli = nim && SP.X && SP.X.mhs ? SP.X.mhs[nim] : null;
+    const isContoh = !mAsli;
+    const m = mAsli || {
+      nim: '2310601001',
+      nama: 'MUHAMMAD RIDWAN MALIK',
+      angkatan: (s.tahun_ajaran_aktif || '2026/2027').slice(0, 4) || '2026',
+      email: 'ridwan@mhs.ac.id'
+    };
+    const klsObj = mAsli ? SP.kelasTerkini(m.nim) : null;
+    const namaKelas = klsObj ? klsObj.nama : (isContoh ? 'PAI A' : '—');
+    const namaProdi = (klsObj && klsObj.prodi) ? klsObj.prodi : (isContoh ? 'Pendidikan Agama Islam' : 'Program Sarjana');
+    const sert = (mAsli && SP.X && SP.X.sert) ? SP.X.sert[m.nim] : null;
+    const thNow = String(new Date().getFullYear());
+    const blnNow = String(new Date().getMonth() + 1).padStart(2, '0');
+    const fmtNo = String(s.format_nomor || 'CERT/ARB-ENG/{TAHUN}/{URUT}')
+      .replace('{TAHUN}', thNow)
+      .replace('{BULAN}', blnNow)
+      .replace('{URUT}', isContoh ? '001' : '___');
+    const nomor = (sert && sert.nomor) ? sert.nomor : fmtNo;
+    const tanggal = (sert && sert.tanggal_cetak) ? sert.tanggal_cetak : SP.hariIni();
+
+    const sampleScores = { ARB_GJL: 88, ING_GJL: 84, ARB_GNP: 90, ING_GNP: 86 };
+    const metaProg = [
+      { kode: 'ARB_GJL', kodeLabel: 'ARB-GJL', nama: 'Bahasa Arab Semester Ganjil', sub: 'Kemahiran Bahasa Arab I (Al-\'Arabiyyah I)', bahasa: 'Bahasa Arab', semester: 'Ganjil' },
+      { kode: 'ING_GJL', kodeLabel: 'ING-GJL', nama: 'Bahasa Inggris Semester Ganjil', sub: 'Kemahiran Bahasa Inggris I (English I)', bahasa: 'Bahasa Inggris', semester: 'Ganjil' },
+      { kode: 'ARB_GNP', kodeLabel: 'ARB-GNP', nama: 'Bahasa Arab Semester Genap', sub: 'Kemahiran Bahasa Arab II (Al-\'Arabiyyah II)', bahasa: 'Bahasa Arab', semester: 'Genap' },
+      { kode: 'ING_GNP', kodeLabel: 'ING-GNP', nama: 'Bahasa Inggris Semester Genap', sub: 'Kemahiran Bahasa Inggris II (English II)', bahasa: 'Bahasa Inggris', semester: 'Genap' }
+    ];
+
+    let sum = 0, count = 0;
+    const programRows = metaProg.map(function (mp, idx) {
+      const st = mAsli ? SP.statusProgram(m.nim, mp.kode) : 'LULUS';
+      const rawAngka = mAsli ? SP.nilaiAngkaProgram(m.nim, mp.kode) : String(sampleScores[mp.kode]);
+      const valNum = rawAngka !== '' ? Number(rawAngka) : (st === 'LULUS' ? kkm : NaN);
+      if (!isNaN(valNum)) { sum += valNum; count++; }
+      const info = SP.infoPredikatNilai(isNaN(valNum) ? '' : valNum, kkm);
+      return {
+        no: idx + 1,
+        kode: mp.kode,
+        kodeLabel: mp.kodeLabel,
+        nama: mp.nama,
+        sub: mp.sub,
+        bahasa: mp.bahasa,
+        semester: mp.semester,
+        kkm: kkm,
+        angka: info.angka,
+        huruf: info.huruf,
+        predikat: info.predikat,
+        status: st === 'LULUS' ? 'LULUS' : (st === 'TIDAK_LULUS' ? 'TIDAK LULUS' : 'BELUM')
+      };
+    });
+
+    const rataNum = count ? Math.round((sum / count) * 100) / 100 : kkm;
+    const infoAkhir = SP.infoPredikatNilai(rataNum, kkm);
+    const rataFmt = Number.isInteger(rataNum) ? String(rataNum) : rataNum.toFixed(2).replace(/\.?0+$/, '');
+    const frontendBase = (s.frontend_url || (typeof location !== 'undefined' ? location.origin + location.pathname : '')).replace(/\/+$/, '');
+    const urlVerif = frontendBase ? (frontendBase + '/#/verifikasi/' + encodeURIComponent(nomor)) : nomor;
+
+    return {
+      isContoh: isContoh,
+      m: m,
+      kelas: namaKelas,
+      prodi: namaProdi,
+      angkatan: m.angkatan || '—',
+      nomor: nomor,
+      tanggal: tanggal,
+      tanggalLabel: SP.tgl(tanggal, true),
+      lembaga: s.nama_lembaga || 'PUSAT PENGEMBANGAN BAHASA',
+      kkm: kkm,
+      programRows: programRows,
+      totalAngka: count ? String(Math.round(sum * 100) / 100) : '—',
+      rataAngka: count ? rataFmt : '—',
+      hurufAkhir: infoAkhir.huruf,
+      predikatAkhir: infoAkhir.predikat,
+      ttd1: {
+        nama: s.ttd1_nama || '(Nama Pejabat 1)',
+        jabatan: s.ttd1_jabatan || 'Pejabat Penandatangan 1',
+        nip: s.ttd1_nip ? ('NIP. ' + s.ttd1_nip) : ''
+      },
+      ttd2: {
+        nama: s.ttd2_nama || '(Nama Pejabat 2)',
+        jabatan: s.ttd2_jabatan || 'Kepala Pusat Pengembangan Bahasa',
+        nip: s.ttd2_nip ? ('NIP. ' + s.ttd2_nip) : ''
+      },
+      urlVerifikasi: urlVerif
+    };
+  };
+
   // ---------- Kelas, roster, siklus ----------
   function urutSem(r) { return r.tahun_ajaran + (r.semester === 'GENAP' ? '2' : '1'); }
   SP.kelasTerkini = function (nim) {

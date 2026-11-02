@@ -438,11 +438,37 @@
   // ============================================================
   // PENGATURAN & LOG
   // ============================================================
-  SP.ui.set = SP.ui.set || { tab: 'set', f: null, aset: {}, log: null, logQ: '', logAksi: '', logPage: 1 };
+  SP.ui.set = SP.ui.set || { tab: 'set', f: null, aset: {}, certSisi: 'DUA', log: null, logQ: '', logAksi: '', logPage: 1 };
   const KUNCI_FORM = ['nama_lembaga', 'tahun_ajaran_aktif', 'semester_aktif', 'mode_penilaian', 'batas_penilaian', 'target_kelulusan', 'kkm', 'kontak_bantuan', 'frontend_url', 'kuota_email_harian', 'template_slides_id',
     'ttd1_nama', 'ttd1_jabatan', 'ttd1_nip', 'ttd2_nama', 'ttd2_jabatan', 'ttd2_nip', 'format_nomor', 'email_otomatis', 'email_lampirkan_pdf', 'email_bcc', 'email_subjek', 'email_body'];
   function formAwal() { const o = {}; KUNCI_FORM.forEach(function (k) { o[k] = SP.set()[k] === undefined ? '' : String(SP.set()[k]); }); return o; }
   function berubah() { const f = SP.ui.set.f, a = formAwal(); return KUNCI_FORM.filter(function (k) { return f[k] !== a[k]; }); }
+
+  SP.parts.setCertPreview = function () {
+    const u = SP.ui.set;
+    const sisi = u.certSisi || 'DUA';
+    const sampleMhs = (SP.S.mhs || []).filter(function (m) { return SP.lulusMhs(m.nim).akhir === 'LULUS'; })[0];
+    const info = SP.rincianSertifikatMhs(sampleMhs ? sampleMhs.nim : '', u.f || SP.set());
+    const aset = u.aset || {};
+    const htmlDepan = SP.renderSertifikatDepanHtml ? SP.renderSertifikatDepanHtml(info, aset) : '';
+    const htmlBelakang = SP.renderSertifikatBelakangHtml ? SP.renderSertifikatBelakangHtml(info, aset) : '';
+    let konten = '';
+    if (sisi === 'DEPAN') {
+      konten = '<div class="cert-side-block"><div class="cert-side-label"><span>' + SP.icon('award', 'sm') + ' Sisi Depan — Keterangan Kelulusan &amp; Identitas</span><span class="badge b-solid">HALAMAN 1</span></div>' + htmlDepan + '</div>';
+    } else if (sisi === 'BELAKANG') {
+      konten = '<div class="cert-side-block"><div class="cert-side-label"><span>' + SP.icon('list', 'sm') + ' Sisi Belakang — Transkrip Skor Kelulusan 4 Program</span><span class="badge b-info">HALAMAN 2</span></div>' + htmlBelakang + '</div>';
+    } else {
+      konten = '<div class="cert-wrap two-sides">' +
+        '<div class="cert-side-block"><div class="cert-side-label"><span>' + SP.icon('award', 'sm') + ' Sisi Depan — Keterangan Kelulusan</span><span class="badge b-solid">HALAMAN 1</span></div>' + htmlDepan + '</div>' +
+        '<div class="cert-side-block"><div class="cert-side-label"><span>' + SP.icon('list', 'sm') + ' Sisi Belakang — Skor 4 Program</span><span class="badge b-info">HALAMAN 2</span></div>' + htmlBelakang + '</div>' +
+      '</div>';
+    }
+    return '<div class="sigbox" style="background:#F8FAFC;border:1px solid var(--border);padding:14px">' +
+      '<div class="row between wrap gap8 mb16"><div><b style="font-size:13.5px">Pratinjau Langsung Template Sertifikat 2 Sisi</b><div class="muted" style="font-size:12px">Perubahan nama lembaga, KKM, format nomor, tanda tangan, dan logo langsung tercermin di bawah.</div></div>' +
+      '<div class="row wrap gap8"><div class="seg"><button class="' + (sisi === 'DUA' ? 'on' : '') + '" data-act="setCertSisi" data-v="DUA">2 Sisi</button><button class="' + (sisi === 'DEPAN' ? 'on' : '') + '" data-act="setCertSisi" data-v="DEPAN">Sisi Depan</button><button class="' + (sisi === 'BELAKANG' ? 'on' : '') + '" data-act="setCertSisi" data-v="BELAKANG">Sisi Belakang</button></div>' +
+      '<button class="btn btn-outline btn-sm" data-act="setCetakContoh2Sisi">' + SP.icon('printer', 'sm') + ' Cetak Contoh 2 Sisi</button></div></div>' +
+      konten + '</div>';
+  };
 
   SP.parts.setBar = function () {
     const n = berubah().length;
@@ -466,7 +492,8 @@
     }).length;
     const totalKapasitas = Math.max(Number(f.kuota_email_harian) || q.total || 1500, sisaKuota + terkirimHariIni);
     const pctTersedia = Math.min(100, Math.round((sisaKuota / (totalKapasitas || 1)) * 100));
-    const token = ['{NAMA_MAHASISWA}', '{NIM}', '{NOMOR_SERTIFIKAT}', '{TANGGAL_TERBIT}', '{NAMA_LEMBAGA}', '{KELAS}', '{ANGKATAN}'];
+    const tokenDepan = ['{NAMA_MAHASISWA}', '{NIM}', '{PRODI}', '{KELAS}', '{ANGKATAN}', '{NOMOR_SERTIFIKAT}', '{TANGGAL_TERBIT}', '{NAMA_LEMBAGA}', '{TTD1_NAMA}', '{TTD1_JABATAN}', '{TTD1_NIP}', '{TTD2_NAMA}', '{TTD2_JABATAN}', '{TTD2_NIP}'];
+    const tokenBelakang = ['{KKM}', '{NILAI_ARB_GJL}', '{NILAI_ING_GJL}', '{NILAI_ARB_GNP}', '{NILAI_ING_GNP}', '{HURUF_ARB_GJL}', '{HURUF_ING_GJL}', '{HURUF_ARB_GNP}', '{HURUF_ING_GNP}', '{PREDIKAT_ARB_GJL}', '{PREDIKAT_ING_GJL}', '{PREDIKAT_ARB_GNP}', '{PREDIKAT_ING_GNP}', '{NILAI_RATA_RATA}', '{HURUF_AKHIR}', '{PREDIKAT_AKHIR}'];
     const log = SP.S.pengguna.length ? '' : '';
     return '<div class="grid-main" style="grid-template-columns:1.7fr 1fr"><div class="stack">' +
       '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--primary)">' + SP.icon('building', 'lg') + '</span><h2 class="h2">1. Informasi Lembaga &amp; Status Penilaian</h2></div><span class="tagx">MODUL INTI</span></div><div class="stack">' +
@@ -474,13 +501,15 @@
       '<div class="grid2"><div class="field"><label for="s-ta">Tahun akademik aktif</label><select id="s-ta" class="select" data-ch="setF" data-k="tahun_ajaran_aktif">' + opt(SP.daftarTahunAjaran().map(function (ta) { return [ta, ta + (ta === f.tahun_ajaran_aktif ? ' (Aktif)' : '')]; }), f.tahun_ajaran_aktif) + '</select><div class="help">Pilih tahun ajaran yang sedang aktif berjalan.</div></div><div class="field"><label for="s-sm">Semester aktif</label><select id="s-sm" class="select" data-ch="setF" data-k="semester_aktif">' + opt([['GANJIL', 'Ganjil'], ['GENAP', 'Genap']], f.semester_aktif) + '</select><div class="help">Pilih semester perkuliahan (Ganjil / Genap).</div></div></div>' +
       '<div class="grid2">' + inp('batas_penilaian', 'Batas akhir finalisasi nilai', { type: 'date', help: 'Batas akhir waktu pengisian nilai bagi tutor.' }) + '<div class="field"><label>Status penguncian nilai</label><div class="seg lg"><button class="' + (f.mode_penilaian === 'AKTIF' ? 'on' : '') + '" data-act="setMode" data-v="AKTIF">' + SP.icon('lock', 'sm') + ' Penilaian aktif / terbuka</button><button class="' + (f.mode_penilaian === 'TERKUNCI' ? 'on' : '') + '" data-act="setMode" data-v="TERKUNCI">Terkunci</button></div><div class="help">Bila terkunci, tutor hanya dapat melihat nilai.</div></div></div>' +
       '<div class="grid3">' + inp('target_kelulusan', 'Target kelulusan (%)', { type: 'number', help: 'Target capaian kelulusan institusi.' }) + inp('kkm', 'Standar KKM Program (0–100)', { type: 'number', help: 'Batas minimal nilai kelulusan program.' }) + inp('kontak_bantuan', 'Kontak bantuan login', { ph: 'email / WhatsApp admin', help: 'Ditampilkan pada panduan login.' }) + '</div></div></div>' +
-      '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--accent)">' + SP.icon('award', 'lg') + '</span><h2 class="h2">2. Template Sertifikat &amp; Tanda Tangan Digital</h2></div><span class="tagx">DRIVE SYNC</span></div><div class="stack">' +
-      '<div class="filerow"><div class="fi">' + SP.icon('file') + '</div><div class="grow"><b>' + (f.template_slides_id ? 'Template Google Slides aktif' : 'Belum ada template') + '</b> ' + (f.template_slides_id ? '<span class="badge b-solid">AKTIF</span>' : '') + '<div class="muted mono" style="font-size:11.5px">ID: ' + esc(f.template_slides_id || '—') + '</div></div>' + (f.template_slides_id ? '<a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="https://docs.google.com/presentation/d/' + esc(f.template_slides_id) + '/edit">' + SP.icon('eye', 'sm') + ' Buka &amp; sunting</a>' : '') + '<button class="btn btn-primary btn-sm" data-act="setBuatTemplate">' + SP.icon('refresh', 'sm') + ' Buat template bawaan</button></div>' +
-      inp('template_slides_id', 'Atau tempel URL / ID Google Slides template sendiri', { mono: true, help: 'Template harus berupa Google Slides yang dimiliki akun deployer. Gunakan token di bawah sebagai penanda teks.' }) +
-      '<div><div class="cap mb16">Token placeholder dinamis (klik untuk menyalin)</div><div class="tokens">' + token.concat(['{TTD1_NAMA}', '{TTD1_JABATAN}', '{TTD2_NAMA}', '{TTD2_JABATAN}']).map(function (t) { return '<span class="token" data-act="salinToken" data-v="' + t + '">' + t + ' ' + SP.icon('copy', 'sm') + '</span>'; }).join('') + '</div></div>' +
+      '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--accent)">' + SP.icon('award', 'lg') + '</span><h2 class="h2">2. Template Sertifikat 2 Sisi (Depan &amp; Belakang) &amp; Tanda Tangan Digital</h2></div><span class="tagx">2 SISI · DRIVE SYNC</span></div><div class="stack">' +
+      '<div class="filerow"><div class="fi">' + SP.icon('file') + '</div><div class="grow"><b>' + (f.template_slides_id ? 'Template Google Slides 2 Sisi aktif' : 'Belum ada template') + '</b> ' + (f.template_slides_id ? '<span class="badge b-solid">AKTIF</span>' : '') + '<div class="muted mono" style="font-size:11.5px">ID: ' + esc(f.template_slides_id || '—') + ' · Slide 1: Sisi Depan (Keterangan Lulus) · Slide 2: Sisi Belakang (Transkrip Skor 4 Program)</div></div>' + (f.template_slides_id ? '<a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="https://docs.google.com/presentation/d/' + esc(f.template_slides_id) + '/edit">' + SP.icon('eye', 'sm') + ' Buka &amp; sunting</a>' : '') + '<button class="btn btn-primary btn-sm" data-act="setBuatTemplate">' + SP.icon('refresh', 'sm') + ' Buat template 2 sisi bawaan</button></div>' +
+      inp('template_slides_id', 'Atau tempel URL / ID Google Slides template sendiri (2 Slide: Depan & Belakang)', { mono: true, help: 'Slide 1 digunakan untuk Sisi Depan (Keterangan Lulus) dan Slide 2 untuk Sisi Belakang (Skor 4 Program). Jika template hanya memiliki 1 slide, sistem otomatis menambahkan Slide 2 saat mencetak PDF.' }) +
+      '<div class="stack" style="gap:10px"><div><div class="cap" style="margin-bottom:6px">Token Sisi Depan — Keterangan Kelulusan &amp; Identitas (klik untuk menyalin)</div><div class="tokens">' + tokenDepan.map(function (t) { return '<span class="token" data-act="salinToken" data-v="' + t + '">' + t + ' ' + SP.icon('copy', 'sm') + '</span>'; }).join('') + '</div></div>' +
+      '<div><div class="cap" style="margin-bottom:6px">Token Sisi Belakang — Transkrip Skor 4 Program (klik untuk menyalin)</div><div class="tokens">' + tokenBelakang.map(function (t) { return '<span class="token" data-act="salinToken" data-v="' + t + '">' + t + ' ' + SP.icon('copy', 'sm') + '</span>'; }).join('') + '</div></div></div>' +
       '<div class="grid2">' + kartuTtd(1) + kartuTtd(2) + '</div>' +
-      '<div class="sigbox row"><div class="sigprev" style="width:90px;height:60px;margin:0">' + (SP.ui.set.aset.logo ? '<img src="' + SP.ui.set.aset.logo + '" alt="Logo">' : SP.icon('image')) + '</div><div class="grow"><b>Logo lembaga (opsional)</b><div class="muted" style="font-size:12.5px">Ditampilkan di bagian atas sertifikat.</div></div><label class="btn btn-outline btn-sm" style="cursor:pointer">' + SP.icon('upload', 'sm') + ' Unggah<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="setAset" data-k="logo"></label></div>' +
-      '<div class="grid2">' + inp('format_nomor', 'Format nomor sertifikat', { mono: true, help: 'Gunakan {TAHUN}, {BULAN}, {URUT}.', ph: 'CERT/ARB-ENG/{TAHUN}/{URUT}' }) + inp('frontend_url', 'URL aplikasi (untuk QR verifikasi)', { ph: 'https://username.github.io/sipena', help: 'Kosongkan jika tidak ingin QR pada sertifikat.' }) + '</div></div></div>' +
+      '<div class="sigbox row"><div class="sigprev" style="width:90px;height:60px;margin:0">' + (SP.ui.set.aset.logo ? '<img src="' + SP.ui.set.aset.logo + '" alt="Logo">' : SP.icon('image')) + '</div><div class="grow"><b>Logo lembaga (opsional)</b><div class="muted" style="font-size:12.5px">Ditampilkan di bagian atas sertifikat (Sisi Depan &amp; Sisi Belakang).</div></div><label class="btn btn-outline btn-sm" style="cursor:pointer">' + SP.icon('upload', 'sm') + ' Unggah<input type="file" accept="image/png,image/jpeg" class="hide" data-ch="setAset" data-k="logo"></label></div>' +
+      '<div class="grid2">' + inp('format_nomor', 'Format nomor sertifikat', { mono: true, help: 'Gunakan {TAHUN}, {BULAN}, {URUT}.', ph: 'CERT/ARB-ENG/{TAHUN}/{URUT}' }) + inp('frontend_url', 'URL aplikasi (untuk QR verifikasi)', { ph: 'https://username.github.io/sipena', help: 'Kosongkan jika tidak ingin QR pada sertifikat.' }) + '</div>' +
+      '<div data-part="setCertPreview">' + SP.parts.setCertPreview() + '</div></div></div>' +
       '<div class="card card-p"><div class="row between mb16"><div class="row gap8"><span style="color:var(--primary)">' + SP.icon('mail', 'lg') + '</span><h2 class="h2">3. Template Notifikasi Email Otomatis</h2></div><span class="tagx">MAILAPP</span></div><div class="stack">' +
       inp('email_subjek', 'Subjek email penerbitan sertifikat') + inp('email_body', 'Isi pesan email (teks biasa, mendukung token)', { area: true, tinggi: 170 }) +
       '<div class="row wrap" style="gap:20px"><label class="chk"><input type="checkbox" data-ch="setChk" data-k="email_otomatis" ' + (f.email_otomatis === '1' ? 'checked' : '') + '><span>Antrekan email otomatis saat sertifikat terbit</span></label><label class="chk"><input type="checkbox" data-ch="setChk" data-k="email_lampirkan_pdf" ' + (f.email_lampirkan_pdf === '1' ? 'checked' : '') + '><span>Lampirkan berkas PDF sertifikat</span></label></div>' +
@@ -521,10 +550,15 @@
   };
   SP.actions.setTab = function (el) { SP.ui.set.tab = el.dataset.v; SP.renderUlang(); };
   SP.actions.setTabLog = function () { SP.ui.set.tab = 'log'; SP.renderUlang(); };
-  SP.inputs.setF = function (el) { SP.ui.set.f[el.dataset.k] = el.value; SP.refresh('setBar'); };
-  SP.changes.setF = function (el) { SP.ui.set.f[el.dataset.k] = el.value; SP.refresh('setBar'); };
+  SP.inputs.setF = function (el) { SP.ui.set.f[el.dataset.k] = el.value; SP.refresh('setBar'); if (SP.$('[data-part="setCertPreview"]')) SP.refresh('setCertPreview'); };
+  SP.changes.setF = function (el) { SP.ui.set.f[el.dataset.k] = el.value; SP.refresh('setBar'); if (SP.$('[data-part="setCertPreview"]')) SP.refresh('setCertPreview'); };
   SP.changes.setChk = function (el) { SP.ui.set.f[el.dataset.k] = el.checked ? '1' : '0'; SP.refresh('setBar'); };
   SP.actions.setMode = function (el) { SP.ui.set.f.mode_penilaian = el.dataset.v; SP.refresh('setIsi'); SP.refresh('setBar'); };
+  SP.actions.setCertSisi = function (el) { SP.ui.set.certSisi = el.dataset.v || 'DUA'; SP.refresh('setCertPreview'); };
+  SP.actions.setCetakContoh2Sisi = function () {
+    const sampleMhs = (SP.S.mhs || []).filter(function (m) { return SP.lulusMhs(m.nim).akhir === 'LULUS'; })[0];
+    if (SP.cetakSertifikat2Sisi) SP.cetakSertifikat2Sisi(sampleMhs ? sampleMhs.nim : '', SP.ui.set.f || SP.set());
+  };
   SP.actions.salinToken = function (el) { SP.salin(el.dataset.v); };
   SP.actions.setBatal = function () { SP.ui.set.f = formAwal(); SP.refresh('setIsi'); SP.refresh('setBar'); };
   SP.actions.setSimpan = async function (el) {

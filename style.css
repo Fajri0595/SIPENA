@@ -852,23 +852,78 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 .fullload { min-height: 100vh; display: grid; place-items: center; text-align: center; color: var(--text2); }
 .fullload .spin { width: 36px; height: 36px; border-width: 3px; color: var(--primary); margin-bottom: 12px; }
 
-/* ---------- Sertifikat (pratinjau) ---------- */
-.cert-wrap { container-type: inline-size; }
-.cert { position: relative; aspect-ratio: 720 / 405; background: #fff; border: .7cqw solid var(--primary-d); padding: 1.7cqw; box-shadow: var(--sh1); overflow: hidden; }
-.cert-in { position: relative; height: 100%; border: .15cqw solid var(--accent); text-align: center; color: var(--text); }
-.cert-in > * { position: absolute; left: 0; right: 0; margin: 0; }
-.cert .lb { top: 4%; font-size: 1.7cqw; font-weight: 700; color: var(--primary-d); }
-.cert .tt { top: 9.5%; font-family: 'EB Garamond', 'Source Serif 4', Georgia, serif; font-size: 4.2cqw; font-weight: 700; color: var(--accent); letter-spacing: .02em; }
-.cert .ar { top: 21%; font-size: 1.5cqw; font-weight: 700; color: var(--primary-d); }
-.cert .ln { top: 26%; left: 36%; right: 36%; border-top: .2cqw solid var(--accent); height: 0; }
-.cert .no { top: 28%; font-size: 1.4cqw; color: var(--text2); } .cert .gv { top: 34%; font-size: 1.5cqw; font-style: italic; color: var(--text2); }
-.cert .nm { top: 38.5%; font-family: 'EB Garamond', 'Source Serif 4', Georgia, serif; font-size: 3.7cqw; font-weight: 700; color: var(--primary-d); }
-.cert .ni { top: 49%; font-size: 1.4cqw; color: var(--text2); } .cert .st { top: 55%; left: 14%; right: 14%; font-size: 1.5cqw; }
-.cert .tg { top: 65%; font-size: 1.4cqw; color: var(--text2); }
-.cert .sg { top: 67%; width: 28%; font-size: 1.25cqw; color: var(--text2); } .cert .sg.l { left: 11%; right: auto; } .cert .sg.r { left: auto; right: 11%; }
-.cert .sg .ln2 { border-top: .1cqw solid var(--text); margin: 8% 0 2%; } .cert .sg b { display: block; color: var(--text); font-size: 1.4cqw; } .cert .sg .sgi { height: 6cqw; margin-top: 1.5%; }
-.cert .qr { top: 76%; left: 46.5%; right: auto; width: 7%; aspect-ratio: 1; background: repeating-conic-gradient(#111 0 25%, #fff 0 50%) 50% / 25% 25%; border: .2cqw solid #111; }
-.cert .ph { position: absolute; left: 7%; top: 36%; width: 9%; aspect-ratio: 3/4; border: .15cqw dashed var(--text3); display: grid; place-items: center; font-size: 1.1cqw; color: var(--text3); right: auto; }
+/* ---------- Sertifikat 2 Sisi (Pratinjau Depan & Belakang) ---------- */
+.cert-wrap { container-type: inline-size; display: flex; flex-direction: column; gap: 16px; }
+.cert-side-block { display: flex; flex-direction: column; gap: 6px; }
+.cert-side-label { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--primary-d); background: #F0FDF4; border: 1px solid #BBF7D0; padding: 5px 10px; border-radius: 6px; }
+.cert-side-label.back { color: #9A3412; background: #FFF7ED; border-color: #FED7AA; }
+.cert-sheet { position: relative; aspect-ratio: 720 / 405; background: #fff; border: .6cqw solid #14532D; padding: .95cqw; box-shadow: var(--sh1); overflow: hidden; border-radius: 4px; color: #111827; font-family: 'Inter', system-ui, sans-serif; }
+.cert-frame { position: relative; height: 100%; border: .18cqw solid #C2410C; padding: 1.8cqw 2.8cqw; display: flex; flex-direction: column; justify-content: space-between; text-align: center; background: radial-gradient(circle at 50% 50%, rgba(240, 253, 244, 0.45) 0%, rgba(255, 255, 255, 0.98) 72%); }
+.cert-frame::before, .cert-frame::after { content: ''; position: absolute; width: 2.2cqw; height: 2.2cqw; border-color: #14532D; border-style: solid; pointer-events: none; }
+.cert-frame::before { top: .45cqw; left: .45cqw; border-width: .22cqw 0 0 .22cqw; }
+.cert-frame::after { bottom: .45cqw; right: .45cqw; border-width: 0 .22cqw .22cqw 0; }
+
+/* Sisi Depan */
+.cert-head { display: flex; flex-direction: column; align-items: center; gap: .25cqw; }
+.cert-logo { width: 3.6cqw; height: 3.6cqw; object-fit: contain; margin-bottom: .15cqw; }
+.cert-lb { font-size: 1.35cqw; font-weight: 800; color: #14532D; letter-spacing: .09em; text-transform: uppercase; line-height: 1.2; }
+.cert-tt { font-family: 'EB Garamond', Georgia, serif; font-size: 3.15cqw; font-weight: 700; color: #C2410C; letter-spacing: .03em; line-height: 1.05; margin-top: .1cqw; }
+.cert-sub { font-size: 1.12cqw; font-weight: 800; color: #14532D; letter-spacing: .12em; text-transform: uppercase; }
+.cert-divider { width: 28%; border-top: .2cqw solid #C2410C; margin: .3cqw auto; }
+.cert-no { font-size: 1.12cqw; color: #4B5563; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+.cert-body-front { position: relative; display: flex; align-items: center; justify-content: center; padding: 0 9.5cqw; min-height: 16cqw; }
+.cert-foto-box { position: absolute; left: .8cqw; top: 50%; transform: translateY(-50%); width: 7.4cqw; aspect-ratio: 3 / 4; border: .16cqw solid #14532D; background: #F8FAFC; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: .95cqw; color: #6B7280; overflow: hidden; border-radius: 2px; }
+.cert-foto-box img { width: 100%; height: 100%; object-fit: cover; }
+.cert-recipient { display: flex; flex-direction: column; align-items: center; gap: .35cqw; width: 100%; }
+.cert-gv { font-size: 1.18cqw; font-style: italic; color: #4B5563; }
+.cert-nm { font-family: 'EB Garamond', Georgia, serif; font-size: 2.85cqw; font-weight: 700; color: #14532D; line-height: 1.1; border-bottom: .14cqw solid #D97706; padding: 0 2cqw .2cqw; max-width: 100%; }
+.cert-ni { font-size: 1.12cqw; font-weight: 600; color: #374151; margin-top: .15cqw; }
+.cert-st { font-size: 1.16cqw; line-height: 1.42; color: #1F2937; max-width: 96%; margin-top: .25cqw; }
+.cert-st b { color: #14532D; }
+.cert-score-pill { display: inline-flex; align-items: center; gap: .6cqw; margin-top: .35cqw; padding: .28cqw 1.1cqw; border-radius: 99px; background: #F0FDF4; border: .12cqw solid #86EFAC; font-size: 1.08cqw; font-weight: 700; color: #14532D; }
+
+.cert-foot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 1.5cqw; width: 100%; padding-top: .4cqw; }
+.cert-sig { display: flex; flex-direction: column; align-items: center; font-size: 1.08cqw; color: #374151; line-height: 1.25; }
+.cert-sig-space { height: 4.2cqw; display: flex; align-items: center; justify-content: center; margin: .2cqw 0; }
+.cert-sig-space img { max-height: 4.0cqw; max-width: 14cqw; object-fit: contain; }
+.cert-sig-line { width: 78%; border-top: .12cqw solid #111827; margin-bottom: .2cqw; }
+.cert-sig-name { font-weight: 700; color: #111827; font-size: 1.15cqw; }
+.cert-sig-nip { font-size: .96cqw; color: #4B5563; }
+.cert-center-qr { display: flex; flex-direction: column; align-items: center; gap: .25cqw; }
+.cert-tg { font-size: 1.05cqw; color: #4B5563; font-weight: 500; margin-bottom: .15cqw; }
+.cert-qr-box { width: 5.8cqw; height: 5.8cqw; border: .14cqw solid #14532D; padding: .2cqw; background: #fff; display: grid; place-items: center; border-radius: 3px; }
+.cert-qr-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.cert-qr-fallback { width: 100%; height: 100%; background: repeating-conic-gradient(#14532D 0 25%, #fff 0 50%) 50% / 25% 25%; }
+.cert-qr-cap { font-size: .88cqw; color: #6B7280; letter-spacing: .02em; }
+
+/* Sisi Belakang (Transkrip Skor 4 Program) */
+.cert-back-head { display: flex; flex-direction: column; align-items: center; gap: .18cqw; border-bottom: .16cqw solid #C2410C; padding-bottom: .6cqw; }
+.cert-back-tt { font-family: 'EB Garamond', Georgia, serif; font-size: 2.15cqw; font-weight: 700; color: #C2410C; letter-spacing: .03em; line-height: 1.1; }
+.cert-back-sub { font-size: 1.02cqw; color: #4B5563; font-weight: 500; }
+
+.cert-id-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: .4cqw 2cqw; text-align: left; background: #F8FAFC; border: .12cqw solid #CBD5E1; border-left: .35cqw solid #14532D; border-radius: 3px; padding: .65cqw 1.2cqw; font-size: 1.05cqw; line-height: 1.35; }
+.cert-id-row { display: flex; gap: .5cqw; }
+.cert-id-row span.k { color: #4B5563; min-width: 9.5cqw; font-weight: 500; }
+.cert-id-row b.v { color: #111827; font-weight: 700; }
+
+.cert-score-tbl { width: 100%; border-collapse: collapse; font-size: 1.05cqw; text-align: left; }
+.cert-score-tbl th { background: #14532D; color: #fff; font-weight: 700; font-size: .96cqw; letter-spacing: .04em; text-transform: uppercase; padding: .55cqw .7cqw; border: .1cqw solid #14532D; }
+.cert-score-tbl td { padding: .52cqw .7cqw; border: .1cqw solid #CBD5E1; color: #1F2937; vertical-align: middle; background: #fff; }
+.cert-score-tbl tbody tr:nth-child(even) td { background: #F9FBFA; }
+.cert-score-tbl td.c, .cert-score-tbl th.c { text-align: center; }
+.cert-score-tbl .prog-nm { font-weight: 700; color: #111827; display: block; line-height: 1.15; }
+.cert-score-tbl .prog-sub { font-size: .88cqw; color: #6B7280; display: block; }
+.cert-score-tbl .sc-num { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.18cqw; color: #14532D; }
+.cert-score-tbl .sc-grd { font-weight: 800; color: #C2410C; }
+.cert-score-tbl .sc-pass { display: inline-block; padding: .12cqw .55cqw; border-radius: 3px; background: #DCFCE7; color: #14532D; font-weight: 700; font-size: .92cqw; }
+.cert-score-tbl tfoot td { background: #F0FDF4; border-top: .18cqw solid #14532D; font-weight: 800; color: #14532D; padding: .6cqw .7cqw; }
+
+.cert-back-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 2cqw; text-align: left; padding-top: .3cqw; }
+.cert-scale-box { flex: 1.3; background: #FFFBEB; border: .1cqw solid #FDE68A; border-radius: 3px; padding: .6cqw .9cqw; font-size: .94cqw; color: #4B5563; line-height: 1.38; }
+.cert-scale-box b.hd { display: block; color: #92400E; font-size: .98cqw; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2cqw; }
+.cert-scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .15cqw 1.2cqw; }
+.cert-back-sig { flex: 0.85; text-align: center; display: flex; flex-direction: column; align-items: center; font-size: 1.02cqw; color: #374151; line-height: 1.25; }
 
 /* ---------- Responsif ---------- */
 @media (max-width: 1279px) {
