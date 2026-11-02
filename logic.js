@@ -35,19 +35,26 @@
     }
     return 0;
   };
+  SP.semesterProgram = function (p) { return String(p || '').slice(-3) === 'GJL' ? 'GANJIL' : 'GENAP'; };
+  SP.semesterWajibUlang = function (r) {
+    if (!r) return 'GANJIL';
+    if (r.program) return SP.semesterProgram(r.program);
+    return r.semester_asal === 'GENAP' ? 'GENAP' : 'GANJIL';
+  };
   SP.targetSemDefinitif = function (r) {
     if (!r) return { ta: '', sem: '' };
+    const semWajib = SP.semesterWajibUlang(r);
+    const thAsal = SP.tahunAwal(r.ta_asal);
+    if ((r.status === 'SEDANG_MENGULANG' || r.status === 'SELESAI') && r.ta_target && r.semester_target) {
+      return { ta: r.ta_target, sem: r.semester_target };
+    }
     let ta = r.ta_target;
     let sem = r.semester_target;
-    const urutAsal = SP.urutSemAsal(r);
-    if (!ta || !sem || (urutAsal > 0 && SP.kodeUrutSem(ta, sem) <= urutAsal)) {
-      if (r.semester_asal === 'GANJIL') {
-        ta = r.ta_asal || (SP.set() ? SP.set().tahun_ajaran_aktif : '');
-        sem = 'GENAP';
-      } else {
-        ta = r.ta_asal ? SP.taBerikut(r.ta_asal) : (SP.set() ? SP.set().tahun_ajaran_aktif : '');
-        sem = 'GANJIL';
-      }
+    if (!ta || (thAsal > 0 && SP.tahunAwal(ta) <= thAsal)) {
+      ta = r.ta_asal ? SP.taBerikut(r.ta_asal) : (SP.set() ? SP.set().tahun_ajaran_aktif : '');
+    }
+    if (!sem || sem !== semWajib) {
+      sem = semWajib;
     }
     return { ta: ta, sem: sem };
   };
@@ -134,7 +141,7 @@
     const prog = SP.kodeProgram(pg.bahasa, pg.semester);
     const rows = SP.S.km.filter(function (r) {
       return r.kelas_id === pg.kelas_id && r.tahun_ajaran === pg.tahun_ajaran && r.semester === pg.semester &&
-        (r.jenis !== 'PENGULANGAN' || r.program === prog || SP.bahasaProgram(r.program) === pg.bahasa);
+        (r.jenis !== 'PENGULANGAN' || r.program === prog);
     });
     return (SP.X.roster[pg.id] = { program: prog, rows: rows });
   };
@@ -251,6 +258,11 @@
     if (res.pengulangan) gabung(S.pengulangan, [].concat(res.pengulangan), function (x) { return x.id; });
     if (res.notifikasi) res.notifikasi.forEach(function (n) { if (!S.notif.some(function (x) { return x.id === n.id; })) S.notif.push(n); });
     if (res.kelas) gabung(S.kelas, [].concat(res.kelas), function (x) { return x.id; });
+    if (res.hapusKelasMahasiswaIds) {
+      const rm = {};
+      [].concat(res.hapusKelasMahasiswaIds).forEach(function (id) { rm[id] = true; });
+      S.km = S.km.filter(function (x) { return !rm[x.id]; });
+    }
     if (res.kelasMahasiswa) gabung(S.km, [].concat(res.kelasMahasiswa), function (x) { return x.id; });
     if (res.mahasiswa) gabung(S.mahasiswa, [].concat(res.mahasiswa), function (x) { return x.nim; });
     if (res.mutasi) S.mutasi.push(res.mutasi);

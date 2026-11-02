@@ -34,13 +34,26 @@
     return '<div class="tbl-wrap has-foot"><table class="tbl cards compact"><thead><tr><th>Mahasiswa</th><th>Kelas asal</th><th>Program gagal</th><th>Semester asal</th><th>Jadwal pengulangan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
       pg.items.map(function (x) {
         const r = x.r;
+        const semWajib = SP.semesterWajibUlang(r);
+        const tDef = SP.targetSemDefinitif(r);
+        const salahSem = !!(tDef.sem && tDef.sem !== semWajib);
         let aksi;
-        if (r.status === 'WAJIB_MENGULANG' && admin) aksi = '<button class="btn btn-soft btn-sm" data-act="mengAtur" data-id="' + esc(r.id) + '">' + SP.icon('calendar') + ' Atur Kelas Ulang</button>';
-        else if (r.status === 'SEDANG_MENGULANG') aksi = '<button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(r.nim) + '">' + SP.icon('eye') + ' Lihat Progres</button>';
-        else aksi = '<button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(r.nim) + '">' + SP.icon('history') + ' Lihat Riwayat</button>';
+        if (r.status === 'WAJIB_MENGULANG' && admin) {
+          aksi = '<div class="row gap6 wrap"><button class="btn btn-soft btn-sm" data-act="mengAtur" data-id="' + esc(r.id) + '">' + SP.icon('calendar') + ' Atur Kelas Ulang</button></div>';
+        } else if (r.status === 'SEDANG_MENGULANG') {
+          aksi = '<div class="row gap6 wrap">' +
+            (admin ? '<button class="btn ' + (salahSem ? 'btn-accent' : 'btn-soft') + ' btn-sm" data-act="mengAtur" data-id="' + esc(r.id) + '">' + SP.icon('pencil', 'sm') + ' Edit Jadwal</button>' : '') +
+            '<button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(r.nim) + '">' + SP.icon('eye') + ' Lihat Progres</button>' +
+            '</div>';
+        } else {
+          aksi = '<button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(r.nim) + '">' + SP.icon('history') + ' Lihat Riwayat</button>';
+        }
         return '<tr><td data-l="Mahasiswa" class="nm"><b>' + esc(x.m.nama) + '</b><small><span class="mono">' + esc(r.nim) + '</span></small></td><td data-l="Kelas asal"><span class="chip">' + esc(x.kelasAsal ? x.kelasAsal.nama : '—') + '</span></td>' +
           '<td data-l="Program gagal"><span class="badge b-bad">' + esc(SP.PROG_SHORT[r.program]) + '</span></td><td data-l="Semester asal" style="white-space:nowrap">' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</td>' +
-          '<td data-l="Jadwal"><b>' + esc(SP.targetLabel(r)) + '</b>' + (r.kelas_ulang_id ? '<br><small class="muted">Kelas ' + esc(SP.kelasNama(r.kelas_ulang_id)) + '</small>' : '') + '</td><td data-l="Status">' + SP.badge(r.status) + '</td><td>' + aksi + '</td></tr>';
+          '<td data-l="Jadwal"><b>' + esc(SP.targetLabel(r)) + '</b>' +
+            (r.kelas_ulang_id ? '<br><small class="muted">Kelas ' + esc(SP.kelasNama(r.kelas_ulang_id)) + '</small>' : '') +
+            (salahSem ? '<br><span class="badge b-bad" style="margin-top:4px;font-size:11px">' + SP.icon('alert', 'sm') + ' Tidak Sesuai Semester (Wajib ' + esc(SP.semLabel(semWajib)) + ')</span>' : '') +
+          '</td><td data-l="Status">' + SP.badge(r.status) + '</td><td>' + aksi + '</td></tr>';
       }).join('') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pg.dari + '–' + pg.sampai + ' dari ' + pg.total + ' catatan pengulangan</span>' + SP.pagerHtml('mengHal', pg) + '</div>';
   };
 
@@ -99,75 +112,243 @@
     SP.eksporXlsx('Daftar Wajib Mengulang', ['NIM', 'Nama', 'Kelas Asal', 'Program Gagal', 'Semester Asal', 'Jadwal Pengulangan', 'Status'],
       b.map(function (x) { return [x.r.nim, x.m.nama, x.kelasAsal ? x.kelasAsal.nama : '', SP.PROG_LABEL[x.r.program], SP.semLabel(x.r.semester_asal) + ' ' + x.r.ta_asal, SP.targetLabel(x.r), x.r.status]; }));
   };
-  SP.actions.mengAtur = function (el) {
-    const r = SP.S.pengulangan.filter(function (x) { return x.id === el.dataset.id; })[0], m = SP.X.mhs[r.nim], bahasa = SP.bahasaProgram(r.program);
+  function bangunOpsiKelasMeng(r, taPilihan, semPilihan, kelasPilihan) {
+    const bahasa = SP.bahasaProgram(r.program);
+    const semWajib = SP.semesterWajibUlang(r);
     const s = SP.set();
     const taAktif = s.tahun_ajaran_aktif || '';
     const semAktif = s.semester_aktif || '';
     const urutAsal = SP.urutSemAsal(r);
-    const targetSem = SP.targetSemDefinitif(r);
     const thAsal = SP.tahunAwal(r.ta_asal) || Math.floor(urutAsal / 2);
     const thAktif = SP.tahunAwal(taAktif);
-    // Tahun ajaran tujuan WAJIB tahun ajaran baru (> thAsal) dan tidak di masa lalu (>= thAktif)
     const thMin = Math.max(thAsal + 1, thAktif || (thAsal + 1));
-    const urutMin = SP.kodeUrutSem(taAktif, semAktif);
 
-    // Ambil penugasan aktif tutor serumpun bahasa HANYA untuk tahun ajaran baru (bukan tahun ajaran sebelumnya / yang pernah diampu)
     const semuaPenugasan = (SP.S.penugasan || []).filter(function (p) {
       if (p.bahasa !== bahasa || p.status !== 'AKTIF' || !SP.X.kelas[p.kelas_id]) return false;
       const thP = SP.tahunAwal(p.tahun_ajaran);
-      if (thP < thMin) return false;
-      const urutP = SP.kodeUrutSem(p.tahun_ajaran, p.semester);
-      if (urutMin > 0 && urutP < urutMin) return false;
-      return true;
+      return thP >= thMin && p.tahun_ajaran === taPilihan;
     });
 
-    // Urutkan prioritas:
-    // 1. Penugasan pada semester aktif saat ini
-    // 2. Penugasan pada semester target bawaan
-    // 3. Penugasan urutan semester terdekat
-    // 4. Nama kelas alfabetis
-    semuaPenugasan.sort(function (a, b) {
-      const pA = (a.tahun_ajaran === taAktif && a.semester === semAktif) ? 3 : (a.tahun_ajaran === targetSem.ta && a.semester === targetSem.sem ? 2 : 1);
-      const pB = (b.tahun_ajaran === taAktif && b.semester === semAktif) ? 3 : (b.tahun_ajaran === targetSem.ta && b.semester === targetSem.sem ? 2 : 1);
-      if (pB !== pA) return pB - pA;
-      const urutA = SP.kodeUrutSem(a.tahun_ajaran, a.semester);
-      const urutB = SP.kodeUrutSem(b.tahun_ajaran, b.semester);
-      if (urutA !== urutB) return urutA - urutB;
+    const pgSesuai = semuaPenugasan.filter(function (p) { return p.semester === semPilihan; }).sort(function (a, b) {
+      return (SP.kelasNama(a.kelas_id) < SP.kelasNama(b.kelas_id)) ? -1 : 1;
+    });
+    const pgLain = semuaPenugasan.filter(function (p) { return p.semester !== semPilihan; }).sort(function (a, b) {
       return (SP.kelasNama(a.kelas_id) < SP.kelasNama(b.kelas_id)) ? -1 : 1;
     });
 
+    const cocokSem = (semPilihan === semWajib);
+    const peringatanHtml = cocokSem
+      ? SP.callout({
+          tipe: 'ok', ikon: 'checkCircle',
+          judul: 'Semester Sesuai (' + esc(SP.semLabel(semPilihan) + ' ' + taPilihan) + ')',
+          teks: 'Program <b>' + esc(SP.PROG_LABEL[r.program]) + '</b> wajib diulang pada <b>Semester ' + esc(SP.semLabel(semWajib)) + '</b>.'
+        })
+      : SP.callout({
+          tipe: 'bad', ikon: 'alert',
+          judul: 'Peringatan: Tidak Sesuai Semester! (Ditolak)',
+          teks: 'Mahasiswa ini mengulang program <b>' + esc(SP.PROG_LABEL[r.program]) + '</b> (Semester <b>' + esc(SP.semLabel(semWajib)) + '</b>), namun jadwal terpilih adalah <b>Semester ' + esc(SP.semLabel(semPilihan)) + '</b>.<br>Penjadwalan lintas semester akan menyebabkan kekeliruan nilai akhir dan <b>ditolak oleh sistem</b>. Silakan pilih <b>Semester ' + esc(SP.semLabel(semWajib)) + '</b>.'
+        });
+
+    let opsiHtml = '';
+    if (pgSesuai.length && cocokSem) {
+      opsiHtml += pgSesuai.map(function (p) {
+        const isAktif = (p.tahun_ajaran === taAktif && p.semester === semAktif);
+        const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
+        const sel = (kelasPilihan && p.kelas_id === kelasPilihan) ? ' selected' : '';
+        return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '" data-sem="' + esc(p.semester) + '" data-ta="' + esc(p.tahun_ajaran) + '"' + sel + '>' +
+          esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
+          '</option>';
+      }).join('');
+      opsiHtml += '<option value="__TANPA_KELAS__" data-pg="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '"' + (kelasPilihan === '__TANPA_KELAS__' ? ' selected' : '') + '>' +
+        esc('— Atur Ulang Jadwal ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + ' (Tanpa Kelas Dulu / Menunggu Kelas) —') +
+        '</option>';
+    } else if (cocokSem) {
+      opsiHtml += '<option value="__TANPA_KELAS__" data-pg="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '" selected>' +
+        esc('Atur Jadwal ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + ' (Menunggu Kelas Semester ' + SP.semLabel(semPilihan) + ' Dibentuk)') +
+        '</option>';
+    } else {
+      if (pgSesuai.length) {
+        opsiHtml += pgSesuai.map(function (p) {
+          const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + ' • TIDAK SESUAI SEMESTER';
+          return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '" data-sem="' + esc(p.semester) + '" data-ta="' + esc(p.tahun_ajaran) + '">' +
+            esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
+            '</option>';
+        }).join('');
+      } else {
+        opsiHtml += '<option value="" data-pg="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '" selected>' +
+          esc('— Tidak sesuai semester (Wajib Semester ' + SP.semLabel(semWajib) + ') —') +
+          '</option>';
+      }
+    }
+
+    if (pgLain.length && cocokSem) {
+      const semLainLabel = SP.semLabel(semPilihan === 'GANJIL' ? 'GENAP' : 'GANJIL');
+      opsiHtml += '<optgroup label="Kelas Semester ' + esc(semLainLabel) + ' (Tidak Sesuai Semester Program)">' +
+        pgLain.map(function (p) {
+          const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + ' • Tidak Sesuai Semester';
+          return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '" data-sem="' + esc(p.semester) + '" data-ta="' + esc(p.tahun_ajaran) + '">' +
+            esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
+            '</option>';
+        }).join('') + '</optgroup>';
+    }
+
+    const helpHtml = !cocokSem
+      ? '<div class="help mt4" style="color:var(--danger);font-weight:600">Jadwal pada Semester ' + esc(SP.semLabel(semPilihan)) + ' tidak dapat disimpan karena mahasiswa wajib mengulang di Semester ' + esc(SP.semLabel(semWajib)) + '.</div>'
+      : (pgSesuai.length
+          ? '<div class="help mt4">Hanya menampilkan kelas &amp; penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' pada tahun ajaran baru yang dipilih.</div>'
+          : '<div class="help mt4">Penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk <b>' + esc(SP.semLabel(semPilihan) + ' ' + taPilihan) + '</b> belum dibentuk. Anda tetap dapat menyimpan jadwal ke <b>' + esc(SP.semLabel(semPilihan) + ' ' + taPilihan) + '</b> terlebih dahulu.</div>');
+
+    return {
+      peringatanHtml: peringatanHtml,
+      kelasFieldHtml: '<label for="ak-k">Pilih Kelas Tujuan (Tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' di Tahun Ajaran Baru)</label>' +
+        '<select id="ak-k" class="select" data-ch="mengUbahKelas">' + opsiHtml + '</select>' + helpHtml
+    };
+  }
+
+  SP.actions.mengAtur = function (el) {
+    const r = SP.S.pengulangan.filter(function (x) { return x.id === el.dataset.id; })[0], m = SP.X.mhs[r.nim];
+    const semWajib = SP.semesterWajibUlang(r);
+    const isEdit = (r.status === 'SEDANG_MENGULANG' || !!r.kelas_ulang_id);
+    const s = SP.set();
+    const taAktif = s.tahun_ajaran_aktif || '';
+    const urutAsal = SP.urutSemAsal(r);
+    const thAsal = SP.tahunAwal(r.ta_asal) || Math.floor(urutAsal / 2);
+    const thAktif = SP.tahunAwal(taAktif);
+    const thMin = Math.max(thAsal + 1, thAktif || (thAsal + 1));
+
+    const mapTA = {};
+    const taNextAsal = r.ta_asal ? SP.taBerikut(r.ta_asal) : '';
+    if (taNextAsal && SP.tahunAwal(taNextAsal) >= thMin) mapTA[taNextAsal] = true;
+    if (taAktif && SP.tahunAwal(taAktif) >= thMin) mapTA[taAktif] = true;
+    if (r.ta_target && SP.tahunAwal(r.ta_target) >= thMin) mapTA[r.ta_target] = true;
+    (SP.S.penugasan || []).forEach(function (p) {
+      if (p.tahun_ajaran && SP.tahunAwal(p.tahun_ajaran) >= thMin) mapTA[p.tahun_ajaran] = true;
+    });
+    const baseTA = Object.keys(mapTA)[0] || (thMin + '/' + (thMin + 1));
+    mapTA[baseTA] = true;
+    mapTA[SP.taBerikut(baseTA)] = true;
+    const daftarTA = Object.keys(mapTA).sort(function (a, b) { return SP.tahunAwal(a) - SP.tahunAwal(b); });
+
+    const taInit = (r.ta_target && SP.tahunAwal(r.ta_target) >= thMin) ? r.ta_target : (taAktif && SP.tahunAwal(taAktif) >= thMin ? taAktif : daftarTA[0]);
+    const semInit = (isEdit && r.semester_target) ? r.semester_target : semWajib;
+    const bagian = bangunOpsiKelasMeng(r, taInit, semInit, r.kelas_ulang_id || '');
+
     const h = SP.modal({
-      judul: 'Atur Kelas Ulang', lebar: 560,
+      judul: isEdit ? 'Edit / Atur Ulang Jadwal Pengulangan' : 'Atur Kelas Ulang', lebar: 580,
       isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br>' +
         '<span class="muted">Program yang diulang: <b>' + esc(SP.PROG_LABEL[r.program]) + '</b></span><br>' +
-        '<span class="muted">Semester asal gagal: <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b></span></p>' +
-        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' di tahun ajaran baru)</label><select id="ak-k" class="select">' +
-          semuaPenugasan.map(function (p) {
-            const isAktif = (p.tahun_ajaran === taAktif && p.semester === semAktif);
-            const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
-            return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '">' +
-              esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
-              '</option>';
-          }).join('') + '</select><div class="help mt4">Hanya menampilkan kelas &amp; penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk tahun ajaran baru (bukan tahun ajaran sebelumnya).</div></div>'
-          : SP.callout({
-              tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan di tahun ajaran baru',
-              teks: 'Mahasiswa gagal pada <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b> dan hanya dapat dijadwalkan pada tahun ajaran baru (' + esc(SP.semLabel(targetSem.sem) + ' ' + targetSem.ta) + ').<br><br>Saat ini belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang aktif di tahun ajaran baru. Pastikan Anda telah membuat kelas dan penugasan tutor untuk tahun ajaran baru melalui menu <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.'
-            })),
-      footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' + (semuaPenugasan.length ? '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">Jadwalkan</button>' : '')
+        '<span class="muted">Semester asal gagal: <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b> · Wajib diulang pada: <span class="badge b-ok">Semester ' + esc(SP.semLabel(semWajib)) + '</span></span></p>' +
+        '<div class="grid2 mb12">' +
+          '<div class="field"><label for="ak-ta">Tahun Ajaran Baru</label><select id="ak-ta" class="select" data-ch="mengUbahTaSem">' +
+            daftarTA.map(function (ta) {
+              return '<option value="' + esc(ta) + '"' + (ta === taInit ? ' selected' : '') + '>' + esc(ta + (ta === taAktif ? ' • Aktif' : '')) + '</option>';
+            }).join('') +
+          '</select></div>' +
+          '<div class="field"><label for="ak-sem">Semester Pengulangan</label><select id="ak-sem" class="select" data-ch="mengUbahTaSem">' +
+            '<option value="GANJIL"' + (semInit === 'GANJIL' ? ' selected' : '') + '>Semester Ganjil' + (semWajib === 'GANJIL' ? ' (Sesuai Program)' : ' (Tidak Sesuai)') + '</option>' +
+            '<option value="GENAP"' + (semInit === 'GENAP' ? ' selected' : '') + '>Semester Genap' + (semWajib === 'GENAP' ? ' (Sesuai Program)' : ' (Tidak Sesuai)') + '</option>' +
+          '</select></div>' +
+        '</div>' +
+        '<div id="ak-peringatan" class="mb12">' + bagian.peringatanHtml + '</div>' +
+        '<div id="ak-k-wrap" class="field">' + bagian.kelasFieldHtml + '</div>',
+      footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' +
+        '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">' + (isEdit ? 'Simpan Perubahan Jadwal' : 'Jadwalkan') + '</button>'
     });
     h.el.dataset.rid = r.id;
   };
+
+  SP.changes.mengUbahTaSem = function () {
+    const modalEl = document.querySelector('.modal');
+    if (!modalEl || !modalEl.dataset.rid) return;
+    const r = SP.S.pengulangan.filter(function (x) { return x.id === modalEl.dataset.rid; })[0];
+    if (!r) return;
+    const semWajib = SP.semesterWajibUlang(r);
+    const taEl = SP.$('#ak-ta');
+    const semEl = SP.$('#ak-sem');
+    const taPilihan = taEl ? taEl.value : '';
+    const semPilihan = semEl ? semEl.value : semWajib;
+
+    if (semPilihan !== semWajib) {
+      SP.toast('Peringatan: Tidak sesuai semester! Mahasiswa ini mengulang program Semester ' + SP.semLabel(semWajib) + ' (' + SP.PROG_LABEL[r.program] + '), tidak dapat dijadwalkan pada Semester ' + SP.semLabel(semPilihan) + '.', 'err', 6500);
+    }
+
+    const bagian = bangunOpsiKelasMeng(r, taPilihan, semPilihan, r.kelas_ulang_id || '');
+    const pWrap = SP.$('#ak-peringatan');
+    const kWrap = SP.$('#ak-k-wrap');
+    if (pWrap) pWrap.innerHTML = bagian.peringatanHtml;
+    if (kWrap) kWrap.innerHTML = bagian.kelasFieldHtml;
+  };
+
+  SP.changes.mengUbahKelas = function (el) {
+    const modalEl = document.querySelector('.modal');
+    if (!modalEl || !modalEl.dataset.rid) return;
+    const r = SP.S.pengulangan.filter(function (x) { return x.id === modalEl.dataset.rid; })[0];
+    if (!r) return;
+    const semWajib = SP.semesterWajibUlang(r);
+    const opt = el.options[el.selectedIndex];
+    const semOpt = opt ? opt.dataset.sem : '';
+    if (semOpt && semOpt !== semWajib) {
+      const semEl = SP.$('#ak-sem');
+      if (semEl) semEl.value = semOpt;
+      SP.changes.mengUbahTaSem();
+    }
+  };
+
   SP.actions.mengSimpan = async function (el) {
+    const r = SP.S.pengulangan.filter(function (x) { return x.id === el.dataset.id; })[0];
+    if (!r) return;
+    const semWajib = SP.semesterWajibUlang(r);
+    const taEl = SP.$('#ak-ta');
+    const semEl = SP.$('#ak-sem');
+    const sel = SP.$('#ak-k');
+    const opt = sel ? sel.options[sel.selectedIndex] : null;
+    const taPilihan = taEl ? taEl.value : '';
+    const semPilihan = semEl ? semEl.value : semWajib;
+    const semAktual = (opt && opt.dataset.sem) ? opt.dataset.sem : semPilihan;
+
+    if (semPilihan !== semWajib || semAktual !== semWajib) {
+      SP.toast('Ditolak: Tidak sesuai semester! Mahasiswa ini mengulang pada Semester ' + SP.semLabel(semWajib) + ' (' + SP.PROG_LABEL[r.program] + '), tidak dapat dijadwalkan pada Semester ' + SP.semLabel(semAktual) + '.', 'err', 7500);
+      return;
+    }
+
+    const rawKelas = sel ? sel.value : '';
+    const kelasId = (rawKelas === '__TANPA_KELAS__') ? '' : rawKelas;
+    const pgId = (opt && kelasId) ? (opt.dataset.pg || '') : '';
+
     el.disabled = true;
     try {
-      const sel = SP.$('#ak-k');
-      const opt = sel ? sel.options[sel.selectedIndex] : null;
-      const kelasId = sel ? sel.value : '';
-      const pgId = opt ? opt.dataset.pg : '';
-      const res = await SP.api('aturKelasUlang', { pengulangan_id: el.dataset.id, kelas_id: kelasId, penugasan_id: pgId });
-      SP.terapkanHasil(res); SP.simpanCache(); SP.tutupModal(); SP.toast('Mahasiswa berhasil dijadwalkan ke kelas pengulangan.'); SP.renderUlang();
-    } catch (e) { el.disabled = false; SP.toast(esc(e.message), 'err', 8000); }
+      const res = await SP.api('aturKelasUlang', {
+        pengulangan_id: r.id,
+        ta_target: taPilihan,
+        semester_target: semPilihan,
+        kelas_id: kelasId,
+        penugasan_id: pgId
+      });
+      SP.terapkanHasil(res);
+      SP.simpanCache();
+      SP.tutupModal();
+      SP.toast(kelasId ? 'Mahasiswa berhasil dijadwalkan ke kelas pengulangan.' : 'Jadwal pengulangan berhasil diatur ulang ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + '.');
+      SP.renderUlang();
+    } catch (e) {
+      if (!kelasId && String(e.message || '').indexOf('belum memiliki penugasan') >= 0) {
+        // Fallback kompatibilitas jika backend belum di-deploy ulang saat mereset jadwal ke semester baru tanpa kelas
+        r.ta_target = taPilihan;
+        r.semester_target = semPilihan;
+        r.kelas_ulang_id = '';
+        r.status = 'WAJIB_MENGULANG';
+        SP.S.km = (SP.S.km || []).filter(function (km) {
+          return !(km.jenis === 'PENGULANGAN' && km.nim === r.nim && km.program === r.program);
+        });
+        SP.indeks();
+        SP.simpanCache();
+        SP.tutupModal();
+        SP.toast('Jadwal pengulangan berhasil diatur ulang ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + '.');
+        SP.renderUlang();
+        return;
+      }
+      el.disabled = false;
+      SP.toast(esc(e.message), 'err', 8000);
+    }
   };
   SP.actions.notifSatu = function (el) {
     const id = el.dataset.id; const n = SP.S.notif.filter(function (x) { return x.id === id; })[0]; if (n) n.dibaca = true;
