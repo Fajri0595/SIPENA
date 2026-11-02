@@ -104,35 +104,48 @@
     const s = SP.set();
     const taAktif = s.tahun_ajaran_aktif || '';
     const semAktif = s.semester_aktif || '';
+    const urutAsal = SP.urutSemAsal(r);
+    const targetSem = SP.targetSemDefinitif(r);
 
-    // Ambil penugasan aktif tutor serumpun bahasa
+    // Ambil penugasan aktif tutor serumpun bahasa HANYA untuk semester berikutnya atau tahun ajaran baru (bukan tahun ajaran yang pernah diampu)
     const semuaPenugasan = (SP.S.penugasan || []).filter(function (p) {
-      return p.bahasa === bahasa && p.status === 'AKTIF' && SP.X.kelas[p.kelas_id];
+      if (p.bahasa !== bahasa || p.status !== 'AKTIF' || !SP.X.kelas[p.kelas_id]) return false;
+      const urutP = SP.kodeUrutSem(p.tahun_ajaran, p.semester);
+      return urutP > urutAsal;
     });
 
     // Urutkan prioritas:
-    // 1. Penugasan pada semester aktif saat ini (paling relevan saat admin berganti semester)
+    // 1. Penugasan pada semester aktif saat ini
     // 2. Penugasan pada semester target bawaan
-    // 3. Penugasan aktif lainnya
+    // 3. Penugasan urutan semester terdekat
+    // 4. Nama kelas alfabetis
     semuaPenugasan.sort(function (a, b) {
-      const pA = (a.tahun_ajaran === taAktif && a.semester === semAktif) ? 3 : (a.tahun_ajaran === r.ta_target && a.semester === r.semester_target ? 2 : 1);
-      const pB = (b.tahun_ajaran === taAktif && b.semester === semAktif) ? 3 : (b.tahun_ajaran === r.ta_target && b.semester === r.semester_target ? 2 : 1);
+      const pA = (a.tahun_ajaran === taAktif && a.semester === semAktif) ? 3 : (a.tahun_ajaran === targetSem.ta && a.semester === targetSem.sem ? 2 : 1);
+      const pB = (b.tahun_ajaran === taAktif && b.semester === semAktif) ? 3 : (b.tahun_ajaran === targetSem.ta && b.semester === targetSem.sem ? 2 : 1);
       if (pB !== pA) return pB - pA;
+      const urutA = SP.kodeUrutSem(a.tahun_ajaran, a.semester);
+      const urutB = SP.kodeUrutSem(b.tahun_ajaran, b.semester);
+      if (urutA !== urutB) return urutA - urutB;
       return (SP.kelasNama(a.kelas_id) < SP.kelasNama(b.kelas_id)) ? -1 : 1;
     });
 
     const h = SP.modal({
       judul: 'Atur Kelas Ulang', lebar: 560,
-      isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br><span class="muted">Program yang diulang: <b>' + esc(SP.PROG_LABEL[r.program]) + '</b></span></p>' +
-        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' aktif)</label><select id="ak-k" class="select">' +
+      isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br>' +
+        '<span class="muted">Program yang diulang: <b>' + esc(SP.PROG_LABEL[r.program]) + '</b></span><br>' +
+        '<span class="muted">Semester asal gagal: <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b></span></p>' +
+        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' di semester berikutnya / tahun ajaran baru)</label><select id="ak-k" class="select">' +
           semuaPenugasan.map(function (p) {
             const isAktif = (p.tahun_ajaran === taAktif && p.semester === semAktif);
             const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
             return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '">' +
               esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
               '</option>';
-          }).join('') + '</select><div class="help mt4">Menampilkan kelas dengan penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang tersedia di semester aktif maupun semester target.</div></div>'
-          : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan', teks: 'Belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' pada semester aktif (' + esc(SP.semLabel(semAktif) + ' ' + taAktif) + '). Bentuk kelas dan atur penugasan tutor terlebih dahulu di <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.' })),
+          }).join('') + '</select><div class="help mt4">Hanya menampilkan kelas &amp; penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk semester berikutnya atau tahun ajaran baru (bukan tahun ajaran yang pernah diampu).</div></div>'
+          : SP.callout({
+              tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan di semester berikutnya',
+              teks: 'Mahasiswa gagal pada <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b> dan hanya dapat dijadwalkan pada semester berikutnya atau tahun ajaran baru (' + esc(SP.semLabel(targetSem.sem) + ' ' + targetSem.ta) + ').<br><br>Saat ini belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang aktif setelah ' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '. Pastikan Anda telah membuat kelas dan penugasan tutor untuk semester baru melalui menu <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.'
+            })),
       footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' + (semuaPenugasan.length ? '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">Jadwalkan</button>' : '')
     });
     h.el.dataset.rid = r.id;

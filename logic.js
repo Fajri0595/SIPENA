@@ -15,6 +15,39 @@
   SP.bahasaProgram = function (p) { return p.indexOf('ARB') === 0 ? 'ARAB' : 'INGGRIS'; };
   SP.bahasaLabel = function (b) { return b === 'ARAB' ? 'Bahasa Arab' : b === 'INGGRIS' ? 'Bahasa Inggris' : '—'; };
   SP.taBerikut = function (ta) { const a = String(ta).split('/').map(Number); return (a[0] + 1) + '/' + (a[1] + 1); };
+  SP.kodeUrutSem = function (ta, sem) {
+    const m = String(ta || '').match(/\d{4}/);
+    const th = m ? parseInt(m[0], 10) : 0;
+    return th * 2 + (String(sem || '').toUpperCase() === 'GENAP' ? 1 : 0);
+  };
+  SP.urutSemAsal = function (r) {
+    if (r && r.ta_asal && r.semester_asal) {
+      return SP.kodeUrutSem(r.ta_asal, r.semester_asal);
+    }
+    if (r && r.nim && r.program) {
+      const n = SP.barisNilai ? SP.barisNilai(r.nim, r.program, Number(r.siklus_asal || 1)) : null;
+      if (n && n.tahun_ajaran && n.semester) {
+        return SP.kodeUrutSem(n.tahun_ajaran, n.semester);
+      }
+    }
+    return 0;
+  };
+  SP.targetSemDefinitif = function (r) {
+    if (!r) return { ta: '', sem: '' };
+    let ta = r.ta_target;
+    let sem = r.semester_target;
+    const urutAsal = SP.urutSemAsal(r);
+    if (!ta || !sem || (urutAsal > 0 && SP.kodeUrutSem(ta, sem) <= urutAsal)) {
+      if (r.semester_asal === 'GANJIL') {
+        ta = r.ta_asal || (SP.set() ? SP.set().tahun_ajaran_aktif : '');
+        sem = 'GENAP';
+      } else {
+        ta = r.ta_asal ? SP.taBerikut(r.ta_asal) : (SP.set() ? SP.set().tahun_ajaran_aktif : '');
+        sem = 'GANJIL';
+      }
+    }
+    return { ta: ta, sem: sem };
+  };
 
   function baru() {
     return { me: null, pengaturan: {}, pengguna: [], kelas: [], penugasan: [], pengganti: [], km: [], mahasiswa: [], nilai: [], pengulangan: [], notif: [], sert: [], mutasi: [], meta: {} };
@@ -184,7 +217,10 @@
   SP.jumlahMahasiswaMengulang = function () {
     const s = {}; SP.pengulanganAktif().forEach(function (r) { s[r.nim] = true; }); return Object.keys(s).length;
   };
-  SP.targetLabel = function (r) { return SP.semLabel(r.semester_target) + ' ' + r.ta_target; };
+  SP.targetLabel = function (r) {
+    const t = SP.targetSemDefinitif(r);
+    return SP.semLabel(t.sem) + ' ' + t.ta;
+  };
 
   // ---------- Notifikasi ----------
   SP.notifBelum = function () { return SP.S.notif.filter(function (n) { return !n.dibaca; }); };
