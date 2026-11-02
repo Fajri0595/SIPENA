@@ -97,13 +97,14 @@
     if (SP.X.roster[pg.id]) return SP.X.roster[pg.id];
     const prog = SP.kodeProgram(pg.bahasa, pg.semester);
     const rows = SP.S.km.filter(function (r) {
-      return r.kelas_id === pg.kelas_id && r.tahun_ajaran === pg.tahun_ajaran && r.semester === pg.semester && (r.jenis !== 'PENGULANGAN' || r.program === prog);
+      return r.kelas_id === pg.kelas_id && r.tahun_ajaran === pg.tahun_ajaran && r.semester === pg.semester &&
+        (r.jenis !== 'PENGULANGAN' || r.program === prog || SP.bahasaProgram(r.program) === pg.bahasa);
     });
     return (SP.X.roster[pg.id] = { program: prog, rows: rows });
   };
   SP.siklusUntuk = function (nim, prog, pg, jenis) {
     const rec = (SP.X.peng[nim] || []).filter(function (r) {
-      return r.program === prog && r.ta_target === pg.tahun_ajaran && r.semester_target === pg.semester && r.status !== 'DIBATALKAN';
+      return r.program === prog && r.status !== 'DIBATALKAN';
     });
     if (rec.length) return Math.max.apply(null, rec.map(function (r) { return Number(r.siklus_asal); })) + 1;
     return jenis === 'PENGULANGAN' ? 2 : 1;
@@ -115,8 +116,9 @@
   SP.barisRoster = function (pg, draft) {
     const ro = SP.roster(pg);
     return ro.rows.map(function (km) {
-      const siklus = SP.siklusUntuk(km.nim, ro.program, pg, km.jenis);
-      const row = SP.barisNilai(km.nim, ro.program, siklus);
+      const progMhs = (km.jenis === 'PENGULANGAN' && km.program) ? km.program : ro.program;
+      const siklus = SP.siklusUntuk(km.nim, progMhs, pg, km.jenis);
+      const row = SP.barisNilai(km.nim, progMhs, siklus);
       const tersimpan = row ? row.status : 'BELUM';
       const angkaTersimpan = row && row.angka !== undefined && row.angka !== null ? String(row.angka) : '';
       const dItem = draft ? draft[km.nim] : undefined;
@@ -131,7 +133,7 @@
         }
       }
       const ubah = efektif !== tersimpan || String(angkaEfektif) !== String(angkaTersimpan);
-      return { nim: km.nim, mhs: SP.X.mhs[km.nim], jenis: km.jenis, siklus: siklus, row: row, tersimpan: tersimpan, status: efektif, angka: angkaEfektif, ubah: ubah };
+      return { nim: km.nim, mhs: SP.X.mhs[km.nim], jenis: km.jenis, progMhs: progMhs, siklus: siklus, row: row, tersimpan: tersimpan, status: efektif, angka: angkaEfektif, ubah: ubah };
     }).sort(function (a, b) { return a.nim < b.nim ? -1 : 1; });
   };
   SP.kemajuan = function (pg, draft) {
@@ -313,16 +315,26 @@
   SP.kunciKelas = function (s) {
     return SP.bersihkanNamaKelas(s).toLowerCase().replace(/[^a-z0-9]/g, '');
   };
-  SP.cariKelasByNama = function (nama, daftar) {
+  SP.cariKelasByNama = function (nama, daftar, angkatan) {
     const bersih = SP.bersihkanNamaKelas(nama);
     if (!bersih) return null;
     const list = daftar || SP.S.kelas || [];
     const low = bersih.toLowerCase();
+    if (angkatan) {
+      for (let i = 0; i < list.length; i++) {
+        if (SP.bersihkanNamaKelas(list[i].nama).toLowerCase() === low && String(list[i].angkatan) === String(angkatan)) return list[i];
+      }
+    }
     for (let i = 0; i < list.length; i++) {
       if (SP.bersihkanNamaKelas(list[i].nama).toLowerCase() === low) return list[i];
     }
     const kunci = SP.kunciKelas(bersih);
     if (!kunci) return null;
+    if (angkatan) {
+      for (let j = 0; j < list.length; j++) {
+        if (SP.kunciKelas(list[j].nama) === kunci && String(list[j].angkatan) === String(angkatan)) return list[j];
+      }
+    }
     for (let j = 0; j < list.length; j++) {
       if (SP.kunciKelas(list[j].nama) === kunci) return list[j];
     }

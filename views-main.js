@@ -251,7 +251,7 @@
   function draftNow() { const pg = pgNilaiAktif(); return pg ? SP.draft.baca(pg.id) : {}; }
   function tag(r) {
     if (r.status === 'TIDAK_LULUS') return '<span class="badge b-warn">' + SP.icon('rotate') + 'Wajib Ulang</span>';
-    if (r.jenis === 'PENGULANGAN') return '<span class="badge b-info">Pengulangan</span>';
+    if (r.jenis === 'PENGULANGAN') return '<span class="badge b-info">Pengulangan' + (r.progMhs ? ': ' + esc(SP.PROG_SHORT[r.progMhs] || r.progMhs) : '') + '</span>';
     if (r.jenis === 'PINDAHAN') return '<span class="badge b-neutral">Pindahan</span>';
     return '<span class="badge b-neutral">Reguler</span>';
   }
@@ -301,14 +301,14 @@
     if (!pgn.total) return '<div class="card">' + SP.kosong('users', SP.kemajuan(pg).total ? 'Tidak ada data yang cocok' : 'Belum ada mahasiswa pada kelas ini', SP.kemajuan(pg).total ? 'Ubah filter atau kata kunci pencarian.' : 'Tambahkan mahasiswa secara manual atau impor dari berkas CSV.', SP.kemajuan(pg).total ? '' : '<div class="row gap8 wrap" style="justify-content:center"><button class="btn btn-outline" data-act="bukaTambahMhsManual" data-kelas="' + esc(pg.kelas_id) + '">' + SP.icon('plus') + ' Tambah Mahasiswa Manual</button><a class="btn btn-primary" href="#/impor">' + SP.icon('upload') + ' Impor CSV</a></div>') + '</div>';
     const btn = function (r, st, label, kls, ikon) {
       const on = r.status === st;
-      return '<button ' + (dapat ? '' : 'disabled') + ' class="' + (on ? kls : '') + '" data-act="nilaiSet" data-nim="' + esc(r.nim) + '" data-st="' + st + '" aria-pressed="' + on + '">' + (on ? SP.icon(ikon, 'sm') : '') + label + '</button>';
+      return '<button ' + (dapat ? '' : 'disabled') + ' tabindex="-1" class="' + (on ? kls : '') + '" data-act="nilaiSet" data-nim="' + esc(r.nim) + '" data-st="' + st + '" aria-pressed="' + on + '">' + (on ? SP.icon(ikon, 'sm') : '') + label + '</button>';
     };
     return '<div class="tbl-wrap has-foot"><table class="tbl cards"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama Mahasiswa</th><th>Status Nilai Akhir</th><th>Riwayat Program Lain</th><th>Keterangan</th><th>Terakhir Diperbarui</th></tr></thead><tbody>' +
       pgn.items.map(function (r, i) {
         return '<tr class="' + (r.status === 'BELUM' ? 'rowwarn' : '') + '" data-nim="' + esc(r.nim) + '"><td data-l="No" class="col-no num muted">' + String(pgn.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b>' + esc(r.nim) + '</b></td>' +
           '<td data-l="Nama" class="nm"><b>' + esc(r.mhs ? r.mhs.nama : '—') + (r.ubah ? ' <span class="dotp" style="color:var(--accent)" title="Belum disimpan"></span>' : '') + '</b><small>' + esc((SP.X.kelas[pg.kelas_id] || {}).prodi || '') + '</small></td>' +
           '<td data-l="Status nilai"><div class="row gap8 wrap" style="align-items:center">' +
-          '<input type="number" min="0" max="100" class="input num" style="width:68px;height:32px;padding:0 6px;text-align:center;font-weight:700" placeholder="0–100" value="' + esc(r.angka !== undefined ? r.angka : '') + '" data-in="nilaiAngka" data-nim="' + esc(r.nim) + '" ' + (dapat ? '' : 'disabled') + ' aria-label="Nilai angka 0-100">' +
+          '<input type="number" min="0" max="100" class="input num inp-nilai" style="width:68px;height:32px;padding:0 6px;text-align:center;font-weight:700" placeholder="0–100" value="' + esc(r.angka !== undefined ? r.angka : '') + '" data-in="nilaiAngka" data-ch="nilaiAngka" data-nim="' + esc(r.nim) + '" ' + (dapat ? '' : 'disabled') + ' tabindex="0" aria-label="Nilai angka 0-100">' +
           '<div class="seg">' + btn(r, 'LULUS', 'Lulus', 'on-ok', 'check') + btn(r, 'TIDAK_LULUS', 'Tdk Lulus', 'on-bad', 'x') + btn(r, 'BELUM', 'Belum', 'on-null', 'minus') + '</div>' +
           (dapat ? '' : ' <span class="muted3">' + SP.icon('lock', 'sm') + '</span>') + '</div></td>' +
           '<td data-l="Riwayat program lain"><div class="row wrap gap4">' + riwayatLain(r, pg) + '</div></td><td data-l="Keterangan">' + tag(r) + '</td>' +
@@ -359,6 +359,71 @@
 
   function segarkanNilai() { SP.refresh('nilaiProgres'); SP.refresh('nilaiFilter'); SP.refresh('nilaiTabel'); SP.refresh('nilaiBar'); SP.setSinkron(SP.sinkron.status); }
 
+  function updateRowNilai(nim, cur, baris) {
+    const tr = document.querySelector('tr[data-nim="' + nim + '"]');
+    if (!tr) return;
+    const pg = pgNilaiAktif();
+    const kkm = Number((SP.set() && SP.set().kkm) || 75);
+
+    // Update rowwarn
+    if (cur.status === 'BELUM') tr.classList.add('rowwarn');
+    else tr.classList.remove('rowwarn');
+
+    // Update status buttons
+    const btns = tr.querySelectorAll('[data-act="nilaiSet"]');
+    btns.forEach(function (b) {
+      const st = b.dataset.st;
+      const on = cur.status === st;
+      b.className = on ? (st === 'LULUS' ? 'on-ok' : st === 'TIDAK_LULUS' ? 'on-bad' : 'on-null') : '';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const ikon = st === 'LULUS' ? 'check' : st === 'TIDAK_LULUS' ? 'x' : 'minus';
+      const label = st === 'LULUS' ? 'Lulus' : st === 'TIDAK_LULUS' ? 'Tdk Lulus' : 'Belum';
+      b.innerHTML = (on ? SP.icon(ikon, 'sm') : '') + label;
+    });
+
+    // Update input number value if called from button click
+    const inp = tr.querySelector('.inp-nilai');
+    if (inp && document.activeElement !== inp) {
+      inp.value = cur.angka !== undefined && cur.angka !== null ? cur.angka : '';
+    }
+
+    // Update dirty indicator dot on student name
+    const tdNamaB = tr.querySelector('td.nm b');
+    if (tdNamaB) {
+      const tersimpanStatus = baris ? baris.tersimpan : 'BELUM';
+      const tersimpanAngka = (baris && baris.angka !== undefined && baris.angka !== null) ? String(baris.angka) : '';
+      const isUbah = cur.status !== tersimpanStatus || String(cur.angka || '') !== tersimpanAngka;
+      let dot = tdNamaB.querySelector('.dotp');
+      if (isUbah && !dot) {
+        tdNamaB.insertAdjacentHTML('beforeend', ' <span class="dotp" style="color:var(--accent)" title="Belum disimpan"></span>');
+      } else if (!isUbah && dot) {
+        dot.remove();
+      }
+    }
+
+    // Update Keterangan badge
+    const tdKet = tr.querySelector('td[data-l="Keterangan"]');
+    if (tdKet) {
+      const dummyR = { status: cur.status, jenis: (baris ? baris.jenis : 'REGULER'), progMhs: (baris ? baris.progMhs : '') };
+      tdKet.innerHTML = tag(dummyR);
+    }
+  }
+
+  // Keyboard navigation: Enter moves to next student's score input
+  document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains('inp-nilai')) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const inputs = Array.from(document.querySelectorAll('.inp-nilai:not([disabled])'));
+        const idx = inputs.indexOf(e.target);
+        if (idx >= 0 && idx < inputs.length - 1) {
+          inputs[idx + 1].focus();
+          inputs[idx + 1].select();
+        }
+      }
+    }
+  });
+
   SP.changes.nilaiPg = function (el) { SP.ui.nilai.pgId = el.value; SP.ui.nilai.page = 1; SP.ui.nilai.filter = 'semua'; location.hash = '#/nilai/' + encodeURIComponent(el.value); };
   SP.changes.nilaiPer = function (el) { SP.ui.nilai.per = Number(el.value); SP.ui.nilai.page = 1; SP.refresh('nilaiTabel'); };
   SP.inputs.nilaiQ = SP.debounce(function (el) { SP.ui.nilai.q = el.value; SP.ui.nilai.page = 1; SP.refresh('nilaiTabel'); }, 150);
@@ -376,13 +441,32 @@
     if (val !== '') {
       const n = Number(val);
       if (!isNaN(n)) cur.status = n >= kkm ? 'LULUS' : 'TIDAK_LULUS';
+    } else {
+      cur.status = 'BELUM';
     }
     if (baris && baris.tersimpan === cur.status && String(baris.angka || '') === String(cur.angka || '')) {
       delete d[nim];
     } else {
       d[nim] = cur;
     }
-    SP.draft.tulis(pg.id, d); segarkanNilai();
+    SP.draft.tulis(pg.id, d);
+    updateRowNilai(nim, cur, baris);
+    SP.refresh('nilaiProgres');
+    SP.refresh('nilaiFilter');
+    SP.refresh('nilaiBar');
+    SP.setSinkron(SP.sinkron.status);
+  };
+  SP.changes.nilaiAngka = function (el) {
+    const val = el.value.trim();
+    if (val !== '') {
+      let n = Number(val);
+      if (!isNaN(n)) {
+        if (n > 100) n = 100;
+        if (n < 0) n = 0;
+        el.value = String(n);
+        SP.inputs.nilaiAngka(el);
+      }
+    }
   };
   SP.actions.nilaiSet = function (el) {
     const pg = pgNilaiAktif(); if (!pg || !SP.bolehTulis(pg)) return;
@@ -404,7 +488,12 @@
     } else {
       d[nim] = cur;
     }
-    SP.draft.tulis(pg.id, d); segarkanNilai();
+    SP.draft.tulis(pg.id, d);
+    updateRowNilai(nim, cur, baris);
+    SP.refresh('nilaiProgres');
+    SP.refresh('nilaiFilter');
+    SP.refresh('nilaiBar');
+    SP.setSinkron(SP.sinkron.status);
   };
   SP.actions.nilaiBatal = async function () {
     const pg = pgNilaiAktif(); if (!pg) return;

@@ -119,8 +119,19 @@
 
   function semTerpilih() { const s = SP.set(); return (SP.ui.pgu.sem || (s.tahun_ajaran_aktif + '|' + s.semester_aktif)).split('|'); }
   function matriks() {
-    const t = semTerpilih(), klasAktif = SP.S.kelas.filter(function (k) { return k.status !== 'ARSIP'; });
-    return klasAktif.map(function (k) {
+    const t = semTerpilih();
+    const taAngkatan = t[0].slice(0, 4);
+    // Tampilkan kelas aktif yang sesuai angkatan tahun ajaran terpilih,
+    // ATAU kelas yang sudah memiliki penugasan di semester terpilih.
+    const klasAktif = SP.S.kelas.filter(function (k) {
+      if (k.status === 'ARSIP') return false;
+      const matchAngkatan = !taAngkatan || String(k.angkatan) === String(taAngkatan);
+      const adaPenugasan = (SP.S.penugasan || []).some(function (p) {
+        return p.kelas_id === k.id && p.tahun_ajaran === t[0] && p.semester === t[1];
+      });
+      return matchAngkatan || adaPenugasan;
+    });
+    return klasAktif.sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }).map(function (k) {
       const tk = SP.tutorKelas(k.id, t[0], t[1]);
       return { k: k, arab: tk.ARAB, ing: tk.INGGRIS, valid: !!(tk.ARAB && tk.INGGRIS) };
     });
@@ -150,10 +161,30 @@
   };
   SP.parts.pguKelas = function () {
     const t = semTerpilih();
-    const rows = SP.S.kelas.slice().sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    const taAngkatan = t[0].slice(0, 4);
+    const u = SP.ui.pgu;
+    if (u.angkatan === undefined) u.angkatan = taAngkatan;
+
+    const semuaAngkatan = {};
+    SP.S.kelas.forEach(function (k) { if (k.angkatan) semuaAngkatan[k.angkatan] = true; });
+    if (taAngkatan) semuaAngkatan[taAngkatan] = true;
+    const listAngkatan = Object.keys(semuaAngkatan).sort().reverse();
+
+    let rows = SP.S.kelas.slice();
+    if (u.angkatan) {
+      rows = rows.filter(function (k) { return String(k.angkatan) === String(u.angkatan); });
+    }
+    rows.sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
     const jml = function (id) { const s = {}; SP.S.km.forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1] && r.jenis !== 'PENGULANGAN') s[r.nim] = true; }); return Object.keys(s).length; };
-    return '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th class="right">Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
-      (rows.length ? rows.map(function (k) { return '<tr><td data-l="Kelas"><b>' + esc(k.nama) + '</b></td><td data-l="Prodi">' + esc(k.prodi || '—') + '</td><td data-l="Angkatan" class="num">' + esc(k.angkatan) + '</td><td data-l="Mahasiswa" class="right num">' + jml(k.id) + '</td><td data-l="Status">' + SP.badge(k.status === 'ARSIP' ? 'ARSIP' : 'AKTIF') + '</td><td><div class="row gap4"><button class="btn btn-outline btn-sm" data-act="pguEditKelas" data-id="' + esc(k.id) + '">' + SP.icon('pencil', 'sm') + ' Edit</button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="pguHapusKelas" data-id="' + esc(k.id) + '" title="Hapus Kelas ' + esc(k.nama) + '">' + SP.icon('trash', 'sm') + ' Hapus</button></div></td></tr>'; }).join('') : '<tr><td colspan="6">' + SP.kosong('book', 'Belum ada kelas', 'Klik “Tambah Kelas Baru”.') + '</td></tr>') + '</tbody></table></div>';
+
+    const toolbarAngkatan = '<div class="row between wrap mb12 gap8" style="align-items:center">' +
+      '<div class="row gap8" style="align-items:center"><label style="font-size:13px;font-weight:600">Filter Angkatan:</label><select class="select" style="width:auto;height:34px;padding:0 12px" data-ch="pguAngkatan">' +
+      '<option value="" ' + (!u.angkatan ? 'selected' : '') + '>Semua Angkatan</option>' +
+      listAngkatan.map(function (a) { return '<option value="' + a + '" ' + (String(u.angkatan) === String(a) ? 'selected' : '') + '>Angkatan ' + a + (a === taAngkatan ? ' (Tahun Ini)' : '') + '</option>'; }).join('') +
+      '</select></div><span class="muted" style="font-size:12.5px">Menampilkan <b>' + rows.length + '</b> kelas' + (u.angkatan ? ' Angkatan ' + esc(u.angkatan) : '') + '</span></div>';
+
+    return toolbarAngkatan + '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th class="right">Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+      (rows.length ? rows.map(function (k) { return '<tr><td data-l="Kelas"><b>' + esc(k.nama) + '</b></td><td data-l="Prodi">' + esc(k.prodi || '—') + '</td><td data-l="Angkatan" class="num">' + esc(k.angkatan) + '</td><td data-l="Mahasiswa" class="right num">' + jml(k.id) + '</td><td data-l="Status">' + SP.badge(k.status === 'ARSIP' ? 'ARSIP' : 'AKTIF') + '</td><td><div class="row gap4"><button class="btn btn-outline btn-sm" data-act="pguEditKelas" data-id="' + esc(k.id) + '">' + SP.icon('pencil', 'sm') + ' Edit</button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="pguHapusKelas" data-id="' + esc(k.id) + '" title="Hapus Kelas ' + esc(k.nama) + '">' + SP.icon('trash', 'sm') + ' Hapus</button></div></td></tr>'; }).join('') : '<tr><td colspan="6">' + SP.kosong('book', 'Belum ada kelas untuk angkatan ini', 'Klik “Tambah Kelas Baru” untuk membuat kelas pada angkatan ini.') + '</td></tr>') + '</tbody></table></div>';
   };
   SP.parts.pguMatriks = function () {
     const m = matriks(), t = semTerpilih();
@@ -189,7 +220,13 @@
   SP.changes.pguBahasa = function (el) { SP.ui.pgu.bahasa = el.value; SP.ui.pgu.page = 1; SP.refresh('pguTabel'); };
   SP.changes.pguStatus = function (el) { SP.ui.pgu.status = el.value; SP.ui.pgu.page = 1; SP.refresh('pguTabel'); };
   SP.changes.pguUrut = function (el) { SP.ui.pgu.urut = el.value; SP.refresh('pguTabel'); };
-  SP.changes.pguSem = function (el) { SP.ui.pgu.sem = el.value; SP.renderUlang(); };
+  SP.changes.pguSem = function (el) {
+    SP.ui.pgu.sem = el.value;
+    const semTa = el.value.split('|')[0];
+    if (semTa) SP.ui.pgu.angkatan = semTa.slice(0, 4);
+    SP.renderUlang();
+  };
+  SP.changes.pguAngkatan = function (el) { SP.ui.pgu.angkatan = el.value; SP.refresh('pguKelas'); };
   SP.actions.pguHal = function (el) { SP.ui.pgu.page = Number(el.dataset.p); SP.refresh('pguTabel'); };
   SP.actions.pguUnduh = function () { SP.unduhCsv('daftar-tutor.csv', ['Nama', 'Email', 'NIP', 'Peran', 'Bahasa', 'Izin Cetak', 'Status'], SP.S.pengguna.map(function (x) { return [x.nama, x.email, x.nip, x.peran, x.bahasa, x.peran === 'SUPERADMIN' || x.izin_cetak === '1' ? 'Ya' : 'Tidak', x.status]; })); };
 
@@ -234,7 +271,10 @@
   SP.actions.pguTambahTutor = function () { formTutor(null); };
   SP.actions.pguEditTutor = function (el) { formTutor(SP.X.user[el.dataset.email]); };
   function formKelas(k) {
-    const baru = !k; k = k || { status: 'AKTIF', angkatan: (SP.set().tahun_ajaran_aktif || '').slice(0, 4) };
+    const t = semTerpilih();
+    const taAngkatan = t[0].slice(0, 4);
+    const baru = !k;
+    k = k || { status: 'AKTIF', angkatan: (SP.ui.pgu && SP.ui.pgu.angkatan) || taAngkatan || (SP.set().tahun_ajaran_aktif || '').slice(0, 4) };
     const h = SP.modal({
       judul: baru ? 'Tambah Kelas Baru' : 'Ubah Kelas', lebar: 480,
       isi: '<div class="stack"><div class="field"><label for="fk-n">Nama kelas <span class="req">*</span></label><input id="fk-n" class="input" value="' + esc(k.nama || '') + '" placeholder="mis. PAI A"></div><div class="field"><label for="fk-p">Program studi</label><input id="fk-p" class="input" value="' + esc(k.prodi || '') + '" placeholder="mis. Pendidikan Agama Islam"></div>' +

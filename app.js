@@ -323,7 +323,7 @@
       const mh = SP.S.mahasiswa.filter(function (m) { return (m.nim + ' ' + m.nama).toLowerCase().indexOf(q) >= 0; }).slice(0, 6);
       const kl = SP.S.kelas.filter(function (k) { return k.nama.toLowerCase().indexOf(q) >= 0; }).slice(0, 4);
       box.innerHTML = '<div class="sr-box">' + (mh.length ? '<div class="sr-h">Mahasiswa</div>' + mh.map(function (m) { return '<button class="sr-item" data-act="cariMhs" data-nim="' + esc(m.nim) + '"><span class="avatar sm">' + esc(SP.inisial(m.nama)) + '</span><span><b>' + esc(m.nama) + '</b><br><small class="mono muted">' + esc(m.nim) + '</small></span></button>'; }).join('') : '') +
-        (kl.length ? '<div class="sr-h">Kelas</div>' + kl.map(function (k) { return '<button class="sr-item" data-act="cariKelas" data-id="' + esc(k.id) + '"><span class="avatar sm lt">' + SP.icon('book', 'sm') + '</span><span><b>' + esc(k.nama) + '</b><br><small class="muted">' + esc(k.prodi || '') + '</small></span></button>'; }).join('') : '') +
+        (kl.length ? '<div class="sr-h">Kelas</div>' + kl.map(function (k) { return '<button class="sr-item" data-act="cariKelas" data-id="' + esc(k.id) + '"><span class="avatar sm lt">' + SP.icon('book', 'sm') + '</span><span><b>' + esc(k.nama) + '</b>' + (k.angkatan ? ' <small class="muted">(Angkatan ' + esc(k.angkatan) + ')</small>' : '') + '<br><small class="muted">' + esc(k.prodi || '') + '</small></span></button>'; }).join('') : '') +
         (!mh.length && !kl.length ? '<div class="muted" style="padding:12px">Tidak ditemukan.</div>' : '') + '</div>';
     }, 120));
   }

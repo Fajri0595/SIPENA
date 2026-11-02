@@ -19,8 +19,14 @@
 
   function kelasImporIzin() {
     const out = {};
-    if (SP.isAdmin()) SP.S.kelas.filter(function (k) { return k.status !== 'ARSIP'; }).forEach(function (k) { out[k.nama.toLowerCase()] = k; });
-    else SP.penugasanAktifSaya().forEach(function (p) { const k = SP.X.kelas[p.kelas_id]; if (k && SP.peran(p)) out[k.nama.toLowerCase()] = k; });
+    const catat = function (k) {
+      if (!k) return;
+      const low = k.nama.toLowerCase();
+      out[low + '|' + k.angkatan] = k;
+      if (!out[low]) out[low] = k;
+    };
+    if (SP.isAdmin()) SP.S.kelas.filter(function (k) { return k.status !== 'ARSIP'; }).forEach(catat);
+    else SP.penugasanAktifSaya().forEach(function (p) { const k = SP.X.kelas[p.kelas_id]; if (k && SP.peran(p)) catat(k); });
     return out;
   }
   function validasi(rowsMentah) {
@@ -35,16 +41,17 @@
     rowsMentah.slice(1).forEach(function (r, i) {
       const o = { baris: i + 2, nim: String(r[idx.nim] || '').trim(), nama: String(r[idx.nama] || '').trim(), email: String(r[idx.email] || '').trim().toLowerCase(), kelas: String(r[idx.kelas] || '').trim(), angkatan: String(r[idx.angkatan] || '').trim() };
       let catatan = '', status = 'VALID';
+      const kls = izin[o.kelas.toLowerCase() + '|' + o.angkatan] || izin[o.kelas.toLowerCase()];
       if (!/^\d{5,20}$/.test(o.nim)) { status = 'ERROR'; catatan = 'Format NIM tidak valid (hanya angka, 5–20 digit)'; }
       else if (!o.nama || o.nama.length > 120) { status = 'ERROR'; catatan = 'Nama kosong / terlalu panjang'; }
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.email)) { status = 'ERROR'; catatan = o.email ? 'Format email salah' : 'Email kosong'; }
       else if (!/^\d{4}$/.test(o.angkatan)) { status = 'ERROR'; catatan = 'Angkatan harus 4 digit tahun'; }
-      else if (!izin[o.kelas.toLowerCase()]) { status = 'ERROR'; catatan = 'Kelas "' + o.kelas + '" tidak ditemukan / bukan penugasan aktif Anda'; }
+      else if (!kls) { status = 'ERROR'; catatan = 'Kelas "' + o.kelas + '"' + (o.angkatan ? ' Angkatan ' + o.angkatan : '') + ' tidak ditemukan / bukan penugasan aktif Anda'; }
       else if (vis[o.nim]) { status = 'ERROR'; catatan = 'NIM ganda di berkas (baris ' + vis[o.nim] + ')'; }
       else if (ada[o.nim]) {
         const k = SP.X.kelas[ada[o.nim].kelas_id];
-        if (k && k.nama.toLowerCase() === o.kelas.toLowerCase()) { status = 'SKIP'; catatan = 'Sudah terdaftar di kelas ini'; }
-        else { status = 'ERROR'; catatan = 'NIM sudah terdaftar di kelas ' + (k ? k.nama : '?') + ' (gunakan Pindah Kelas)'; }
+        if (k && k.id === kls.id) { status = 'SKIP'; catatan = 'Sudah terdaftar di kelas ini'; }
+        else { status = 'ERROR'; catatan = 'NIM sudah terdaftar di kelas ' + (k ? k.nama + (k.angkatan ? ' (' + k.angkatan + ')' : '') : '?') + ' (gunakan Pindah Kelas)'; }
       } else catatan = 'Format sesuai';
       vis[o.nim] = vis[o.nim] || o.baris;
       o.status = status; o.catatan = catatan; baris.push(o);
@@ -222,8 +229,16 @@
       return SP.toast('Tidak ada kelas aktif yang tersedia untuk penambahan mahasiswa.', 'warn');
     }
 
+    daftarKelas.sort(function (a, b) {
+      const aMatch = String(a.angkatan) === String(thDefault) ? 1 : 0;
+      const bMatch = String(b.angkatan) === String(thDefault) ? 1 : 0;
+      if (bMatch !== aMatch) return bMatch - aMatch;
+      return a.nama < b.nama ? -1 : 1;
+    });
+
     const opsiKelas = daftarKelas.map(function (k) {
-      return '<option value="' + esc(k.id) + '" ' + (k.id === kelasTerpilih ? 'selected' : '') + '>' + esc(k.nama) + (k.prodi ? ' (' + esc(k.prodi) + ')' : '') + '</option>';
+      const tagAngk = k.angkatan ? ' [Angkatan ' + esc(k.angkatan) + ']' : '';
+      return '<option value="' + esc(k.id) + '" ' + (k.id === kelasTerpilih ? 'selected' : '') + '>' + esc(k.nama) + tagAngk + (k.prodi ? ' (' + esc(k.prodi) + ')' : '') + '</option>';
     }).join('');
 
     SP.modal({

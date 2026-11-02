@@ -101,21 +101,51 @@
   };
   SP.actions.mengAtur = function (el) {
     const r = SP.S.pengulangan.filter(function (x) { return x.id === el.dataset.id; })[0], m = SP.X.mhs[r.nim], bahasa = SP.bahasaProgram(r.program);
-    const opsi = SP.S.penugasan.filter(function (p) { return p.tahun_ajaran === r.ta_target && p.semester === r.semester_target && p.bahasa === bahasa && p.status === 'AKTIF'; });
+    const s = SP.set();
+    const taAktif = s.tahun_ajaran_aktif || '';
+    const semAktif = s.semester_aktif || '';
+
+    // Ambil penugasan aktif tutor serumpun bahasa
+    const semuaPenugasan = (SP.S.penugasan || []).filter(function (p) {
+      return p.bahasa === bahasa && p.status === 'AKTIF' && SP.X.kelas[p.kelas_id];
+    });
+
+    // Urutkan prioritas:
+    // 1. Penugasan pada semester aktif saat ini (paling relevan saat admin berganti semester)
+    // 2. Penugasan pada semester target bawaan
+    // 3. Penugasan aktif lainnya
+    semuaPenugasan.sort(function (a, b) {
+      const pA = (a.tahun_ajaran === taAktif && a.semester === semAktif) ? 3 : (a.tahun_ajaran === r.ta_target && a.semester === r.semester_target ? 2 : 1);
+      const pB = (b.tahun_ajaran === taAktif && b.semester === semAktif) ? 3 : (b.tahun_ajaran === r.ta_target && b.semester === r.semester_target ? 2 : 1);
+      if (pB !== pA) return pB - pA;
+      return (SP.kelasNama(a.kelas_id) < SP.kelasNama(b.kelas_id)) ? -1 : 1;
+    });
+
     const h = SP.modal({
-      judul: 'Atur Kelas Ulang', lebar: 520,
-      isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br><span class="muted">Mengulang <b>' + esc(SP.PROG_LABEL[r.program]) + '</b> pada ' + esc(SP.targetLabel(r)) + '</span></p>' +
-        (opsi.length ? '<div class="field"><label for="ak-k">Kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' tersedia)</label><select id="ak-k" class="select">' + opsi.map(function (p) { return '<option value="' + esc(p.kelas_id) + '">' + esc(SP.kelasNama(p.kelas_id) + ' — tutor ' + SP.namaUser(p.tutor_email)) + '</option>'; }).join('') + '</select></div>'
-          : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan', teks: 'Belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk ' + esc(SP.targetLabel(r)) + '. Buat penugasan terlebih dahulu di <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.' })),
-      footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' + (opsi.length ? '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">Jadwalkan</button>' : '')
+      judul: 'Atur Kelas Ulang', lebar: 560,
+      isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br><span class="muted">Program yang diulang: <b>' + esc(SP.PROG_LABEL[r.program]) + '</b></span></p>' +
+        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' aktif)</label><select id="ak-k" class="select">' +
+          semuaPenugasan.map(function (p) {
+            const isAktif = (p.tahun_ajaran === taAktif && p.semester === semAktif);
+            const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
+            return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '">' +
+              esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
+              '</option>';
+          }).join('') + '</select><div class="help mt4">Menampilkan kelas dengan penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang tersedia di semester aktif maupun semester target.</div></div>'
+          : SP.callout({ tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan', teks: 'Belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' pada semester aktif (' + esc(SP.semLabel(semAktif) + ' ' + taAktif) + '). Bentuk kelas dan atur penugasan tutor terlebih dahulu di <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.' })),
+      footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' + (semuaPenugasan.length ? '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">Jadwalkan</button>' : '')
     });
     h.el.dataset.rid = r.id;
   };
   SP.actions.mengSimpan = async function (el) {
     el.disabled = true;
     try {
-      const res = await SP.api('aturKelasUlang', { pengulangan_id: el.dataset.id, kelas_id: SP.$('#ak-k').value });
-      SP.terapkanHasil(res); SP.simpanCache(); SP.tutupModal(); SP.toast('Mahasiswa dijadwalkan ke kelas pengulangan.'); SP.renderUlang();
+      const sel = SP.$('#ak-k');
+      const opt = sel ? sel.options[sel.selectedIndex] : null;
+      const kelasId = sel ? sel.value : '';
+      const pgId = opt ? opt.dataset.pg : '';
+      const res = await SP.api('aturKelasUlang', { pengulangan_id: el.dataset.id, kelas_id: kelasId, penugasan_id: pgId });
+      SP.terapkanHasil(res); SP.simpanCache(); SP.tutupModal(); SP.toast('Mahasiswa berhasil dijadwalkan ke kelas pengulangan.'); SP.renderUlang();
     } catch (e) { el.disabled = false; SP.toast(esc(e.message), 'err', 8000); }
   };
   SP.actions.notifSatu = function (el) {
