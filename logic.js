@@ -74,6 +74,41 @@
     S.pengulangan = d.pengulangan || []; S.notif = d.notifikasi || []; S.sert = d.sertifikat || []; S.mutasi = d.mutasi || [];
     S.meta = d.meta || {};
     if (S.meta.waktu) { const t = Date.parse(String(S.meta.waktu).replace(' ', 'T') + '+07:00'); if (!isNaN(t)) SP.selisihWaktu = t - Date.now(); }
+    try {
+      const patches = JSON.parse(localStorage.getItem('sipena_meng_patch') || '{}');
+      Object.keys(patches).forEach(function (pid) {
+        const pt = patches[pid];
+        const rec = S.pengulangan.filter(function (x) { return x.id === pid; })[0];
+        if (!rec || (rec.status !== 'WAJIB_MENGULANG' && rec.status !== 'SEDANG_MENGULANG')) return;
+        if (rec.ta_target === pt.ta_target && rec.semester_target === pt.semester_target && (rec.kelas_ulang_id || '') === (pt.kelas_ulang_id || '')) {
+          delete patches[pid];
+          return;
+        }
+        rec.ta_target = pt.ta_target;
+        rec.semester_target = pt.semester_target;
+        rec.kelas_ulang_id = pt.kelas_ulang_id || '';
+        rec.status = pt.kelas_ulang_id ? 'SEDANG_MENGULANG' : 'WAJIB_MENGULANG';
+        S.km = S.km.filter(function (km) {
+          return !(km.jenis === 'PENGULANGAN' && km.nim === rec.nim && km.program === rec.program);
+        });
+        if (pt.kelas_ulang_id) {
+          S.km.push({
+            id: 'E-' + rec.nim + '-' + pt.ta_target + '-' + pt.semester_target + '-' + rec.program,
+            nim: rec.nim,
+            kelas_id: pt.kelas_ulang_id,
+            tahun_ajaran: pt.ta_target,
+            semester: pt.semester_target,
+            jenis: 'PENGULANGAN',
+            program: rec.program,
+            kelas_asal: ''
+          });
+        }
+        if (pt.penugasan && !S.penugasan.some(function (p) { return p.id === pt.penugasan.id; })) {
+          S.penugasan.push(pt.penugasan);
+        }
+      });
+      localStorage.setItem('sipena_meng_patch', JSON.stringify(patches));
+    } catch (e) { /* abaikan */ }
     SP.indeks();
   };
   SP.dataMentah = function () {
@@ -258,6 +293,7 @@
     if (res.pengulangan) gabung(S.pengulangan, [].concat(res.pengulangan), function (x) { return x.id; });
     if (res.notifikasi) res.notifikasi.forEach(function (n) { if (!S.notif.some(function (x) { return x.id === n.id; })) S.notif.push(n); });
     if (res.kelas) gabung(S.kelas, [].concat(res.kelas), function (x) { return x.id; });
+    if (res.penugasan) gabung(S.penugasan, [].concat(res.penugasan), function (x) { return x.id; });
     if (res.hapusKelasMahasiswaIds) {
       const rm = {};
       [].concat(res.hapusKelasMahasiswaIds).forEach(function (id) { rm[id] = true; });
