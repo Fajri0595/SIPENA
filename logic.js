@@ -15,9 +15,12 @@
   SP.bahasaProgram = function (p) { return p.indexOf('ARB') === 0 ? 'ARAB' : 'INGGRIS'; };
   SP.bahasaLabel = function (b) { return b === 'ARAB' ? 'Bahasa Arab' : b === 'INGGRIS' ? 'Bahasa Inggris' : '—'; };
   SP.taBerikut = function (ta) { const a = String(ta).split('/').map(Number); return (a[0] + 1) + '/' + (a[1] + 1); };
-  SP.kodeUrutSem = function (ta, sem) {
+  SP.tahunAwal = function (ta) {
     const m = String(ta || '').match(/\d{4}/);
-    const th = m ? parseInt(m[0], 10) : 0;
+    return m ? parseInt(m[0], 10) : 0;
+  };
+  SP.kodeUrutSem = function (ta, sem) {
+    const th = SP.tahunAwal(ta);
     return th * 2 + (String(sem || '').toUpperCase() === 'GENAP' ? 1 : 0);
   };
   SP.urutSemAsal = function (r) {

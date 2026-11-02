@@ -106,12 +106,20 @@
     const semAktif = s.semester_aktif || '';
     const urutAsal = SP.urutSemAsal(r);
     const targetSem = SP.targetSemDefinitif(r);
+    const thAsal = SP.tahunAwal(r.ta_asal) || Math.floor(urutAsal / 2);
+    const thAktif = SP.tahunAwal(taAktif);
+    // Tahun ajaran tujuan WAJIB tahun ajaran baru (> thAsal) dan tidak di masa lalu (>= thAktif)
+    const thMin = Math.max(thAsal + 1, thAktif || (thAsal + 1));
+    const urutMin = SP.kodeUrutSem(taAktif, semAktif);
 
-    // Ambil penugasan aktif tutor serumpun bahasa HANYA untuk semester berikutnya atau tahun ajaran baru (bukan tahun ajaran yang pernah diampu)
+    // Ambil penugasan aktif tutor serumpun bahasa HANYA untuk tahun ajaran baru (bukan tahun ajaran sebelumnya / yang pernah diampu)
     const semuaPenugasan = (SP.S.penugasan || []).filter(function (p) {
       if (p.bahasa !== bahasa || p.status !== 'AKTIF' || !SP.X.kelas[p.kelas_id]) return false;
+      const thP = SP.tahunAwal(p.tahun_ajaran);
+      if (thP < thMin) return false;
       const urutP = SP.kodeUrutSem(p.tahun_ajaran, p.semester);
-      return urutP > urutAsal;
+      if (urutMin > 0 && urutP < urutMin) return false;
+      return true;
     });
 
     // Urutkan prioritas:
@@ -134,17 +142,17 @@
       isi: '<p class="mb16"><b>' + esc(m.nama) + '</b> <span class="mono muted">(' + esc(m.nim) + ')</span><br>' +
         '<span class="muted">Program yang diulang: <b>' + esc(SP.PROG_LABEL[r.program]) + '</b></span><br>' +
         '<span class="muted">Semester asal gagal: <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b></span></p>' +
-        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' di semester berikutnya / tahun ajaran baru)</label><select id="ak-k" class="select">' +
+        (semuaPenugasan.length ? '<div class="field"><label for="ak-k">Pilih kelas tujuan (tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' di tahun ajaran baru)</label><select id="ak-k" class="select">' +
           semuaPenugasan.map(function (p) {
             const isAktif = (p.tahun_ajaran === taAktif && p.semester === semAktif);
             const tagSem = SP.semLabel(p.semester) + ' ' + p.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
             return '<option value="' + esc(p.kelas_id) + '" data-pg="' + esc(p.id) + '">' +
               esc(SP.kelasNama(p.kelas_id) + ' — Tutor ' + SP.namaUser(p.tutor_email) + ' (' + tagSem + ')') +
               '</option>';
-          }).join('') + '</select><div class="help mt4">Hanya menampilkan kelas &amp; penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk semester berikutnya atau tahun ajaran baru (bukan tahun ajaran yang pernah diampu).</div></div>'
+          }).join('') + '</select><div class="help mt4">Hanya menampilkan kelas &amp; penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' untuk tahun ajaran baru (bukan tahun ajaran sebelumnya).</div></div>'
           : SP.callout({
-              tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan di semester berikutnya',
-              teks: 'Mahasiswa gagal pada <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b> dan hanya dapat dijadwalkan pada semester berikutnya atau tahun ajaran baru (' + esc(SP.semLabel(targetSem.sem) + ' ' + targetSem.ta) + ').<br><br>Saat ini belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang aktif setelah ' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '. Pastikan Anda telah membuat kelas dan penugasan tutor untuk semester baru melalui menu <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.'
+              tipe: 'warn', ikon: 'alert', judul: 'Belum ada kelas tujuan di tahun ajaran baru',
+              teks: 'Mahasiswa gagal pada <b>' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</b> dan hanya dapat dijadwalkan pada tahun ajaran baru (' + esc(SP.semLabel(targetSem.sem) + ' ' + targetSem.ta) + ').<br><br>Saat ini belum ada penugasan tutor ' + (bahasa === 'ARAB' ? 'Arab' : 'Inggris') + ' yang aktif di tahun ajaran baru. Pastikan Anda telah membuat kelas dan penugasan tutor untuk tahun ajaran baru melalui menu <a href="#/pengguna"><b>Kelola Pengguna &amp; Kelas</b></a>.'
             })),
       footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button>' + (semuaPenugasan.length ? '<button class="btn btn-primary" data-act="mengSimpan" data-id="' + esc(r.id) + '">Jadwalkan</button>' : '')
     });
