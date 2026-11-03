@@ -176,7 +176,31 @@
       rows = rows.filter(function (k) { return String(k.angkatan) === String(u.angkatan); });
     }
     rows.sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
-    const jml = function (id) { const s = {}; SP.S.km.forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1] && r.jenis !== 'PENGULANGAN') s[r.nim] = true; }); return Object.keys(s).length; };
+    const jmlSem = function (id) {
+      const s = {};
+      (SP.S.km || []).forEach(function (r) {
+        if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1]) s[r.nim] = true;
+      });
+      return Object.keys(s).length;
+    };
+    const jmlTotal = function (id) {
+      const s = {};
+      (SP.S.km || []).forEach(function (r) {
+        if (r.kelas_id === id) s[r.nim] = true;
+      });
+      return Object.keys(s).length;
+    };
+    const hitungMahasiswa = function (id) {
+      const semN = jmlSem(id);
+      const totN = jmlTotal(id);
+      if (totN > semN && semN > 0) {
+        return semN + ' <span class="muted" style="font-size:12px;font-weight:normal">(' + totN + ' total)</span>';
+      }
+      if (totN > 0 && semN === 0) {
+        return '0 <span class="muted" style="font-size:12px;font-weight:normal">(' + totN + ' total riwayat)</span>';
+      }
+      return semN;
+    };
 
     const toolbarKelas = '<div class="toolbar mb16">' +
       '<div class="field" style="min-width:240px;max-width:320px"><label for="pg-sem">Semester Roster</label><select id="pg-sem" class="select" data-ch="pguSem">' +
@@ -190,8 +214,8 @@
       '<div class="muted" style="font-size:13px;align-self:flex-end;padding-bottom:10px">Menampilkan <b>' + rows.length + '</b> kelas' + (u.angkatan ? ' (Angkatan ' + esc(u.angkatan) + ')' : '') + '</div>' +
       '</div>';
 
-    return toolbarKelas + '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th class="right">Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
-      (rows.length ? rows.map(function (k) { return '<tr><td data-l="Kelas"><b>' + esc(k.nama) + '</b></td><td data-l="Prodi">' + esc(k.prodi || '—') + '</td><td data-l="Angkatan" class="num">' + esc(k.angkatan) + '</td><td data-l="Mahasiswa" class="right num">' + jml(k.id) + '</td><td data-l="Status">' + SP.badge(k.status === 'ARSIP' ? 'ARSIP' : 'AKTIF') + '</td><td><div class="row gap4"><button class="btn btn-outline btn-sm" data-act="pguEditKelas" data-id="' + esc(k.id) + '">' + SP.icon('pencil', 'sm') + ' Edit</button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="pguHapusKelas" data-id="' + esc(k.id) + '" title="Hapus Kelas ' + esc(k.nama) + '">' + SP.icon('trash', 'sm') + ' Hapus</button></div></td></tr>'; }).join('') : '<tr><td colspan="6">' + SP.kosong('book', 'Belum ada kelas untuk angkatan ini', 'Klik “Tambah Kelas Baru” untuk membuat kelas pada angkatan ini.') + '</td></tr>') + '</tbody></table></div>';
+    return toolbarKelas + '<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>Nama kelas</th><th>Program studi</th><th>Angkatan</th><th>Mahasiswa (' + esc(SP.semLabel(t[1]) + ' ' + t[0]) + ')</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
+      (rows.length ? rows.map(function (k) { return '<tr><td data-l="Kelas"><b>' + esc(k.nama) + '</b></td><td data-l="Prodi">' + esc(k.prodi || '—') + '</td><td data-l="Angkatan" class="num">' + esc(k.angkatan) + '</td><td data-l="Mahasiswa" class="num">' + hitungMahasiswa(k.id) + '</td><td data-l="Status">' + SP.badge(k.status === 'ARSIP' ? 'ARSIP' : 'AKTIF') + '</td><td><div class="row gap4"><button class="btn btn-outline btn-sm" data-act="pguEditKelas" data-id="' + esc(k.id) + '">' + SP.icon('pencil', 'sm') + ' Edit</button><button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:rgba(220,38,38,0.35)" data-act="pguHapusKelas" data-id="' + esc(k.id) + '" title="Hapus Kelas ' + esc(k.nama) + '">' + SP.icon('trash', 'sm') + ' Hapus</button></div></td></tr>'; }).join('') : '<tr><td colspan="6">' + SP.kosong('book', 'Belum ada kelas untuk angkatan ini', 'Klik “Tambah Kelas Baru” untuk membuat kelas pada angkatan ini.') + '</td></tr>') + '</tbody></table></div>';
   };
   SP.parts.pguMatriks = function () {
     const m = matriks(), t = semTerpilih();
@@ -378,7 +402,7 @@
     const kels = SP.S.kelas.filter(function (k) { return k.status !== 'ARSIP' && (!cur || k.id !== cur.id); });
     if (!u.tujuan || !kels.some(function (k) { return k.id === u.tujuan; })) u.tujuan = kels[0] ? kels[0].id : '';
     const tk = u.tujuan ? SP.tutorKelas(u.tujuan, t[0], t[1]) : {};
-    const jumlah = function (id) { const q = {}; SP.S.km.forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1] && r.jenis !== 'PENGULANGAN') q[r.nim] = true; }); return Object.keys(q).length; };
+    const jumlah = function (id) { const q = {}; (SP.S.km || []).forEach(function (r) { if (r.kelas_id === id && r.tahun_ajaran === t[0] && r.semester === t[1]) q[r.nim] = true; }); return Object.keys(q).length; };
     const kel = m ? SP.kelulusan(m.nim) : null;
     const sem = SP.opsiSemester().map(function (o) { return [o.v, o.label]; });
     return '<div class="grid-main" style="grid-template-columns:1fr 1.3fr"><div class="card card-p"><div class="row between mb16"><div class="row gap8"><span class="stepno">1</span><h2 class="h3">Pilih Mahasiswa</h2></div><span class="cap">Identitas target</span></div>' +
