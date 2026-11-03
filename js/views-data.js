@@ -349,7 +349,15 @@
   SP.parts.kelStat = function () {
     const semua = SP.barisKelulusan(), f = kelBaris();
     const c = { l: 0, w: 0, b: 0 }; f.forEach(function (b) { if (b.akhir === 'LULUS') c.l++; else if (b.akhir === 'WAJIB_MENGULANG') c.w++; else c.b++; });
-    return SP.stat({ label: 'Total mahasiswa terdaftar', nilai: SP.n(f.length), satuan: f.length === semua.length ? 'Semua mahasiswa' : 'Hasil filter', ikon: 'users', progress: 100 }) +
+    const pctTotal = semua.length ? Math.round((f.length / semua.length) * 100) : 100;
+    return SP.stat({
+      label: 'Total Mahasiswa',
+      nilai: SP.n(f.length),
+      ikon: 'users',
+      progress: pctTotal,
+      foot: '<span>Persentase</span><b>' + (f.length === semua.length ? '100%' : SP.pctStr(SP.pct(f.length, semua.length))) + '</b>',
+      title: f.length === semua.length ? 'Total semua mahasiswa terdaftar' : 'Hasil filter: ' + SP.n(f.length) + ' dari ' + SP.n(semua.length) + ' mahasiswa'
+    }) +
       SP.stat({ label: 'Lulus penuh (yudisium)', nilai: SP.n(c.l), ikon: 'checkCircle', warna: 'g', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.l, f.length)) + '</b>', progress: SP.pct(c.l, f.length) || 0 }) +
       SP.stat({ label: 'Wajib mengulang', nilai: SP.n(c.w), ikon: 'rotate', warna: 'o', kelas: 'warn', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.w, f.length)) + '</b>', progress: SP.pct(c.w, f.length) || 0, progWarna: 'o' }) +
       SP.stat({ label: 'Nilai belum lengkap', nilai: SP.n(c.b), ikon: 'clock', warna: 'n', foot: '<span>Persentase</span><b>' + SP.pctStr(SP.pct(c.b, f.length)) + '</b>', progress: SP.pct(c.b, f.length) || 0, progWarna: 'g' });

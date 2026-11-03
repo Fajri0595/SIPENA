@@ -192,9 +192,22 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 .banner .tx { flex: 1; font-size: 14px; } .banner .tx b { margin-right: 6px; }
 
 /* ---------- Stat & progress ---------- */
-.stat { padding: 20px; position: relative; transition: transform .22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .22s cubic-bezier(0.16, 1, 0.3, 1); }
+.stat {
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: transform .22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .22s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .stat:hover { transform: translateY(-2px); box-shadow: var(--sh2); }
-.stat .cap { margin-bottom: 8px; display: block; padding-right: 56px; }
+.stat .cap {
+  margin-bottom: 8px;
+  display: block;
+  min-height: 28px;
+  line-height: 1.35;
+  padding-right: 52px;
+}
 .stat .val { font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
 .stat .val small { font-size: 14px; font-weight: 500; color: var(--text2); letter-spacing: 0; margin-left: 4px; }
 .stat .ico { position: absolute; right: 18px; top: 18px; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; background: var(--callout); color: var(--primary); transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1); }

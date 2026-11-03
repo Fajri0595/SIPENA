@@ -139,7 +139,7 @@
       (o.aksi ? '<div class="ph-act">' + o.aksi + '</div>' : '') + '</div>';
   };
   SP.stat = function (o) {
-    return '<div class="card stat ' + (o.kelas || '') + '"><span class="cap">' + SP.esc(o.label) + '</span>' +
+    return '<div class="card stat ' + (o.kelas || '') + '"' + (o.title ? ' title="' + SP.esc(o.title) + '"' : '') + '><span class="cap">' + SP.esc(o.label) + '</span>' +
       (o.ikon ? '<div class="ico ' + (o.warna || '') + '">' + SP.icon(o.ikon, 'lg') + '</div>' : '') +
       '<div class="val num">' + o.nilai + (o.satuan ? '<small>' + SP.esc(o.satuan) + '</small>' : '') + '</div>' +
       (o.progress !== undefined ? '<div class="mt8">' + SP.prog(o.progress, o.progWarna) + '</div>' : '') +
