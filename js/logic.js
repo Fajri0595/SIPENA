@@ -237,7 +237,9 @@
     const infoAkhir = SP.infoPredikatNilai(rataNum, kkm);
     const rataFmt = Number.isInteger(rataNum) ? String(rataNum) : rataNum.toFixed(2).replace(/\.?0+$/, '');
     const frontendBase = (s.frontend_url || (typeof location !== 'undefined' ? location.origin + location.pathname : '')).replace(/\/+$/, '');
-    const urlVerif = frontendBase ? (frontendBase + '/#/verifikasi/' + encodeURIComponent(nomor)) : nomor;
+    const sigHmac = (sert && sert.sig_hmac) ? sert.sig_hmac : (isContoh ? 'a1b2c3d4e5f60718' : '');
+    const qSig = sigHmac ? ('?sig=' + encodeURIComponent(sigHmac)) : '';
+    const urlVerif = frontendBase ? (frontendBase + '/#/verifikasi/' + encodeURIComponent(nomor) + qSig) : (nomor + qSig);
 
     return {
       isContoh: isContoh,
@@ -265,7 +267,9 @@
         jabatan: s.ttd2_jabatan || 'Kepala Pusat Pengembangan Bahasa',
         nip: s.ttd2_nip ? ('NIP. ' + s.ttd2_nip) : ''
       },
-      urlVerifikasi: urlVerif
+      urlVerifikasi: urlVerif,
+      sigHmac: sigHmac,
+      hashPdf: (sert && sert.hash_pdf) || ''
     };
   };
 

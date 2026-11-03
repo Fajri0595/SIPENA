@@ -353,4 +353,169 @@
       img.src = URL.createObjectURL(file);
     });
   };
+
+  // ---------------- Generator QR Code Lokal ISO/IEC 18004 (Tanpa API Eksternal) ----------------
+  SP.qrMatriks = function (teks) {
+    const utf8 = unescape(encodeURIComponent(String(teks || '')));
+    const bytes = [];
+    for (let i = 0; i < utf8.length; i++) bytes.push(utf8.charCodeAt(i));
+    const VTAB = [
+      null,
+      [1, 26, 7, 1, 19, 0, 0, []],
+      [2, 44, 10, 1, 34, 0, 0, [6, 18]],
+      [3, 70, 15, 1, 55, 0, 0, [6, 22]],
+      [4, 100, 20, 1, 80, 0, 0, [6, 26]],
+      [5, 134, 26, 1, 108, 0, 0, [6, 30]],
+      [6, 172, 18, 2, 68, 0, 0, [6, 34]],
+      [7, 196, 20, 2, 78, 0, 0, [6, 22, 38]],
+      [8, 242, 24, 2, 97, 0, 0, [6, 24, 42]],
+      [9, 292, 30, 2, 116, 0, 0, [6, 26, 46]],
+      [10, 346, 18, 2, 68, 2, 69, [6, 28, 50]]
+    ];
+    let ver = 1;
+    for (; ver <= 10; ver++) {
+      const vt = VTAB[ver], cap = (vt[3] * vt[4] + vt[5] * vt[6]) * 8, lb = ver <= 9 ? 8 : 16;
+      if (4 + lb + bytes.length * 8 <= cap) break;
+    }
+    if (ver > 10) ver = 10;
+    const v = VTAB[ver], dataCap = v[3] * v[4] + v[5] * v[6], ecLen = v[2];
+    const bits = [];
+    const pushB = function (val, n) { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    const maxBytes = Math.min(bytes.length, dataCap - (ver <= 9 ? 2 : 3));
+    pushB(4, 4);
+    pushB(maxBytes, ver <= 9 ? 8 : 16);
+    for (let i = 0; i < maxBytes; i++) pushB(bytes[i], 8);
+    for (let i = 0; i < 4 && bits.length < dataCap * 8; i++) bits.push(0);
+    while (bits.length % 8 !== 0) bits.push(0);
+    const dataCw = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      let b = 0;
+      for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j];
+      dataCw.push(b);
+    }
+    for (let p = 0; dataCw.length < dataCap; p++) dataCw.push((p % 2 === 0) ? 0xEC : 0x11);
+
+    const exp = new Array(512), log = new Array(256);
+    let x = 1;
+    for (let i = 0; i < 255; i++) { exp[i] = x; log[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (let i = 255; i < 512; i++) exp[i] = exp[i - 255];
+    const gfMul = function (a, b) { return (a === 0 || b === 0) ? 0 : exp[log[a] + log[b]]; };
+    let gen = [1];
+    for (let i = 0; i < ecLen; i++) {
+      const next = new Array(gen.length + 1).fill(0);
+      for (let j = 0; j < gen.length; j++) {
+        next[j] ^= gen[j];
+        next[j + 1] ^= gfMul(gen[j], exp[i]);
+      }
+      gen = next;
+    }
+    const rsEncode = function (blk) {
+      const rem = new Array(ecLen).fill(0);
+      for (let i = 0; i < blk.length; i++) {
+        const factor = blk[i] ^ rem.shift();
+        rem.push(0);
+        if (factor !== 0) for (let j = 0; j < ecLen; j++) rem[j] ^= gfMul(gen[j + 1], factor);
+      }
+      return rem;
+    };
+
+    const dBlocks = [], eBlocks = [];
+    let offset = 0;
+    for (let b = 0; b < v[3]; b++) { const blk = dataCw.slice(offset, offset + v[4]); offset += v[4]; dBlocks.push(blk); eBlocks.push(rsEncode(blk)); }
+    for (let b = 0; b < v[5]; b++) { const blk = dataCw.slice(offset, offset + v[6]); offset += v[6]; dBlocks.push(blk); eBlocks.push(rsEncode(blk)); }
+    const finalCw = [];
+    const maxD = Math.max(v[4], v[6]);
+    for (let i = 0; i < maxD; i++) for (let b = 0; b < dBlocks.length; b++) if (i < dBlocks[b].length) finalCw.push(dBlocks[b][i]);
+    for (let i = 0; i < ecLen; i++) for (let b = 0; b < eBlocks.length; b++) finalCw.push(eBlocks[b][i]);
+
+    const size = 17 + 4 * ver;
+    const mod = [], isFunc = [];
+    for (let r = 0; r < size; r++) {
+      mod.push(new Array(size).fill(false));
+      isFunc.push(new Array(size).fill(false));
+    }
+    const setF = function (r, c, val) {
+      if (r >= 0 && r < size && c >= 0 && c < size) { mod[r][c] = !!val; isFunc[r][c] = true; }
+    };
+    const drawFinder = function (r0, c0) {
+      for (let dr = -1; dr <= 7; dr++) for (let dc = -1; dc <= 7; dc++) {
+        const dark = (dr >= 0 && dr <= 6 && (dc === 0 || dc === 6)) || (dc >= 0 && dc <= 6 && (dr === 0 || dr === 6)) || (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4);
+        setF(r0 + dr, c0 + dc, dark);
+      }
+    };
+    drawFinder(0, 0); drawFinder(0, size - 7); drawFinder(size - 7, 0);
+    for (let i = 8; i < size - 8; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+    const aligns = v[7];
+    for (let i = 0; i < aligns.length; i++) for (let j = 0; j < aligns.length; j++) {
+      if ((i === 0 && j === 0) || (i === 0 && j === aligns.length - 1) || (i === aligns.length - 1 && j === 0)) continue;
+      const cr = aligns[i], cc = aligns[j];
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        setF(cr + dr, cc + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
+      }
+    }
+    setF(4 * ver + 9, 8, true);
+    for (let i = 0; i <= 8; i++) {
+      if (i !== 6) { setF(8, i, false); setF(i, 8, false); }
+      if (i < 8) { setF(8, size - 1 - i, false); setF(size - 1 - i, 8, false); }
+    }
+    if (ver >= 7) {
+      let rem = ver;
+      for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+      const vBits = (ver << 12) | rem;
+      for (let i = 0; i < 18; i++) {
+        const bit = ((vBits >>> i) & 1) !== 0;
+        const a = size - 11 + (i % 3), b = Math.floor(i / 3);
+        setF(a, b, bit); setF(b, a, bit);
+      }
+    }
+
+    let bitIdx = 0;
+    const totalBits = finalCw.length * 8;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) {
+        for (let j = 0; j < 2; j++) {
+          const c = right - j;
+          const up = ((right + 1) & 2) === 0;
+          const r = up ? size - 1 - vert : vert;
+          if (!isFunc[r][c] && bitIdx < totalBits) {
+            const bit = ((finalCw[bitIdx >>> 3] >>> (7 - (bitIdx & 7))) & 1) !== 0;
+            mod[r][c] = bit;
+            bitIdx++;
+          }
+        }
+      }
+    }
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+      if (!isFunc[r][c] && (r + c) % 2 === 0) mod[r][c] = !mod[r][c];
+    }
+    const fmtBits = 0x77C4;
+    for (let i = 0; i <= 5; i++) setF(8, i, ((fmtBits >>> i) & 1) !== 0);
+    setF(8, 7, ((fmtBits >>> 6) & 1) !== 0);
+    setF(8, 8, ((fmtBits >>> 7) & 1) !== 0);
+    setF(7, 8, ((fmtBits >>> 8) & 1) !== 0);
+    for (let i = 9; i < 15; i++) setF(14 - i, 8, ((fmtBits >>> i) & 1) !== 0);
+    for (let i = 0; i < 8; i++) setF(size - 1 - i, 8, ((fmtBits >>> i) & 1) !== 0);
+    for (let i = 8; i < 15; i++) setF(8, size - 15 + i, ((fmtBits >>> i) & 1) !== 0);
+    setF(size - 8, 8, true);
+    return mod;
+  };
+
+  SP.qrSvg = function (teks, marginOpt) {
+    const mod = SP.qrMatriks(teks);
+    const n = mod.length;
+    const m = marginOpt === undefined ? 1 : marginOpt;
+    const dim = n + m * 2;
+    let d = '';
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (mod[r][c]) d += 'M' + (c + m) + ',' + (r + m) + 'h1v1h-1z';
+      }
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + dim + ' ' + dim + '" shape-rendering="crispEdges"><rect width="' + dim + '" height="' + dim + '" fill="#ffffff"/><path d="' + d + '" fill="#0f291e"/></svg>';
+  };
+
+  SP.qrDataUrl = function (teks, marginOpt) {
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(SP.qrSvg(teks, marginOpt));
+  };
 })();

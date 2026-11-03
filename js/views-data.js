@@ -15,6 +15,7 @@
   SP.ui.impor = SP.ui.impor || { namaFile: '', ukuran: 0, baris: null, hanyaError: false, page: 1, sibuk: false, hasil: null, templateDiunduh: false };
 
   const ALIAS = { nim: ['nim'], nama: ['namalengkap', 'nama', 'namamahasiswa'], email: ['emailmahasiswa', 'email', 'emailgoogle', 'surel'], kelas: ['kelas', 'rombel'], angkatan: ['angkatan', 'tahunmasuk'] };
+  const ALIAS_OPSIONAL = { no_hp: ['nowhatsapp', 'nohp', 'whatsapp', 'wa', 'hp', 'telepon', 'notelp'] };
   function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
   function kelasImporIzin() {
@@ -35,11 +36,12 @@
     Object.keys(ALIAS).forEach(function (k) { idx[k] = head.findIndex(function (h) { return ALIAS[k].indexOf(h) >= 0; }); });
     const hilang = Object.keys(idx).filter(function (k) { return idx[k] < 0; });
     if (hilang.length) return { err: 'Kolom wajib tidak ditemukan: ' + hilang.map(function (k) { return k.toUpperCase(); }).join(', ') + '. Gunakan template CSV resmi.' };
+    const idxHp = head.findIndex(function (h) { return ALIAS_OPSIONAL.no_hp.indexOf(h) >= 0; });
     const izin = kelasImporIzin(), s = SP.set(), ada = {}, vis = {};
     SP.S.km.forEach(function (r) { if (r.tahun_ajaran === s.tahun_ajaran_aktif && r.semester === s.semester_aktif && r.jenis !== 'PENGULANGAN') ada[r.nim] = r; });
     const baris = [];
     rowsMentah.slice(1).forEach(function (r, i) {
-      const o = { baris: i + 2, nim: String(r[idx.nim] || '').trim(), nama: String(r[idx.nama] || '').trim(), email: String(r[idx.email] || '').trim().toLowerCase(), kelas: String(r[idx.kelas] || '').trim(), angkatan: String(r[idx.angkatan] || '').trim() };
+      const o = { baris: i + 2, nim: String(r[idx.nim] || '').trim(), nama: String(r[idx.nama] || '').trim(), email: String(r[idx.email] || '').trim().toLowerCase(), kelas: String(r[idx.kelas] || '').trim(), angkatan: String(r[idx.angkatan] || '').trim(), no_hp: idxHp >= 0 ? String(r[idxHp] || '').trim() : '' };
       let catatan = '', status = 'VALID';
       const kls = izin[o.kelas.toLowerCase() + '|' + o.angkatan] || izin[o.kelas.toLowerCase()];
       if (!/^\d{5,20}$/.test(o.nim)) { status = 'ERROR'; catatan = 'Format NIM tidak valid (hanya angka, 5–20 digit)'; }
@@ -124,7 +126,7 @@
   SP.actions.imporTemplate = function () {
     const k = Object.keys(kelasImporIzin()).map(function (n) { return kelasImporIzin()[n].nama; })[0] || 'PAI A';
     const th = (SP.set().tahun_ajaran_aktif || '2026/2027').slice(0, 4);
-    SP.unduhCsv('template-impor-mahasiswa-sipena.csv', ['NIM', 'NAMA_LENGKAP', 'EMAIL_MAHASISWA', 'KELAS', 'ANGKATAN'], [['2310601001', 'MUHAMMAD RIDWAN MALIK', 'ridwan@mhs.ac.id', k, th], ['2310601002', 'SITI AISYAH NURFADILAH', 'aisyah@mhs.ac.id', k, th]]);
+    SP.unduhCsv('template-impor-mahasiswa-sipena.csv', ['NIM', 'NAMA_LENGKAP', 'EMAIL_MAHASISWA', 'NO_WHATSAPP', 'KELAS', 'ANGKATAN'], [['2310601001', 'MUHAMMAD RIDWAN MALIK', 'ridwan@mhs.ac.id', '081234567890', k, th], ['2310601002', 'SITI AISYAH NURFADILAH', 'aisyah@mhs.ac.id', '081298765432', k, th]]);
     SP.ui.impor.templateDiunduh = true; SP.renderUlang();
   };
   SP.actions.imporReset = function () { Object.assign(SP.ui.impor, { namaFile: '', ukuran: 0, baris: null, hanyaError: false, page: 1, sibuk: false }); SP.renderUlang(); };
@@ -139,7 +141,7 @@
     if (!valid.length || u.sibuk) return;
     u.sibuk = true; SP.refresh('imporPratinjau');
     try {
-      const r = await SP.api('impor', { rows: valid.map(function (x) { return { baris: x.baris, nim: x.nim, nama: x.nama, email: x.email, kelas: x.kelas, angkatan: x.angkatan }; }) }, { timeout: 120000 });
+      const r = await SP.api('impor', { rows: valid.map(function (x) { return { baris: x.baris, nim: x.nim, nama: x.nama, email: x.email, no_hp: x.no_hp || '', kelas: x.kelas, angkatan: x.angkatan }; }) }, { timeout: 120000 });
       SP.terapkanHasil(r); SP.simpanCache();
       u.hasil = r; u.baris = null; u.namaFile = ''; u.sibuk = false;
       SP.toast('<b>' + r.mahasiswaBaru + ' mahasiswa</b> berhasil diimpor.', 'ok');
@@ -158,7 +160,7 @@
     const peng = (SP.X.peng[nim] || []).filter(function (r) { return r.status !== 'DIBATALKAN' && r.status !== 'DIGANTI'; });
     const h = SP.modal({
       judul: 'Detail Mahasiswa', lebar: 760, tanpaFokus: true,
-      isi: '<div class="row top wrap mb16"><div id="dm-foto" class="avatar" style="width:84px;height:84px;border-radius:12px;font-size:26px;overflow:hidden">' + esc(SP.inisial(m.nama)) + '</div><div class="grow"><h3 class="h2">' + esc(m.nama) + '</h3><div class="row wrap gap8 mt8"><span class="chip mono">' + esc(m.nim) + '</span><span class="chip">Angkatan ' + esc(m.angkatan || '—') + '</span><span class="chip">' + esc(kelas ? kelas.nama : '—') + '</span>' + SP.badge(kel.akhir) + '</div><p class="muted mt8">' + SP.icon('mail', 'sm') + ' ' + esc(m.email || '—') + '</p></div></div>' +
+      isi: '<div class="row top wrap mb16"><div id="dm-foto" class="avatar" style="width:84px;height:84px;border-radius:12px;font-size:26px;overflow:hidden">' + esc(SP.inisial(m.nama)) + '</div><div class="grow"><h3 class="h2">' + esc(m.nama) + '</h3><div class="row wrap gap8 mt8"><span class="chip mono">' + esc(m.nim) + '</span><span class="chip">Angkatan ' + esc(m.angkatan || '—') + '</span><span class="chip">' + esc(kelas ? kelas.nama : '—') + '</span>' + SP.badge(kel.akhir) + '</div><p class="muted mt8">' + SP.icon('mail', 'sm') + ' ' + esc(m.email || '—') + (m.no_hp ? ' &nbsp;·&nbsp; <a href="https://wa.me/' + esc(m.no_hp) + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">📱 WhatsApp: +' + esc(m.no_hp) + ' ↗</a>' : '') + '</p></div></div>' +
         '<div class="grid2 mb16">' + SP.PROGRAM.map(function (p) {
           const st = kel.program[p];
           const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(nim, p) : '';
@@ -181,14 +183,18 @@
     const m = SP.X.mhs[el.dataset.nim]; SP.tutupModal();
     SP.modal({
       judul: 'Ubah Data Mahasiswa', lebar: 480,
-      isi: '<div class="stack"><div class="field"><label>NIM</label><input class="input mono" value="' + esc(m.nim) + '" readonly></div><div class="field"><label for="em-n">Nama lengkap</label><input id="em-n" class="input" value="' + esc(m.nama) + '"></div><div class="field"><label for="em-e">Email mahasiswa</label><input id="em-e" type="email" class="input" value="' + esc(m.email) + '"></div></div>',
+      isi: '<div class="stack"><div class="field"><label>NIM</label><input class="input mono" value="' + esc(m.nim) + '" readonly></div><div class="field"><label for="em-n">Nama lengkap</label><input id="em-n" class="input" value="' + esc(m.nama) + '"></div><div class="field"><label for="em-e">Email mahasiswa</label><input id="em-e" type="email" class="input" value="' + esc(m.email) + '"></div><div class="field"><label for="em-hp">Nomor WhatsApp (Notifikasi Sertifikat &amp; Pengulangan)</label><input id="em-hp" class="input mono" value="' + esc(m.no_hp || '') + '" placeholder="081234567890"></div></div>',
       footer: '<button class="btn btn-outline" data-act="tutupModal">Batal</button><button class="btn btn-primary" data-act="simpanMhs" data-nim="' + esc(m.nim) + '">Simpan</button>'
     });
   };
   SP.actions.simpanMhs = async function (el) {
-    const nama = SP.$('#em-n').value.trim(), email = SP.$('#em-e').value.trim();
+    const nama = SP.$('#em-n').value.trim(), email = SP.$('#em-e').value.trim(), no_hp = SP.$('#em-hp') ? SP.$('#em-hp').value.trim() : '';
     el.disabled = true;
-    try { await SP.api('mahasiswaUbah', { nim: el.dataset.nim, nama: nama, email: email }); SP.terapkanHasil({ mahasiswa: [{ nim: el.dataset.nim, nama: nama, email: email.toLowerCase() }] }); SP.simpanCache(); SP.tutupModal(); SP.toast('Data mahasiswa diperbarui.'); SP.renderUlang(); }
+    try {
+      const r = await SP.api('mahasiswaUbah', { nim: el.dataset.nim, nama: nama, email: email, no_hp: no_hp });
+      SP.terapkanHasil({ mahasiswa: [{ nim: el.dataset.nim, nama: nama, email: email.toLowerCase(), no_hp: r.no_hp !== undefined ? r.no_hp : no_hp, status_wa: r.status_wa || '' }] });
+      SP.simpanCache(); SP.tutupModal(); SP.toast('Data mahasiswa diperbarui.'); SP.renderUlang();
+    }
     catch (e) { el.disabled = false; SP.toast(esc(e.message), 'err'); }
   };
   SP.changes.fotoMhs = async function (el) {
@@ -247,7 +253,10 @@
         '<div class="callout" style="margin-bottom:8px;padding:10px 14px"><div class="ic">' + SP.icon('info') + '</div><div class="tx" style="font-size:12.5px">Mendaftarkan 1 mahasiswa langsung ke kelas tanpa berkas CSV. Mahasiswa didaftarkan pada <b>Semester ' + esc(SP.semLabel(s.semester_aktif)) + ' ' + esc(taAktif) + '</b>.</div></div>' +
         '<div class="field"><label for="tm-nim">NIM Mahasiswa <span style="color:var(--danger)">*</span></label><input id="tm-nim" class="input mono" placeholder="Contoh: 2310601001" maxlength="20" required></div>' +
         '<div class="field"><label for="tm-nama">Nama Lengkap <span style="color:var(--danger)">*</span></label><input id="tm-nama" class="input" placeholder="Nama lengkap mahasiswa" maxlength="120" required></div>' +
-        '<div class="field"><label for="tm-email">Email Mahasiswa <span style="color:var(--danger)">*</span></label><input id="tm-email" type="email" class="input" placeholder="contoh@mhs.ac.id" required></div>' +
+        '<div class="grid2 gap12">' +
+          '<div class="field"><label for="tm-email">Email Mahasiswa <span style="color:var(--danger)">*</span></label><input id="tm-email" type="email" class="input" placeholder="contoh@mhs.ac.id" required></div>' +
+          '<div class="field"><label for="tm-hp">Nomor WhatsApp (Opsional)</label><input id="tm-hp" class="input mono" placeholder="081234567890" maxlength="20"></div>' +
+        '</div>' +
         '<div class="grid2 gap12">' +
           '<div class="field"><label for="tm-angkatan">Angkatan (Tahun) <span style="color:var(--danger)">*</span></label><input id="tm-angkatan" class="input num" placeholder="YYYY" value="' + esc(thDefault) + '" maxlength="4" required></div>' +
           '<div class="field"><label for="tm-kelas">Kelas Tujuan <span style="color:var(--danger)">*</span></label><select id="tm-kelas" class="select">' + opsiKelas + '</select></div>' +
@@ -261,6 +270,7 @@
     const nim = (SP.$('#tm-nim').value || '').trim();
     const nama = (SP.$('#tm-nama').value || '').trim();
     const email = (SP.$('#tm-email').value || '').trim().toLowerCase();
+    const no_hp = SP.$('#tm-hp') ? (SP.$('#tm-hp').value || '').trim() : '';
     const angkatan = (SP.$('#tm-angkatan').value || '').trim();
     const kelas_id = SP.$('#tm-kelas').value;
 
@@ -274,7 +284,7 @@
     el.innerHTML = '<span class="spin"></span> Menyimpan…';
     try {
       const res = await SP.api('mahasiswaTambah', {
-        nim: nim, nama: nama, email: email, angkatan: angkatan, kelas_id: kelas_id
+        nim: nim, nama: nama, email: email, no_hp: no_hp, angkatan: angkatan, kelas_id: kelas_id
       });
       SP.terapkanHasil(res);
       SP.simpanCache();
@@ -645,8 +655,8 @@
 
   SP.renderSertifikatDepanHtml = function (info, aset) {
     aset = aset || {};
-    const logoSrc = aset.logo || 'logo.png';
-    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=' + encodeURIComponent(info.urlVerifikasi || info.nomor);
+    const logoSrc = aset.logo || 'assets/logo.png';
+    const qrUrl = SP.qrDataUrl ? SP.qrDataUrl(info.urlVerifikasi || info.nomor, 1) : '';
     return '<div class="cert-sheet cert-front">' +
       '<div class="cert-frame">' +
         '<div class="cert-head">' +
@@ -781,7 +791,7 @@
     }
     const depanHtml = SP.renderSertifikatDepanHtml(info, aset);
     const belakangHtml = SP.renderSertifikatBelakangHtml(info, aset);
-    const cssHref = new URL('style.css', location.href).href;
+    const cssHref = new URL('css/style.css', location.href).href;
     const f = document.createElement('iframe');
     f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
     document.body.appendChild(f);
@@ -924,7 +934,9 @@
           }).join(' ');
           return '<tr><td><label class="chk"><input type="checkbox" data-ch="certPilih" data-nim="' + esc(b.m.nim) + '" ' + (u.sel[b.m.nim] ? 'checked' : '') + ' aria-label="Pilih ' + esc(b.m.nama) + '"></label></td><td data-l="Mahasiswa" class="nm"><b>' + esc(b.m.nama) + '</b><small><span class="mono">' + esc(b.m.nim) + '</span> · ' + esc(b.kelas ? b.kelas.nama : '') + '</small></td>' +
             '<td data-l="Skor 4 Program"><div class="row wrap gap4">' + ringkasSkor + '</div><small class="muted">Rata-rata: <b>' + esc(info.rataAngka) + ' (' + esc(info.predikatAkhir) + ')</b></small></td>' +
-            '<td data-l="No. sertifikat" class="mono" style="font-size:12px">' + esc(c.sert ? c.sert.nomor : '—') + '</td><td data-l="Status terbit">' + SP.badge(c.terbit ? 'DITERBITKAN' : 'SIAP_CETAK') + '</td><td data-l="Status email">' + badgeEmail(c.sert) + '</td>' +
+            '<td data-l="No. sertifikat" class="mono" style="font-size:12px">' + esc(c.sert ? c.sert.nomor : '—') +
+              (c.sert && c.sert.sig_hmac ? '<div class="row gap4 mt4"><span class="badge b-ok" style="font-size:10px;padding:1px 6px" title="Hash PDF SHA-256: ' + esc(c.sert.hash_pdf || '-') + '">' + SP.icon('shieldCheck', 'sm') + ' HMAC</span><button class="btn btn-ghost btn-sm" style="height:22px;padding:0 6px;font-size:10.5px" data-act="salinUrlVerif" data-url="' + esc(info.urlVerifikasi) + '" title="Salin tautan verifikasi ber-HMAC">' + SP.icon('copy', 'sm') + '</button></div>' : '') +
+            '</td><td data-l="Status terbit">' + SP.badge(c.terbit ? 'DITERBITKAN' : 'SIAP_CETAK') + '</td><td data-l="Status email">' + badgeEmail(c.sert) + '</td>' +
             '<td><div class="row gap4">' +
               '<button class="btn btn-outline btn-sm" data-act="certCetak2Sisi" data-nim="' + esc(b.m.nim) + '" title="Cetak / Simpan PDF 2 Sisi (Depan &amp; Belakang)">' + SP.icon('printer') + ' 2 Sisi</button>' +
               (c.terbit ? '<button class="btn btn-outline btn-sm" data-act="unduhSert" data-nim="' + esc(b.m.nim) + '" title="Unduh PDF Drive">' + SP.icon('download') + ' Drive</button> <button class="btn btn-ghost btn-sm" data-act="certUlang" data-nim="' + esc(b.m.nim) + '" title="Terbitkan ulang ke Drive">' + SP.icon('refresh') + '</button>' : '<button class="btn btn-accent btn-sm" data-act="certSatu" data-nim="' + esc(b.m.nim) + '" title="Terbitkan PDF ke Google Drive">' + SP.icon('uploadCloud') + ' Drive</button>') +
@@ -1047,5 +1059,8 @@
       SP.toast(gagal ? 'Email selesai diproses; <b>' + gagal + ' gagal</b>.' : 'Email berhasil dikirim.', gagal ? 'warn' : 'ok');
     } catch (e) { SP.toast(esc(e.message), 'err'); }
     t.remove(); el.disabled = false; SP.simpanCache(); SP.refresh('certTabel');
+  };
+  SP.actions.salinUrlVerif = function (el) {
+    if (el.dataset.url) SP.salin(el.dataset.url);
   };
 })();

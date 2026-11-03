@@ -3,21 +3,22 @@
 Sistem Manajemen Nilai Mahasiswa Program Bahasa Arab & Inggris.
 Folder ini berisi **tampilan** aplikasi (HTML/CSS/JavaScript murni, tanpa build). Backend ada di Google Apps Script (terpisah, tidak di repository ini).
 
-## Isi
-| File | Fungsi |
+## Struktur Direktori
+| Folder / File | Fungsi |
 |---|---|
-| `index.html` | Halaman utama (SPA) |
-| `style.css` | Gaya visual (tema hijau–oranye–merah, responsif) |
+| `index.html` | Halaman utama (SPA) — wajib di root |
 | `config.js` | **Satu-satunya file yang perlu Anda sunting**: `GAS_URL` & `GOOGLE_CLIENT_ID` |
-| `ui.js` · `logic.js` · `api.js` | Utilitas tampilan · aturan kelulusan sisi klien · autentikasi, API, cache, outbox |
-| `views-auth.js` | Login, Akses Ditolak, Verifikasi sertifikat |
-| `views-main.js` | Dasbor, Kelas Saya, Input Nilai |
-| `views-data.js` | Impor Mahasiswa, Status Kelulusan, Cetak Sertifikat |
-| `views-laporan.js` | Wajib Mengulang & Notifikasi, Laporan |
-| `views-admin.js` | Tutor Pengganti, Kelola Pengguna, Pindah Kelas, Pengaturan & Log |
-| `app.js` | Kerangka (sidebar, topbar), router, pencarian global, boot |
-
-Semua file berada di **satu folder (tanpa sub-folder)**.
+| `manifest.json` · `sw.js` | Konfigurasi Progressive Web App (PWA) & Service Worker offline cache |
+| `css/style.css` | Gaya visual (tema hijau–oranye–merah, responsif) |
+| `assets/` | Logo lembaga (`logo.png`), `favicon.png`, dan ikon PWA (`icon-192.png`, `icon-512.png`) |
+| `js/ui.js` · `js/logic.js` · `js/api.js` | Utilitas tampilan & QR lokal · aturan kelulusan sisi klien · autentikasi HMAC, API, cache, outbox |
+| `js/views-auth.js` | Login, Login Darurat, Akses Ditolak, Portal Verifikasi Sertifikat Kriptografi (HMAC & SHA-256) |
+| `js/views-main.js` | Dasbor, Kelas Saya, Input Nilai |
+| `js/views-data.js` | Impor Mahasiswa, Status Kelulusan, Cetak Sertifikat 2 Sisi |
+| `js/views-laporan.js` | Wajib Mengulang & Notifikasi, Laporan |
+| `js/views-admin.js` | Tutor Pengganti, Kelola Pengguna, Pindah Kelas, Pengaturan, WhatsApp Gateway & CRM, Log |
+| `js/app.js` | Kerangka (sidebar, topbar), router, pencarian global, PWA installer, boot |
+| `docs/PANDUAN-INSTALASI.md` | Dokumentasi panduan instalasi & deployment lengkap |
 
 ## Deploy
-Ikuti `PANDUAN-INSTALASI.md`. Ringkasnya: isi `config.js` → `git init` di folder ini → push ke GitHub → aktifkan Pages (branch `main`, folder `/root`).
+Ikuti `docs/PANDUAN-INSTALASI.md`. Ringkasnya: isi `config.js` → `git init` di folder ini → push ke GitHub → aktifkan Pages (branch `main`, folder `/ (root)`).

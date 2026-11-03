@@ -1,0 +1,57 @@
+{
+  "name": "SIPENA — Sistem Manajemen Nilai Bahasa Arab & Inggris",
+  "short_name": "SIPENA",
+  "description": "Portal Penilaian, Evaluasi Kelulusan 4 Program Bahasa Arab & Inggris, dan Penerbitan Sertifikat Digital Terpadu.",
+  "lang": "id-ID",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8FAFC",
+  "theme_color": "#14532D",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "591x591",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Input Nilai Mahasiswa",
+      "short_name": "Input Nilai",
+      "description": "Buka halaman input nilai kelas aktif",
+      "url": "./index.html#/nilai",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Status Kelulusan",
+      "short_name": "Kelulusan",
+      "description": "Pantau kelulusan 4 program bahasa",
+      "url": "./index.html#/kelulusan",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Verifikasi Sertifikat",
+      "short_name": "Verifikasi",
+      "description": "Cek keaslian sertifikat kemahiran bahasa",
+      "url": "./index.html#/verifikasi",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
+

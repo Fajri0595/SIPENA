@@ -24,6 +24,80 @@
     return { nama: p[0] || '', params: p.slice(1).map(function (x) { return x; }) };
   }
 
+  // ---------------- Progressive Web App (gas-pwa-github) ----------------
+  SP.PWA = {
+    deferredPrompt: null,
+    isStandalone: function () {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    },
+    isIOS: function () {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+    },
+    segarkanTombol: function () {
+      const btnAuth = SP.$('#btn-pwa-auth');
+      if (btnAuth) btnAuth.classList.toggle('hide', this.isStandalone());
+      const btnTb = SP.$('#btn-pwa-tb');
+      if (btnTb) btnTb.classList.toggle('hide', this.isStandalone() || (!this.deferredPrompt && !this.isIOS()));
+    },
+    install: async function () {
+      SP.tutupMenu();
+      if (this.deferredPrompt) {
+        try {
+          this.deferredPrompt.prompt();
+          const choice = await this.deferredPrompt.userChoice;
+          if (choice && choice.outcome === 'accepted') {
+            this.deferredPrompt = null;
+            this.segarkanTombol();
+            SP.toast('Aplikasi SIPENA sedang diinstal ke perangkat Anda.', 'ok');
+          }
+        } catch (e) { /* abaikan */ }
+        return;
+      }
+      if (this.isIOS()) {
+        SP.modal({
+          judul: 'Install Aplikasi SIPENA di iPhone / iPad',
+          lebar: 460,
+          isi: '<div class="stack gap12">' +
+            '<p class="muted" style="font-size:13.5px">Instal SIPENA di layar utama agar dapat dibuka layar penuh dan lebih cepat tanpa mengetik alamat web:</p>' +
+            '<div class="row top gap8"><span class="stepno">1</span><span>Ketuk tombol <b>Bagikan (Share)</b> di bagian bawah/atas browser Safari.</span></div>' +
+            '<div class="row top gap8"><span class="stepno">2</span><span>Gulir ke bawah lalu pilih <b>"Tambahkan ke Layar Utama" (Add to Home Screen)</b>.</span></div>' +
+            '<div class="row top gap8"><span class="stepno">3</span><span>Ketuk <b>Tambah (Add)</b> di pojok kanan atas.</span></div>' +
+          '</div>',
+          footer: '<button class="btn btn-primary" data-act="tutupModal">Mengerti</button>'
+        });
+        return;
+      }
+      SP.modal({
+        judul: 'Install Aplikasi SIPENA (PWA)',
+        lebar: 460,
+        isi: '<div class="stack gap12">' +
+          '<p class="muted" style="font-size:13.5px">SIPENA mendukung teknologi <b>Progressive Web App (PWA)</b> sehingga dapat diinstal seperti aplikasi native di HP Android maupun Laptop/PC:</p>' +
+          '<div class="row top gap8"><span class="stepno">1</span><span>Di <b>Chrome / Edge Desktop</b>: klik ikon <b>Install SIPENA</b> di sisi kanan bilah alamat (address bar) atas.</span></div>' +
+          '<div class="row top gap8"><span class="stepno">2</span><span>Di <b>Chrome Android</b>: ketuk menu titik tiga (⋮) di pojok kanan atas lalu pilih <b>"Tambahkan ke Layar Utama" / "Instal aplikasi"</b>.</span></div>' +
+        '</div>',
+        footer: '<button class="btn btn-primary" data-act="tutupModal">Mengerti</button>'
+      });
+    }
+  };
+  SP.actions.installPWA = function () { SP.PWA.install(); };
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    SP.PWA.deferredPrompt = e;
+    SP.PWA.segarkanTombol();
+  });
+  window.addEventListener('appinstalled', function () {
+    SP.PWA.deferredPrompt = null;
+    SP.PWA.segarkanTombol();
+  });
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function (err) {
+        console.warn('Pendaftaran Service Worker dilewati:', err.message);
+      });
+    });
+  }
+
   // ---------------- Shell ----------------
   function sidebarNav() {
     const item = function (r) {
@@ -43,12 +117,13 @@
   function renderShell() {
     const m = SP.S.me;
     document.getElementById('app').innerHTML =
-      '<aside class="sb" aria-label="Navigasi utama"><div class="sb-brand"><div class="sb-logo-wrap"><img src="logo.png" alt="SIPENA Logo" class="sb-brand-logo"></div><div><div class="sb-title">SIPENA</div><div class="sb-sub">Nilai Bahasa Arab &amp; Inggris</div></div></div>' +
+      '<aside class="sb" aria-label="Navigasi utama"><div class="sb-brand"><div class="sb-logo-wrap"><img src="assets/logo.png" alt="SIPENA Logo" class="sb-brand-logo"></div><div><div class="sb-title">SIPENA</div><div class="sb-sub">Nilai Bahasa Arab &amp; Inggris</div></div></div>' +
       '<nav class="sb-nav" id="sb-nav"></nav><div class="sb-user" data-act="bukaModalAkun" role="button" tabindex="0" title="Klik untuk Pengaturan Akun &amp; Profil">' + SP.avatarHtml(m.nama, m.email, 'sm') + '<div class="ut grow"><div class="nm trunc" style="max-width:125px">' + esc(m.nama) + '</div><span class="rl">' + esc(rolLabel()) + '</span></div>' +
       '<div class="sb-user-gear" title="Pengaturan Profil">' + SP.icon('settings', 'sm') + '</div></div></aside><div class="sb-ovl" data-act="tutupSb"></div>' +
       '<div class="main"><header class="tb"><button class="tb-menu" data-act="bukaSb" aria-label="Menu">' + SP.icon('menu', 'lg') + '</button>' +
       '<div class="tb-crumb">SIPENA ' + SP.icon('chevronRight', 'sm') + ' <b>Portal Akademik</b></div><span class="pill-ta" id="pill-ta"></span>' +
       '<div class="tb-search">' + SP.icon('search') + '<input class="input" id="gsearch" placeholder="Cari NIM, Nama, Kelas…" autocomplete="off" aria-label="Pencarian global"><div id="gsr"></div></div>' +
+      '<button class="btn btn-soft btn-sm ' + (SP.PWA && !SP.PWA.isStandalone() && (SP.PWA.deferredPrompt || SP.PWA.isIOS()) ? '' : 'hide') + '" id="btn-pwa-tb" data-act="installPWA" title="Instal Aplikasi SIPENA di Perangkat">' + SP.icon('download', 'sm') + ' <span class="hide-sm">Install App</span></button>' +
       '<div style="position:relative"><button class="tb-btn" data-act="toggleNotif" aria-label="Notifikasi">' + SP.icon('bell', 'lg') + '<span class="tb-badge hide" id="bell-n">0</span></button><div id="dd-notif"></div></div>' +
       '<div style="position:relative"><button class="tb-user" data-act="toggleUser">' + SP.avatarHtml(m.nama, m.email) + '<span class="tx2"><div class="nm trunc" style="max-width:150px">' + esc(m.nama) + '</div><div class="rl">' + esc(rolLabel()) + '</div></span>' + SP.icon('chevronDown', 'sm') + '</button><div id="dd-user"></div></div></header>' +
       '<main class="page" id="view" tabindex="-1"></main></div>';
@@ -123,6 +198,7 @@
         '<span class="badge b-solid" style="background:var(--primary);color:#fff;font-size:10px">' + esc(rolLabel()) + '</span>' +
       '</div>' +
       '<button class="dd-i" data-act="bukaModalAkun">' + SP.icon('settings') + ' Pengaturan Profil &amp; Akun</button>' +
+      (SP.PWA && !SP.PWA.isStandalone() ? '<button class="dd-i" data-act="installPWA">' + SP.icon('download') + ' Install Aplikasi SIPENA</button>' : '') +
       '<button class="dd-i" data-act="muatPaksa">' + SP.icon('refresh') + ' Muat Ulang Data Sinkronisasi</button>' +
       '<button class="dd-i danger" data-act="keluar">' + SP.icon('logout') + ' Keluar dari Aplikasi</button>' +
     '</div>';
@@ -186,9 +262,15 @@
             '<label for="akun-nama">Nama Lengkap &amp; Gelar <span style="color:var(--danger)">*</span></label>' +
             '<input class="input" id="akun-nama" value="' + esc(m.nama) + '" placeholder="Masukkan nama lengkap dengan gelar">' +
           '</div>' +
-          '<div class="field" style="margin-bottom:12px">' +
-            '<label for="akun-nip">NIP / NIDN (Opsional)</label>' +
-            '<input class="input" id="akun-nip" value="' + esc(m.nip || '') + '" placeholder="Contoh: 198501012010011001">' +
+          '<div class="grid2 gap12" style="margin-bottom:12px">' +
+            '<div class="field">' +
+              '<label for="akun-nip">NIP / NIDN (Opsional)</label>' +
+              '<input class="input" id="akun-nip" value="' + esc(m.nip || '') + '" placeholder="Contoh: 198501012010011001">' +
+            '</div>' +
+            '<div class="field">' +
+              '<label for="akun-hp">Nomor WhatsApp (Notifikasi)</label>' +
+              '<input class="input mono" id="akun-hp" value="' + esc(m.no_hp || '') + '" placeholder="081234567890">' +
+            '</div>' +
           '</div>' +
           '<div class="field">' +
             '<label>Email Google Terautentikasi</label>' +
@@ -256,22 +338,24 @@
     await SP.actions.keluar();
   };
   SP.actions.simpanProfilAkun = async function () {
-    const namaIn = SP.$('#akun-nama'), nipIn = SP.$('#akun-nip');
+    const namaIn = SP.$('#akun-nama'), nipIn = SP.$('#akun-nip'), hpIn = SP.$('#akun-hp');
     const nama = (namaIn ? namaIn.value : '').trim();
     const nip = (nipIn ? nipIn.value : '').trim();
+    const no_hp = (hpIn ? hpIn.value : '').trim();
     if (!nama) {
       SP.toast('Nama lengkap tidak boleh kosong.', 'warn');
       if (namaIn) namaIn.focus();
       return;
     }
 
-    const payload = { nama: nama, nip: nip };
+    const payload = { nama: nama, nip: nip, no_hp: no_hp };
     if (window._akunFotoPending !== undefined) {
       payload.foto = window._akunFotoPending;
     }
 
     SP.S.me.nama = nama;
     SP.S.me.nip = nip;
+    SP.S.me.no_hp = no_hp;
     if (payload.foto !== undefined) {
       SP.S.me.foto = payload.foto;
       if (payload.foto) {
@@ -285,6 +369,7 @@
       if (u) {
         u.nama = nama;
         u.nip = nip;
+        u.no_hp = no_hp;
         if (payload.foto !== undefined) u.foto = payload.foto;
       }
     }
@@ -302,7 +387,7 @@
   };
   SP.actions.muatPaksa = async function () {
     SP.tutupMenu(); const t = SP.toast('Memuat ulang data…', 'info', 30000);
-    try { const ok = await SP.muat(); t.remove(); SP.toast(ok ? 'Data diperbarui.' : 'Masih ada perubahan yang belum tersinkron.', ok ? 'ok' : 'warn'); } catch (e) { t.remove(); SP.toast(esc(e.message), 'err'); }
+    try { const ok = await SP.muat(true); t.remove(); SP.toast(ok ? 'Data diperbarui.' : 'Masih ada perubahan yang belum tersinkron.', ok ? 'ok' : 'warn'); } catch (e) { t.remove(); SP.toast(esc(e.message), 'err'); }
   };
   SP.actions.toggleNotif = function () {
     const el = SP.$('#dd-notif'), buka = !el.innerHTML; SP.tutupMenu();
@@ -361,8 +446,8 @@
     const h = parseHash();
     if (h.nama === 'verifikasi') return SP.tampilVerifikasi(h.params[0] || '');
     const C = SP.CFG;
-    if (!C.GAS_URL || C.GAS_URL.indexOf('ISI_') >= 0 || !C.GOOGLE_CLIENT_ID || C.GOOGLE_CLIENT_ID.indexOf('ISI_') >= 0) {
-      return SP.tampilGalatKonfig('GAS_URL dan/atau GOOGLE_CLIENT_ID di config.js belum diisi.');
+    if (!C.GAS_URL || C.GAS_URL.indexOf('ISI_') >= 0) {
+      return SP.tampilGalatKonfig('GAS_URL di config.js belum diisi.');
     }
     if (SP.Auth.token()) { SP.Auth.jadwalkan(); return mulaiSetelahLogin(); }
     SP.tampilLogin();
@@ -379,12 +464,26 @@
     }
   }, 300));
 
-  // Muat ulang berkala & saat tab kembali aktif
+  // Detektor keaktifan pengguna & Adaptive Polling (gas-instant-ux-pro)
+  SP.Activity = { lastActive: Date.now() };
+  ['mousemove', 'keydown', 'touchstart', 'click'].forEach(function (ev) {
+    window.addEventListener(ev, function () { SP.Activity.lastActive = Date.now(); }, { passive: true });
+  });
+
+  // Muat ulang berkala hanya saat tab terlihat & pengguna aktif dalam 15 menit terakhir
   setInterval(function () {
-    if (SP.siap && !document.hidden && SP.terakhirMuat && Date.now() - SP.terakhirMuat > (SP.CFG.REFRESH_MENIT || 5) * 60000 && !SP.$('.modal-bg')) SP.muat().catch(function () { /* diam */ });
+    const aktif = Date.now() - SP.Activity.lastActive < 15 * 60000;
+    if (SP.siap && !document.hidden && aktif && SP.terakhirMuat && Date.now() - SP.terakhirMuat > (SP.CFG.REFRESH_MENIT || 5) * 60000 && !SP.$('.modal-bg')) {
+      SP.muat().catch(function () { /* diam */ });
+    }
   }, 60000);
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && SP.siap && SP.terakhirMuat && Date.now() - SP.terakhirMuat > 2 * 60000) SP.muat().catch(function () { /* diam */ });
+    if (!document.hidden && SP.siap) {
+      SP.Activity.lastActive = Date.now();
+      if (SP.terakhirMuat && Date.now() - SP.terakhirMuat > 2 * 60000) {
+        SP.muat().catch(function () { /* diam */ });
+      }
+    }
   });
 
   document.addEventListener('DOMContentLoaded', boot);
