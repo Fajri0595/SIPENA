@@ -13,16 +13,6 @@
         '<img src="assets/logo.png" alt="SIPENA Logo" class="auth-brand-logo">' +
         '<div><b>SIPENA</b><small>SISTEM PENILAIAN &amp; KELULUSAN BAHASA</small></div>' +
       '</div>' +
-      '<div class="auth-live-pill">' +
-        '<span class="auth-live-dot"></span>' +
-        '<span>Sistem Aktif &amp; Terpantau</span>' +
-      '</div>' +
-      '<nav class="auth-nav">' +
-        '<a href="#/" data-act="installPWA" id="btn-pwa-auth" class="' + (SP.PWA && !SP.PWA.isStandalone() ? '' : 'hide') + '" data-native style="color:var(--primary);font-weight:700">' + SP.icon('download', 'sm') + ' Install Aplikasi</a>' +
-        '<a href="#/" data-act="panduanLogin" data-native>' + SP.icon('help', 'sm') + ' Panduan Tutor</a>' +
-        '<a href="#/verifikasi">' + SP.icon('award', 'sm') + ' Verifikasi Sertifikat</a>' +
-        '<a href="#/" data-act="bantuanLogin" data-native>' + SP.icon('mail', 'sm') + ' Bantuan</a>' +
-      '</nav>' +
     '</header>';
   }
   function footer(info) {
@@ -185,8 +175,8 @@
 
   // ---------------- Login ----------------
   SP.tampilLogin = async function (pesan) {
-    document.getElementById('app').innerHTML = topbar() +
-      '<main class="auth-body">' +
+    document.getElementById('app').innerHTML =
+      '<main class="auth-body auth-body-notop">' +
         '<div class="auth-decor" aria-hidden="true">' +
           '<div class="auth-orb auth-orb-1"></div>' +
           '<div class="auth-orb auth-orb-2"></div>' +
@@ -278,15 +268,23 @@
             '<div class="login-quick-row">' +
               '<button type="button" class="login-quick-btn" data-act="panduanLogin">' +
                 '<span class="qb-ic qb-ic-ok">' + SP.icon('help', 'sm') + '</span>' +
-                '<span>Panduan</span>' +
+                '<span>Panduan Tutor</span>' +
               '</button>' +
+              '<a class="login-quick-btn" href="#/verifikasi" style="text-decoration:none">' +
+                '<span class="qb-ic qb-ic-ok">' + SP.icon('award', 'sm') + '</span>' +
+                '<span>Verifikasi Sertifikat</span>' +
+              '</a>' +
               '<button type="button" class="login-quick-btn" data-act="bantuanLogin">' +
                 '<span class="qb-ic qb-ic-info">' + SP.icon('mail', 'sm') + '</span>' +
                 '<span>Bantuan</span>' +
               '</button>' +
               '<button type="button" class="login-quick-btn" data-act="loginDaruratModal" title="Akses Darurat Superadmin">' +
                 '<span class="qb-ic qb-ic-warn">' + SP.icon('shield', 'sm') + '</span>' +
-                '<span>Darurat</span>' +
+                '<span>Akses Darurat</span>' +
+              '</button>' +
+              '<button type="button" data-act="installPWA" id="btn-pwa-auth" class="login-quick-btn login-quick-btn-wide ' + (SP.PWA && !SP.PWA.isStandalone() ? '' : 'hide') + '">' +
+                '<span class="qb-ic qb-ic-ok">' + SP.icon('download', 'sm') + '</span>' +
+                '<span>Install Aplikasi SIPENA</span>' +
               '</button>' +
             '</div>' +
           '</section>' +
