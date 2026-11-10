@@ -35,164 +35,210 @@
 
   function ilustrasiLogin() {
     return '<div class="login-illo-stage" aria-hidden="true">' +
-      '<div class="illo-float-badge illo-fb-1"><span class="illo-fb-dot"></span><span><b>AR &amp; EN</b> • 4 Program</span></div>' +
-      '<div class="illo-float-badge illo-fb-2"><span class="illo-fb-ic">✓</span><span>Evaluasi KKM Otomatis</span></div>' +
-      '<div class="illo-float-badge illo-fb-3"><span class="illo-fb-ic">★</span><span>E-Sertifikat QR</span></div>' +
-      '<div class="illo-float-badge illo-fb-4"><span class="illo-fb-dot" style="background:#FBBF24;box-shadow:0 0 8px #FBBF24"></span><span>Sinkronisasi Real-Time</span></div>' +
-      '<svg class="login-illo-svg" viewBox="0 0 460 310" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<svg class="login-illo-svg" viewBox="0 0 460 300" fill="none" xmlns="http://www.w3.org/2000/svg">' +
         '<defs>' +
-          '<radialGradient id="ilGlow" cx="50%" cy="54%" r="48%">' +
-            '<stop offset="0%" stop-color="#93E0A2" stop-opacity="0.42"/>' +
-            '<stop offset="60%" stop-color="#4ADE80" stop-opacity="0.14"/>' +
+          '<radialGradient id="eduGlow" cx="50%" cy="52%" r="48%">' +
+            '<stop offset="0%" stop-color="#93E0A2" stop-opacity="0.38"/>' +
+            '<stop offset="55%" stop-color="#4ADE80" stop-opacity="0.12"/>' +
             '<stop offset="100%" stop-color="#166534" stop-opacity="0"/>' +
           '</radialGradient>' +
-          '<radialGradient id="ilSphere1" cx="35%" cy="30%" r="65%">' +
-            '<stop offset="0%" stop-color="#BBF7D0"/>' +
-            '<stop offset="55%" stop-color="#22C55E"/>' +
-            '<stop offset="100%" stop-color="#064E3B"/>' +
-          '</radialGradient>' +
-          '<radialGradient id="ilSphere2" cx="35%" cy="30%" r="65%">' +
-            '<stop offset="0%" stop-color="#FED7AA"/>' +
-            '<stop offset="55%" stop-color="#F97316"/>' +
-            '<stop offset="100%" stop-color="#7C2D12"/>' +
-          '</radialGradient>' +
-          '<linearGradient id="ilDesk" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#0D4A26"/>' +
-            '<stop offset="100%" stop-color="#052110"/>' +
+          '<linearGradient id="eduPedestalTop" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#1F7A44"/>' +
+            '<stop offset="100%" stop-color="#0D4724"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilSweater" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0%" stop-color="#FFFFFF"/>' +
-            '<stop offset="100%" stop-color="#D5E3DA"/>' +
+          '<linearGradient id="eduPedestalSide" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#0C3B1E"/>' +
+            '<stop offset="100%" stop-color="#051E0E"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilPants" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#115E30"/>' +
-            '<stop offset="100%" stop-color="#052913"/>' +
+          '<linearGradient id="eduScreenFrame" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#1E293B"/>' +
+            '<stop offset="100%" stop-color="#0F172A"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilFace" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0%" stop-color="#FFE4C8"/>' +
-            '<stop offset="100%" stop-color="#F2B48C"/>' +
+          '<linearGradient id="eduScreenBg" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#134E2B"/>' +
+            '<stop offset="100%" stop-color="#092916"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilHat" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#F97316"/>' +
-            '<stop offset="100%" stop-color="#9A3412"/>' +
+          '<linearGradient id="eduGold" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#FDE047"/>' +
+            '<stop offset="50%" stop-color="#F59E0B"/>' +
+            '<stop offset="100%" stop-color="#B45309"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilMon" x1="0" y1="0" x2="1" y2="1">' +
+          '<linearGradient id="eduCapTop" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#1E293B"/>' +
+            '<stop offset="100%" stop-color="#090D16"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="eduCapSide" x1="0" y1="0" x2="1" y2="1">' +
             '<stop offset="0%" stop-color="#334155"/>' +
             '<stop offset="100%" stop-color="#0F172A"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilLap" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#EA580C"/>' +
-            '<stop offset="100%" stop-color="#991B1B"/>' +
+          '<linearGradient id="eduBookGreen" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#22C55E"/>' +
+            '<stop offset="100%" stop-color="#14532D"/>' +
           '</linearGradient>' +
-          '<linearGradient id="ilPlant" x1="0" y1="0" x2="0" y2="1">' +
+          '<linearGradient id="eduBookAmber" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#EA580C"/>' +
+            '<stop offset="100%" stop-color="#9A3412"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="eduCertBg" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#FFFFFF"/>' +
+            '<stop offset="100%" stop-color="#ECFDF5"/>' +
+          '</linearGradient>' +
+          '<radialGradient id="eduGlobe" cx="35%" cy="30%" r="68%">' +
+            '<stop offset="0%" stop-color="#A7F3D0"/>' +
+            '<stop offset="50%" stop-color="#10B981"/>' +
+            '<stop offset="100%" stop-color="#064E3B"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="eduBar1" x1="0" y1="0" x2="0" y2="1">' +
             '<stop offset="0%" stop-color="#86EFAC"/>' +
-            '<stop offset="100%" stop-color="#15803D"/>' +
+            '<stop offset="100%" stop-color="#16A34A"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="eduBar2" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#FDE047"/>' +
+            '<stop offset="100%" stop-color="#D97706"/>' +
           '</linearGradient>' +
         '</defs>' +
-        '<!-- Ambient Halo & Orbital Rings -->' +
-        '<ellipse cx="235" cy="175" rx="185" ry="105" fill="url(#ilGlow)"/>' +
-        '<ellipse class="illo-orbit" cx="235" cy="165" rx="165" ry="52" stroke="rgba(147,224,162,0.18)" stroke-width="1.5" stroke-dasharray="6 8"/>' +
-        '<!-- Floating 3D Spheres -->' +
-        '<circle class="illo-sphere-1" cx="76" cy="108" r="10" fill="url(#ilSphere1)" opacity="0.85"/>' +
-        '<circle class="illo-sphere-2" cx="384" cy="122" r="8" fill="url(#ilSphere2)" opacity="0.85"/>' +
-        '<circle class="illo-sphere-1" cx="356" cy="64" r="5" fill="url(#ilSphere1)" opacity="0.65"/>' +
-        '<!-- Floor Shadow -->' +
-        '<ellipse cx="230" cy="284" rx="190" ry="10" fill="#031A0C" fill-opacity="0.5"/>' +
-        '<!-- Main Scene Scaled Up & Centered -->' +
-        '<g transform="translate(8, 12) scale(1.25)">' +
-          '<!-- Potted Plant (Left) -->' +
-          '<g class="illo-plant">' +
-            '<ellipse cx="52" cy="172" rx="15" ry="20" fill="url(#ilPlant)"/>' +
-            '<circle cx="52" cy="155" r="12" fill="#4ADE80" fill-opacity="0.7"/>' +
-            '<rect x="41" y="190" width="22" height="4.5" rx="2.2" fill="#FB923C"/>' +
-            '<path d="M43 194.5H61L58 216H46L43 194.5Z" fill="url(#ilHat)"/>' +
-            '<rect x="42" y="215" width="20" height="3" rx="1.5" fill="#072814"/>' +
-          '</g>' +
-          '<!-- Swivel Chair Base & Seat -->' +
-          '<rect x="175" y="166" width="6" height="40" rx="3" fill="#CBD5E1"/>' +
-          '<path d="M156 212L178 200L200 212" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
-          '<line x1="178" y1="200" x2="178" y2="214" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>' +
-          '<circle cx="155" cy="215" r="3.8" fill="#0F172A"/>' +
-          '<circle cx="178" cy="216" r="3.8" fill="#0F172A"/>' +
-          '<circle cx="201" cy="215" r="3.8" fill="#0F172A"/>' +
-          '<rect x="148" y="155" width="60" height="13" rx="6.5" fill="url(#ilHat)"/>' +
-          '<!-- Character Lower Body / Legs under Desk -->' +
-          '<path d="M156 144L128 176L142 186L172 155Z" fill="url(#ilPants)"/>' +
-          '<path d="M200 144L228 176L214 186L184 155Z" fill="url(#ilPants)"/>' +
-          '<!-- Sneakers -->' +
-          '<g transform="translate(111, 174) rotate(-24)">' +
-            '<rect x="0" y="0" width="26" height="11" rx="5.5" fill="#166534"/>' +
-            '<rect x="-2" y="8.5" width="30" height="4.2" rx="2" fill="#FFFFFF"/>' +
-          '</g>' +
-          '<g transform="translate(221, 163) rotate(24)">' +
-            '<rect x="0" y="0" width="26" height="11" rx="5.5" fill="#166534"/>' +
-            '<rect x="-2" y="8.5" width="30" height="4.2" rx="2" fill="#FFFFFF"/>' +
-          '</g>' +
-          '<!-- Character Torso & Raised Waving Arm -->' +
-          '<g class="illo-waving-arm">' +
-            '<path d="M206 112L239 58" stroke="url(#ilSweater)" stroke-width="15" stroke-linecap="round"/>' +
-            '<!-- Hand Peace / Wave Sign -->' +
-            '<circle cx="243" cy="50" r="7.5" fill="url(#ilFace)"/>' +
-            '<line x1="241" y1="44" x2="238" y2="33" stroke="#F2B48C" stroke-width="3.8" stroke-linecap="round"/>' +
-            '<line x1="246" y1="44" x2="250" y2="34" stroke="#F2B48C" stroke-width="3.8" stroke-linecap="round"/>' +
-          '</g>' +
-          '<!-- Left Arm to Keyboard -->' +
-          '<path d="M150 112L128 130" stroke="url(#ilSweater)" stroke-width="14" stroke-linecap="round"/>' +
-          '<!-- Sweater Body -->' +
-          '<rect x="144" y="95" width="68" height="49" rx="22" fill="url(#ilSweater)"/>' +
-          '<ellipse cx="178" cy="97" rx="17" ry="5.5" fill="#CBD5E1"/>' +
-          '<!-- Character Head & Hat -->' +
-          '<g class="illo-head">' +
-            '<circle cx="151" cy="72" r="6.5" fill="#F2B48C"/>' +
-            '<circle cx="205" cy="72" r="6.5" fill="#F2B48C"/>' +
-            '<rect x="154" y="48" width="48" height="44" rx="22" fill="url(#ilFace)"/>' +
-            '<!-- Hair under hat -->' +
-            '<path d="M154 62C154 50 202 50 202 62" fill="#1E293B"/>' +
-            '<!-- Eyes (with Blink) & Smile -->' +
-            '<g class="illo-eyes">' +
-              '<circle cx="169" cy="70" r="2.8" fill="#1E293B"/>' +
-              '<circle cx="187" cy="70" r="2.8" fill="#1E293B"/>' +
-              '<circle cx="170" cy="69" r="0.9" fill="#FFFFFF"/>' +
-              '<circle cx="188" cy="69" r="0.9" fill="#FFFFFF"/>' +
-            '</g>' +
-            '<circle cx="163" cy="75.5" r="5" fill="#FB7185" fill-opacity="0.45"/>' +
-            '<circle cx="193" cy="75.5" r="5" fill="#FB7185" fill-opacity="0.45"/>' +
-            '<path d="M173.5 77.5Q178 82 182.5 77.5" stroke="#9A3412" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
-            '<!-- Stylish Cap / Hat -->' +
-            '<path d="M158 50C158 38 198 38 198 50Z" fill="url(#ilHat)"/>' +
-            '<ellipse cx="178" cy="51" rx="34" ry="6" fill="#FB923C"/>' +
-            '<ellipse cx="178" cy="52.8" rx="31" ry="3.8" fill="#9A3412" fill-opacity="0.45"/>' +
-          '</g>' +
-          '<!-- Action Spark Lines Above Monitor -->' +
-          '<g class="illo-sparks" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round">' +
-            '<line x1="94" y1="60" x2="88" y2="47"/>' +
-            '<line x1="104" y1="58" x2="104" y2="44"/>' +
-            '<line x1="114" y1="60" x2="119" y2="48"/>' +
-          '</g>' +
-          '<!-- Desktop Monitor (Left of Desk) -->' +
-          '<rect x="64" y="70" width="76" height="52" rx="7" fill="url(#ilMon)" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>' +
-          '<!-- Sticky Note on Monitor Back -->' +
-          '<rect x="118" y="87" width="12" height="14" rx="2" fill="#FEF08A" transform="rotate(-6 118 87)"/>' +
+
+        '<!-- Ambient Halo & Perspective Orbital Rings -->' +
+        '<ellipse cx="230" cy="160" rx="195" ry="110" fill="url(#eduGlow)"/>' +
+        '<ellipse class="edu-orbit-1" cx="230" cy="155" rx="185" ry="56" stroke="rgba(147,224,162,0.22)" stroke-width="1.4" stroke-dasharray="6 8" transform="rotate(-6 230 155)"/>' +
+        '<ellipse class="edu-orbit-2" cx="230" cy="155" rx="150" ry="42" stroke="rgba(253,224,71,0.16)" stroke-width="1.2" stroke-dasharray="4 10" transform="rotate(8 230 155)"/>' +
+
+        '<!-- Glowing Academic Sparkles -->' +
+        '<path class="edu-star edu-star-1" d="M74 62L76.5 68.5L83 71L76.5 73.5L74 80L71.5 73.5L65 71L71.5 68.5Z" fill="#FDE047" opacity="0.85"/>' +
+        '<path class="edu-star edu-star-2" d="M388 54L390 59L395 61L390 63L388 68L386 63L381 61L386 59Z" fill="#A7F3D0" opacity="0.8"/>' +
+        '<path class="edu-star edu-star-3" d="M108 242L109.5 246L113.5 247.5L109.5 249L108 253L106.5 249L102.5 247.5L106.5 246Z" fill="#86EFAC" opacity="0.7"/>' +
+
+        '<!-- 3D Academic Pedestal Base -->' +
+        '<ellipse cx="230" cy="266" rx="168" ry="22" fill="#03180B" fill-opacity="0.55"/>' +
+        '<path d="M82 240C82 252 148 262 230 262C312 262 378 252 378 240V252C378 264 312 274 230 274C148 274 82 264 82 252V240Z" fill="url(#eduPedestalSide)"/>' +
+        '<ellipse cx="230" cy="240" rx="148" ry="20" fill="url(#eduPedestalTop)" stroke="rgba(147,224,162,0.35)" stroke-width="1.2"/>' +
+        '<ellipse cx="230" cy="240" rx="126" ry="15" stroke="rgba(147,224,162,0.18)" stroke-width="1" stroke-dasharray="5 5"/>' +
+
+        '<!-- CENTER: Academic Assessment & Analytics Hub Monitor -->' +
+        '<g class="edu-hub">' +
           '<!-- Monitor Stand -->' +
-          '<path d="M95 100H110L114 133H91L95 100Z" fill="#E2E8F0"/>' +
-          '<rect x="84" y="131" width="37" height="4.5" rx="2.2" fill="#CBD5E1"/>' +
-          '<!-- Keyboard on Desk -->' +
-          '<rect x="142" y="130" width="64" height="4.5" rx="2.2" fill="#1E293B"/>' +
-          '<!-- Laptop on Stand (Right of Desk) -->' +
-          '<rect x="230" y="118" width="35" height="16" rx="2.5" fill="#94A3B8"/>' +
-          '<path d="M218 88H270L265 120H213L218 88Z" fill="url(#ilLap)"/>' +
-          '<circle cx="242" cy="104" r="4.5" fill="#93E0A2" fill-opacity="0.9"/>' +
-          '<circle cx="255" cy="96" r="2.8" fill="#FDE047" fill-opacity="0.9"/>' +
-          '<!-- Desk Tabletop & Legs -->' +
-          '<rect x="46" y="134" width="268" height="9" rx="4.5" fill="url(#ilDesk)"/>' +
-          '<rect x="46" y="134" width="268" height="2.5" rx="1.2" fill="#4ADE80" fill-opacity="0.5"/>' +
-          '<!-- Desk Hanging Tag -->' +
-          '<rect x="278" y="140" width="12" height="15" rx="2" fill="#E2E8F0" transform="rotate(10 278 140)"/>' +
-          '<!-- Desk Legs -->' +
-          '<rect x="64" y="143" width="9" height="73" fill="url(#ilDesk)"/>' +
-          '<rect x="58" y="213" width="21" height="4.5" rx="2.2" fill="#4ADE80" fill-opacity="0.55"/>' +
-          '<rect x="287" y="143" width="9" height="73" fill="url(#ilDesk)"/>' +
-          '<rect x="281" y="213" width="21" height="4.5" rx="2.2" fill="#4ADE80" fill-opacity="0.55"/>' +
+          '<path d="M212 204H248L256 236H204L212 204Z" fill="#CBD5E1"/>' +
+          '<path d="M218 204H248L253 236H230L218 204Z" fill="#94A3B8" opacity="0.45"/>' +
+          '<rect x="190" y="233" width="80" height="7" rx="3.5" fill="#E2E8F0"/>' +
+          '<!-- Outer Bezel -->' +
+          '<rect x="122" y="68" width="216" height="140" rx="14" fill="url(#eduScreenFrame)" stroke="rgba(255,255,255,0.28)" stroke-width="1.6"/>' +
+          '<!-- Inner Academic Dashboard Screen -->' +
+          '<rect x="130" y="76" width="200" height="120" rx="9" fill="url(#eduScreenBg)"/>' +
+          '<!-- Top Window Bar -->' +
+          '<rect x="130" y="76" width="200" height="18" rx="9" fill="rgba(255,255,255,0.07)"/>' +
+          '<circle cx="141" cy="85" r="2.6" fill="#F87171"/>' +
+          '<circle cx="150" cy="85" r="2.6" fill="#FBBF24"/>' +
+          '<circle cx="159" cy="85" r="2.6" fill="#4ADE80"/>' +
+          '<rect x="172" y="82.5" width="68" height="5" rx="2.5" fill="rgba(255,255,255,0.22)"/>' +
+
+          '<!-- Left Widget: 4-Program Language Mastery Bar Chart -->' +
+          '<rect x="140" y="102" width="104" height="84" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(147,224,162,0.16)" stroke-width="1"/>' +
+          '<rect x="148" y="110" width="48" height="4.5" rx="2.2" fill="rgba(255,255,255,0.35)"/>' +
+          '<line x1="148" y1="174" x2="236" y2="174" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>' +
+          '<!-- Animated Academic Bars -->' +
+          '<rect class="edu-bar edu-bar-1" x="154" y="138" width="13" height="36" rx="3" fill="url(#eduBar1)"/>' +
+          '<rect class="edu-bar edu-bar-2" x="174" y="126" width="13" height="48" rx="3" fill="url(#eduBar1)"/>' +
+          '<rect class="edu-bar edu-bar-3" x="194" y="132" width="13" height="42" rx="3" fill="url(#eduBar2)"/>' +
+          '<rect class="edu-bar edu-bar-4" x="214" y="118" width="13" height="56" rx="3" fill="url(#eduBar1)"/>' +
+          '<!-- Rising Trend Line over Bars -->' +
+          '<path d="M160 135L180 123L200 128L220 113" stroke="#FDE047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="220" cy="113" r="3.2" fill="#FDE047"/>' +
+
+          '<!-- Right Widget: KKM & Academic Mastery Ring -->' +
+          '<rect x="252" y="102" width="68" height="84" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(147,224,162,0.16)" stroke-width="1"/>' +
+          '<circle cx="286" cy="134" r="20" stroke="rgba(255,255,255,0.12)" stroke-width="5"/>' +
+          '<circle class="edu-ring-prog" cx="286" cy="134" r="20" stroke="#4ADE80" stroke-width="5" stroke-linecap="round" stroke-dasharray="100 126" transform="rotate(-90 286 134)"/>' +
+          '<path d="M280 134L284.5 138.5L293 129.5" stroke="#FDE047" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<rect x="264" y="164" width="44" height="4.5" rx="2.2" fill="rgba(255,255,255,0.35)"/>' +
+          '<rect x="271" y="172" width="30" height="4" rx="2" fill="rgba(147,224,162,0.45)"/>' +
+        '</g>' +
+
+        '<!-- UPPER RIGHT: Floating 3D Academic Globe (International Language) -->' +
+        '<g class="edu-globe-float">' +
+          '<ellipse cx="378" cy="100" rx="34" ry="11" stroke="#FDE047" stroke-width="1.5" stroke-opacity="0.65" transform="rotate(-22 378 100)"/>' +
+          '<circle cx="378" cy="100" r="22" fill="url(#eduGlobe)"/>' +
+          '<ellipse cx="378" cy="100" rx="11" ry="22" stroke="rgba(255,255,255,0.35)" stroke-width="1.1"/>' +
+          '<line x1="356" y1="100" x2="400" y2="100" stroke="rgba(255,255,255,0.35)" stroke-width="1.1"/>' +
+          '<path d="M360 90C366 93 390 93 396 90" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>' +
+          '<path d="M360 110C366 107 390 107 396 110" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>' +
+          '<path d="M348 112C358 117 392 103 408 88" stroke="#FDE047" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.85"/>' +
+        '</g>' +
+
+        '<!-- LEFT FOREGROUND: Stacked University Books & Floating Graduation Cap -->' +
+        '<g class="edu-books-group">' +
+          '<!-- Bottom Book (Deep Emerald Volume) -->' +
+          '<path d="M62 222L116 206L164 220L110 236Z" fill="url(#eduBookGreen)"/>' +
+          '<path d="M62 222L110 236V250L62 236Z" fill="#0D4724"/>' +
+          '<path d="M110 236L164 220V234L110 250Z" fill="#F1F5F9"/>' +
+          '<line x1="112" y1="240" x2="162" y2="225" stroke="#CBD5E1" stroke-width="1.2"/>' +
+          '<line x1="112" y1="244" x2="162" y2="229" stroke="#CBD5E1" stroke-width="1.2"/>' +
+          '<path d="M60 235L110 250L165 233" stroke="#14532D" stroke-width="2.2" stroke-linecap="round"/>' +
+          '<!-- Gold Spine Stripes -->' +
+          '<line x1="74" y1="226" x2="74" y2="240" stroke="#FDE047" stroke-width="2"/>' +
+          '<line x1="96" y1="232" x2="96" y2="246" stroke="#FDE047" stroke-width="2"/>' +
+
+          '<!-- Top Book (Academic Terracotta/Gold Volume) -->' +
+          '<path d="M68 202L118 188L160 200L110 214Z" fill="url(#eduBookAmber)"/>' +
+          '<path d="M68 202L110 214V227L68 215Z" fill="#7C2D12"/>' +
+          '<path d="M110 214L160 200V213L110 227Z" fill="#FFFBEB"/>' +
+          '<line x1="112" y1="218" x2="158" y2="205" stroke="#FDE68A" stroke-width="1.2"/>' +
+          '<line x1="112" y1="222" x2="158" y2="209" stroke="#FDE68A" stroke-width="1.2"/>' +
+          '<!-- Gold Bookmark Ribbon -->' +
+          '<path d="M128 220V235L133 231L138 235V217Z" fill="url(#eduGold)"/>' +
+        '</g>' +
+
+        '<!-- Floating 3D Graduation Mortarboard Cap (Topi Wisuda) -->' +
+        '<g class="edu-cap-float">' +
+          '<!-- Cap Shadow on Books -->' +
+          '<ellipse cx="114" cy="194" rx="28" ry="7" fill="#041E0E" fill-opacity="0.35"/>' +
+          '<!-- Skullcap Base -->' +
+          '<path d="M88 152V172C88 180 100 186 114 186C128 186 140 180 140 172V152Z" fill="url(#eduCapSide)"/>' +
+          '<path d="M88 168C100 175 128 175 140 168" stroke="url(#eduGold)" stroke-width="2"/>' +
+          '<!-- Mortarboard Diamond Top -->' +
+          '<path d="M56 146L114 124L172 146L114 168Z" fill="url(#eduCapTop)" stroke="#475569" stroke-width="1.2"/>' +
+          '<path d="M56 146L114 168L172 146L172 150L114 172L56 150Z" fill="#0F172A"/>' +
+          '<!-- Gold Center Button & Swaying Tassel -->' +
+          '<ellipse cx="114" cy="145" rx="5.5" ry="3" fill="url(#eduGold)"/>' +
+          '<g class="edu-tassel">' +
+            '<path d="M114 145Q92 154 80 166" stroke="url(#eduGold)" stroke-width="2.4" stroke-linecap="round"/>' +
+            '<path d="M80 165L75 178H84L80 165Z" fill="url(#eduGold)"/>' +
+          '</g>' +
+        '</g>' +
+
+        '<!-- RIGHT FOREGROUND: Floating Official Academic E-Certificate & Seal -->' +
+        '<g class="edu-cert-float">' +
+          '<!-- Card Drop Shadow -->' +
+          '<ellipse cx="348" cy="236" rx="44" ry="8" fill="#041E0E" fill-opacity="0.4"/>' +
+          '<!-- Tilted Certificate Card -->' +
+          '<g transform="translate(296, 152) rotate(-5)">' +
+            '<rect x="0" y="0" width="98" height="72" rx="9" fill="url(#eduCertBg)" stroke="#86EFAC" stroke-width="1.6"/>' +
+            '<rect x="6" y="6" width="86" height="60" rx="5" stroke="#BBF7D0" stroke-width="1" stroke-dasharray="3 2"/>' +
+            '<!-- Certificate Header Ribbon -->' +
+            '<rect x="14" y="13" width="46" height="6" rx="3" fill="#166534"/>' +
+            '<rect x="14" y="23" width="66" height="4" rx="2" fill="#94A3B8"/>' +
+            '<rect x="14" y="31" width="54" height="4" rx="2" fill="#CBD5E1"/>' +
+            '<rect x="14" y="39" width="38" height="4" rx="2" fill="#CBD5E1"/>' +
+            '<!-- Mini QR Verification Matrix -->' +
+            '<rect x="14" y="47" width="14" height="14" rx="2" fill="#0F172A"/>' +
+            '<rect x="16" y="49" width="4" height="4" fill="#FFFFFF"/>' +
+            '<rect x="22" y="49" width="4" height="4" fill="#FFFFFF"/>' +
+            '<rect x="16" y="55" width="4" height="4" fill="#FFFFFF"/>' +
+            '<rect x="22" y="55" width="2" height="2" fill="#4ADE80"/>' +
+            '<!-- Gold Academic Rosette Seal -->' +
+            '<path d="M70 54L66 68L72 64L76 69L75 54Z" fill="#D97706"/>' +
+            '<path d="M76 54L78 69L82 64L88 68L82 54Z" fill="#B45309"/>' +
+            '<circle cx="76" cy="49" r="10.5" fill="url(#eduGold)" stroke="#FEF08A" stroke-width="1.5"/>' +
+            '<path d="M72.5 49L75 51.5L80 46.5" stroke="#78350F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '</g>' +
+        '</g>' +
+
+        '<!-- CENTER FOREGROUND: Rolled Academic Diploma Scroll -->' +
+        '<g transform="translate(182, 224) rotate(-8)">' +
+          '<rect x="0" y="0" width="76" height="15" rx="7.5" fill="#FEFCE8" stroke="#FDE68A" stroke-width="1.2"/>' +
+          '<ellipse cx="74" cy="7.5" rx="3.5" ry="7.5" fill="#FDE047"/>' +
+          '<rect x="31" y="-1" width="12" height="17" rx="2" fill="#DC2626"/>' +
+          '<path d="M34 16L31 24L37 21L43 24L40 16Z" fill="#B91C1C"/>' +
+          '<circle cx="37" cy="7.5" r="4" fill="url(#eduGold)"/>' +
         '</g>' +
       '</svg>' +
     '</div>';
@@ -242,13 +288,6 @@
             '</div>' +
             (pesan ? '<div class="callout bad" style="width:100%;max-width:430px;text-align:left"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + SP.esc(pesan) + '</div></div>' : '') +
             '<div class="login-form-stack">' +
-              '<div class="login-guide-card">' +
-                '<div class="login-guide-ic">' + SP.icon('lock') + '</div>' +
-                '<div class="login-guide-tx">' +
-                  '<b>Akses Khusus Pendidik &amp; Administrator</b>' +
-                  '<p>Hanya Tutor aktif dan Superadmin yang memiliki hak akses ke sistem. Mahasiswa tidak memiliki akun login — seluruh rekapan nilai dan sertifikat dikirim otomatis melalui surel resmi.</p>' +
-                '</div>' +
-              '</div>' +
               '<div class="login-auth-box">' +
                 '<div class="login-auth-cta-bar">' +
                   SP.icon('lock', 'sm') +

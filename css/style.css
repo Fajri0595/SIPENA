@@ -592,251 +592,106 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   max-width: 96%;
 }
 
-/* 3D-Style Desk & Character Illustration Stage (Dominant Lower Area) */
+/* 3D Higher-Education & Academic Assessment Illustration Stage */
 .login-illo-stage {
   position: relative;
   z-index: 2;
   flex: 1;
   width: 100%;
-  min-height: 320px;
+  min-height: 300px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .login-illo-svg {
   width: 100%;
   max-width: 460px;
   height: auto;
-  max-height: 330px;
+  max-height: 310px;
   overflow: visible;
-  filter: drop-shadow(0 16px 28px rgba(4, 24, 12, 0.38));
+  filter: drop-shadow(0 18px 30px rgba(4, 24, 12, 0.36));
 }
-.illo-waving-arm {
-  transform-origin: 206px 112px;
-  animation: illoWave 2.8s ease-in-out infinite alternate;
+.edu-cap-float {
+  animation: eduFloatCap 4.2s ease-in-out infinite alternate;
 }
-.illo-head {
-  transform-origin: 178px 78px;
-  animation: illoBob 3.6s ease-in-out infinite alternate;
+.edu-tassel {
+  transform-origin: 114px 145px;
+  animation: eduTasselSway 3.2s ease-in-out infinite alternate;
 }
-.illo-eyes {
-  transform-origin: 178px 70px;
-  animation: illoBlink 5.2s ease-in-out infinite;
+.edu-cert-float {
+  animation: eduFloatCert 4.8s ease-in-out -1.6s infinite alternate;
 }
-.illo-plant {
-  transform-origin: 52px 190px;
-  animation: illoLeafSway 4.4s ease-in-out infinite alternate;
+.edu-globe-float {
+  animation: eduFloatGlobe 5.4s ease-in-out -0.8s infinite alternate;
 }
-.illo-sparks {
-  animation: illoSparkPulse 2s ease-in-out infinite alternate;
+.edu-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
 }
-.illo-sphere-1 {
-  animation: badgeFloat 4.5s ease-in-out infinite alternate;
+.edu-bar-1 { animation: eduBarPulse 3.4s ease-in-out infinite alternate; }
+.edu-bar-2 { animation: eduBarPulse 3.8s ease-in-out -1.1s infinite alternate; }
+.edu-bar-3 { animation: eduBarPulse 3.2s ease-in-out -2.2s infinite alternate; }
+.edu-bar-4 { animation: eduBarPulse 4.0s ease-in-out -0.6s infinite alternate; }
+.edu-ring-prog {
+  animation: eduRingGlow 4s ease-in-out infinite alternate;
 }
-.illo-sphere-2 {
-  animation: badgeFloat 5.2s ease-in-out -2s infinite alternate;
+.edu-orbit-1 {
+  transform-origin: 230px 155px;
+  animation: eduOrbitPulse 6.5s ease-in-out infinite alternate;
 }
-.illo-orbit {
-  transform-origin: 235px 165px;
-  animation: illoOrbitPulse 6s ease-in-out infinite alternate;
+.edu-orbit-2 {
+  transform-origin: 230px 155px;
+  animation: eduOrbitPulse 5.2s ease-in-out -2.5s infinite alternate;
 }
-@keyframes illoWave {
-  0% { transform: rotate(-5deg); }
-  100% { transform: rotate(9deg); }
-}
-@keyframes illoBob {
-  0% { transform: translateY(0) rotate(-1.2deg); }
-  100% { transform: translateY(-3px) rotate(1.8deg); }
-}
-@keyframes illoBlink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  96% { transform: scaleY(0.12); }
-}
-@keyframes illoLeafSway {
-  0% { transform: rotate(-1.5deg); }
-  100% { transform: rotate(2deg); }
-}
-@keyframes illoSparkPulse {
-  0% { opacity: 0.4; transform: translateY(1.5px); }
-  100% { opacity: 1; transform: translateY(-2.5px); }
-}
-@keyframes illoOrbitPulse {
-  0% { opacity: 0.55; transform: scale(0.98); }
-  100% { opacity: 1; transform: scale(1.03); }
-}
+.edu-star-1 { animation: eduTwinkle 2.8s ease-in-out infinite alternate; }
+.edu-star-2 { animation: eduTwinkle 3.4s ease-in-out -1.2s infinite alternate; }
+.edu-star-3 { animation: eduTwinkle 2.5s ease-in-out -0.7s infinite alternate; }
 
-/* Floating Dynamic Badges around Illustration */
-.illo-float-badge {
-  position: absolute;
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 13px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 600;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-  white-space: nowrap;
+@keyframes eduFloatCap {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(-1.5deg); }
 }
-.illo-fb-dot {
-  width: 7.5px;
-  height: 7.5px;
-  border-radius: 50%;
-  background: #4ADE80;
-  box-shadow: 0 0 8px #4ADE80;
+@keyframes eduTasselSway {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(4deg); }
 }
-.illo-fb-ic {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.24);
-  color: #FEF08A;
-  display: inline-grid;
-  place-items: center;
-  font-size: 10px;
-  font-weight: 800;
-}
-.illo-fb-1 {
-  top: 12px;
-  left: 6px;
-  animation: badgeFloat 4.2s ease-in-out infinite alternate;
-}
-.illo-fb-2 {
-  top: 8px;
-  right: 4px;
-  animation: badgeFloat 4.8s ease-in-out -1.5s infinite alternate;
-}
-.illo-fb-3 {
-  bottom: 24px;
-  right: 8px;
-  animation: badgeFloat 3.9s ease-in-out -2.4s infinite alternate;
-}
-.illo-fb-4 {
-  bottom: 28px;
-  left: 8px;
-  animation: badgeFloat 4.5s ease-in-out -1s infinite alternate;
-}
-@keyframes badgeFloat {
+@keyframes eduFloatCert {
   0% { transform: translateY(0px); }
   100% { transform: translateY(-7px); }
 }
-
-/* Feature Showcase Cards inside Left Inset Card */
-.login-features {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-  z-index: 2;
+@keyframes eduFloatGlobe {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-6px) rotate(2deg); }
 }
-.ft-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 13px;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(8px);
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+@keyframes eduBarPulse {
+  0% { transform: scaleY(0.88); opacity: 0.88; }
+  100% { transform: scaleY(1.04); opacity: 1; }
 }
-.ft-card:hover, .ft-card.is-active {
-  background: rgba(255, 255, 255, 0.17);
-  border-color: rgba(147, 224, 162, 0.5);
-  transform: translateX(4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+@keyframes eduRingGlow {
+  0% { stroke-dasharray: 88 126; opacity: 0.85; }
+  100% { stroke-dasharray: 106 126; opacity: 1; }
 }
-.ft-card .ic {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  flex: none;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s;
+@keyframes eduOrbitPulse {
+  0% { opacity: 0.45; transform: scale(0.98); }
+  100% { opacity: 0.95; transform: scale(1.02); }
 }
-.ft-card:hover .ic, .ft-card.is-active .ic {
-  transform: scale(1.08);
-  background: rgba(147, 224, 162, 0.3);
-  color: #fff;
-}
-.ft-card-body { flex: 1; min-width: 0; }
-.ft-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-.ft-card-head b {
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-}
-.ft-card-tag {
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--primary-l);
-  padding: 1.5px 7px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-.ft-card-desc {
-  font-size: 11.5px;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.82);
-  margin-top: 2px;
-}
-
-/* Quick Pills */
-.login-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  position: relative;
-  z-index: 2;
-}
-.login-pill-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3.5px 10px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.95);
-  transition: all 0.2s ease;
-}
-.login-pill-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
+@keyframes eduTwinkle {
+  0% { opacity: 0.3; transform: scale(0.85); }
+  100% { opacity: 0.95; transform: scale(1.12); }
 }
 
 /* Right Panel — Clean Form & Brand Workspace (Reference Model) */
 .login-r {
   position: relative;
   z-index: 1;
-  padding: 26px 38px;
+  padding: 32px 38px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  gap: 16px;
+  gap: 18px;
   background: transparent;
 }
 
@@ -930,52 +785,6 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-/* Guide Notice Card (Styled like Soft Gray Field Box in Reference) */
-.login-guide-card {
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: #F4F6F8;
-  border: 1px solid #E5E9F0;
-  transition: all 0.2s ease;
-}
-.login-guide-card:hover {
-  background: #EEF3F0;
-  border-color: #CBDAD2;
-}
-.login-guide-ic {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #DCFCE7;
-  color: var(--primary);
-  display: grid;
-  place-items: center;
-  flex: none;
-  margin-top: 1px;
-}
-.login-guide-tx {
-  flex: 1;
-  min-width: 0;
-}
-.login-guide-card b {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 3px;
-}
-.login-guide-card p {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--text2);
-  margin: 0;
 }
 
 /* Auth Action Box (Styled with Prominent Primary Header & Clean Google Button Slot) */
