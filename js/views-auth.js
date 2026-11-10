@@ -38,30 +38,42 @@
       '<div class="illo-float-badge illo-fb-1"><span class="illo-fb-dot"></span><span><b>AR &amp; EN</b> • 4 Program</span></div>' +
       '<div class="illo-float-badge illo-fb-2"><span class="illo-fb-ic">✓</span><span>Evaluasi KKM Otomatis</span></div>' +
       '<div class="illo-float-badge illo-fb-3"><span class="illo-fb-ic">★</span><span>E-Sertifikat QR</span></div>' +
-      '<svg class="login-illo-svg" viewBox="0 0 420 230" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<div class="illo-float-badge illo-fb-4"><span class="illo-fb-dot" style="background:#FBBF24;box-shadow:0 0 8px #FBBF24"></span><span>Sinkronisasi Real-Time</span></div>' +
+      '<svg class="login-illo-svg" viewBox="0 0 460 310" fill="none" xmlns="http://www.w3.org/2000/svg">' +
         '<defs>' +
-          '<radialGradient id="ilGlow" cx="50%" cy="55%" r="48%">' +
-            '<stop offset="0%" stop-color="#93E0A2" stop-opacity="0.38"/>' +
+          '<radialGradient id="ilGlow" cx="50%" cy="54%" r="48%">' +
+            '<stop offset="0%" stop-color="#93E0A2" stop-opacity="0.42"/>' +
+            '<stop offset="60%" stop-color="#4ADE80" stop-opacity="0.14"/>' +
             '<stop offset="100%" stop-color="#166534" stop-opacity="0"/>' +
+          '</radialGradient>' +
+          '<radialGradient id="ilSphere1" cx="35%" cy="30%" r="65%">' +
+            '<stop offset="0%" stop-color="#BBF7D0"/>' +
+            '<stop offset="55%" stop-color="#22C55E"/>' +
+            '<stop offset="100%" stop-color="#064E3B"/>' +
+          '</radialGradient>' +
+          '<radialGradient id="ilSphere2" cx="35%" cy="30%" r="65%">' +
+            '<stop offset="0%" stop-color="#FED7AA"/>' +
+            '<stop offset="55%" stop-color="#F97316"/>' +
+            '<stop offset="100%" stop-color="#7C2D12"/>' +
           '</radialGradient>' +
           '<linearGradient id="ilDesk" x1="0" y1="0" x2="1" y2="1">' +
             '<stop offset="0%" stop-color="#0D4A26"/>' +
-            '<stop offset="100%" stop-color="#072814"/>' +
+            '<stop offset="100%" stop-color="#052110"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilSweater" x1="0" y1="0" x2="0" y2="1">' +
             '<stop offset="0%" stop-color="#FFFFFF"/>' +
-            '<stop offset="100%" stop-color="#DCE7E0"/>' +
+            '<stop offset="100%" stop-color="#D5E3DA"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilPants" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#0F532B"/>' +
-            '<stop offset="100%" stop-color="#062E16"/>' +
+            '<stop offset="0%" stop-color="#115E30"/>' +
+            '<stop offset="100%" stop-color="#052913"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilFace" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0%" stop-color="#FDE2C4"/>' +
-            '<stop offset="100%" stop-color="#F3B893"/>' +
+            '<stop offset="0%" stop-color="#FFE4C8"/>' +
+            '<stop offset="100%" stop-color="#F2B48C"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilHat" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#EA580C"/>' +
+            '<stop offset="0%" stop-color="#F97316"/>' +
             '<stop offset="100%" stop-color="#9A3412"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilMon" x1="0" y1="0" x2="1" y2="1">' +
@@ -69,7 +81,7 @@
             '<stop offset="100%" stop-color="#0F172A"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilLap" x1="0" y1="0" x2="1" y2="1">' +
-            '<stop offset="0%" stop-color="#DC2626"/>' +
+            '<stop offset="0%" stop-color="#EA580C"/>' +
             '<stop offset="100%" stop-color="#991B1B"/>' +
           '</linearGradient>' +
           '<linearGradient id="ilPlant" x1="0" y1="0" x2="0" y2="1">' +
@@ -77,98 +89,111 @@
             '<stop offset="100%" stop-color="#15803D"/>' +
           '</linearGradient>' +
         '</defs>' +
-        '<!-- Ambient Glow & Floor Shadow -->' +
-        '<ellipse cx="215" cy="135" rx="155" ry="78" fill="url(#ilGlow)"/>' +
-        '<ellipse cx="210" cy="212" rx="164" ry="8" fill="#041E0E" fill-opacity="0.45"/>' +
-        '<!-- Potted Plant (Left) -->' +
-        '<g class="illo-plant">' +
-          '<ellipse cx="56" cy="168" rx="14" ry="18" fill="url(#ilPlant)"/>' +
-          '<circle cx="56" cy="153" r="11" fill="#4ADE80" fill-opacity="0.65"/>' +
-          '<rect x="46" y="185" width="20" height="4" rx="2" fill="#FB923C"/>' +
-          '<path d="M48 189H64L61 210H51L48 189Z" fill="url(#ilHat)"/>' +
-          '<rect x="47" y="209" width="18" height="3" rx="1.5" fill="#072814"/>' +
+        '<!-- Ambient Halo & Orbital Rings -->' +
+        '<ellipse cx="235" cy="175" rx="185" ry="105" fill="url(#ilGlow)"/>' +
+        '<ellipse class="illo-orbit" cx="235" cy="165" rx="165" ry="52" stroke="rgba(147,224,162,0.18)" stroke-width="1.5" stroke-dasharray="6 8"/>' +
+        '<!-- Floating 3D Spheres -->' +
+        '<circle class="illo-sphere-1" cx="76" cy="108" r="10" fill="url(#ilSphere1)" opacity="0.85"/>' +
+        '<circle class="illo-sphere-2" cx="384" cy="122" r="8" fill="url(#ilSphere2)" opacity="0.85"/>' +
+        '<circle class="illo-sphere-1" cx="356" cy="64" r="5" fill="url(#ilSphere1)" opacity="0.65"/>' +
+        '<!-- Floor Shadow -->' +
+        '<ellipse cx="230" cy="284" rx="190" ry="10" fill="#031A0C" fill-opacity="0.5"/>' +
+        '<!-- Main Scene Scaled Up & Centered -->' +
+        '<g transform="translate(8, 12) scale(1.25)">' +
+          '<!-- Potted Plant (Left) -->' +
+          '<g class="illo-plant">' +
+            '<ellipse cx="52" cy="172" rx="15" ry="20" fill="url(#ilPlant)"/>' +
+            '<circle cx="52" cy="155" r="12" fill="#4ADE80" fill-opacity="0.7"/>' +
+            '<rect x="41" y="190" width="22" height="4.5" rx="2.2" fill="#FB923C"/>' +
+            '<path d="M43 194.5H61L58 216H46L43 194.5Z" fill="url(#ilHat)"/>' +
+            '<rect x="42" y="215" width="20" height="3" rx="1.5" fill="#072814"/>' +
+          '</g>' +
+          '<!-- Swivel Chair Base & Seat -->' +
+          '<rect x="175" y="166" width="6" height="40" rx="3" fill="#CBD5E1"/>' +
+          '<path d="M156 212L178 200L200 212" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<line x1="178" y1="200" x2="178" y2="214" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>' +
+          '<circle cx="155" cy="215" r="3.8" fill="#0F172A"/>' +
+          '<circle cx="178" cy="216" r="3.8" fill="#0F172A"/>' +
+          '<circle cx="201" cy="215" r="3.8" fill="#0F172A"/>' +
+          '<rect x="148" y="155" width="60" height="13" rx="6.5" fill="url(#ilHat)"/>' +
+          '<!-- Character Lower Body / Legs under Desk -->' +
+          '<path d="M156 144L128 176L142 186L172 155Z" fill="url(#ilPants)"/>' +
+          '<path d="M200 144L228 176L214 186L184 155Z" fill="url(#ilPants)"/>' +
+          '<!-- Sneakers -->' +
+          '<g transform="translate(111, 174) rotate(-24)">' +
+            '<rect x="0" y="0" width="26" height="11" rx="5.5" fill="#166534"/>' +
+            '<rect x="-2" y="8.5" width="30" height="4.2" rx="2" fill="#FFFFFF"/>' +
+          '</g>' +
+          '<g transform="translate(221, 163) rotate(24)">' +
+            '<rect x="0" y="0" width="26" height="11" rx="5.5" fill="#166534"/>' +
+            '<rect x="-2" y="8.5" width="30" height="4.2" rx="2" fill="#FFFFFF"/>' +
+          '</g>' +
+          '<!-- Character Torso & Raised Waving Arm -->' +
+          '<g class="illo-waving-arm">' +
+            '<path d="M206 112L239 58" stroke="url(#ilSweater)" stroke-width="15" stroke-linecap="round"/>' +
+            '<!-- Hand Peace / Wave Sign -->' +
+            '<circle cx="243" cy="50" r="7.5" fill="url(#ilFace)"/>' +
+            '<line x1="241" y1="44" x2="238" y2="33" stroke="#F2B48C" stroke-width="3.8" stroke-linecap="round"/>' +
+            '<line x1="246" y1="44" x2="250" y2="34" stroke="#F2B48C" stroke-width="3.8" stroke-linecap="round"/>' +
+          '</g>' +
+          '<!-- Left Arm to Keyboard -->' +
+          '<path d="M150 112L128 130" stroke="url(#ilSweater)" stroke-width="14" stroke-linecap="round"/>' +
+          '<!-- Sweater Body -->' +
+          '<rect x="144" y="95" width="68" height="49" rx="22" fill="url(#ilSweater)"/>' +
+          '<ellipse cx="178" cy="97" rx="17" ry="5.5" fill="#CBD5E1"/>' +
+          '<!-- Character Head & Hat -->' +
+          '<g class="illo-head">' +
+            '<circle cx="151" cy="72" r="6.5" fill="#F2B48C"/>' +
+            '<circle cx="205" cy="72" r="6.5" fill="#F2B48C"/>' +
+            '<rect x="154" y="48" width="48" height="44" rx="22" fill="url(#ilFace)"/>' +
+            '<!-- Hair under hat -->' +
+            '<path d="M154 62C154 50 202 50 202 62" fill="#1E293B"/>' +
+            '<!-- Eyes (with Blink) & Smile -->' +
+            '<g class="illo-eyes">' +
+              '<circle cx="169" cy="70" r="2.8" fill="#1E293B"/>' +
+              '<circle cx="187" cy="70" r="2.8" fill="#1E293B"/>' +
+              '<circle cx="170" cy="69" r="0.9" fill="#FFFFFF"/>' +
+              '<circle cx="188" cy="69" r="0.9" fill="#FFFFFF"/>' +
+            '</g>' +
+            '<circle cx="163" cy="75.5" r="5" fill="#FB7185" fill-opacity="0.45"/>' +
+            '<circle cx="193" cy="75.5" r="5" fill="#FB7185" fill-opacity="0.45"/>' +
+            '<path d="M173.5 77.5Q178 82 182.5 77.5" stroke="#9A3412" stroke-width="2.4" stroke-linecap="round" fill="none"/>' +
+            '<!-- Stylish Cap / Hat -->' +
+            '<path d="M158 50C158 38 198 38 198 50Z" fill="url(#ilHat)"/>' +
+            '<ellipse cx="178" cy="51" rx="34" ry="6" fill="#FB923C"/>' +
+            '<ellipse cx="178" cy="52.8" rx="31" ry="3.8" fill="#9A3412" fill-opacity="0.45"/>' +
+          '</g>' +
+          '<!-- Action Spark Lines Above Monitor -->' +
+          '<g class="illo-sparks" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round">' +
+            '<line x1="94" y1="60" x2="88" y2="47"/>' +
+            '<line x1="104" y1="58" x2="104" y2="44"/>' +
+            '<line x1="114" y1="60" x2="119" y2="48"/>' +
+          '</g>' +
+          '<!-- Desktop Monitor (Left of Desk) -->' +
+          '<rect x="64" y="70" width="76" height="52" rx="7" fill="url(#ilMon)" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>' +
+          '<!-- Sticky Note on Monitor Back -->' +
+          '<rect x="118" y="87" width="12" height="14" rx="2" fill="#FEF08A" transform="rotate(-6 118 87)"/>' +
+          '<!-- Monitor Stand -->' +
+          '<path d="M95 100H110L114 133H91L95 100Z" fill="#E2E8F0"/>' +
+          '<rect x="84" y="131" width="37" height="4.5" rx="2.2" fill="#CBD5E1"/>' +
+          '<!-- Keyboard on Desk -->' +
+          '<rect x="142" y="130" width="64" height="4.5" rx="2.2" fill="#1E293B"/>' +
+          '<!-- Laptop on Stand (Right of Desk) -->' +
+          '<rect x="230" y="118" width="35" height="16" rx="2.5" fill="#94A3B8"/>' +
+          '<path d="M218 88H270L265 120H213L218 88Z" fill="url(#ilLap)"/>' +
+          '<circle cx="242" cy="104" r="4.5" fill="#93E0A2" fill-opacity="0.9"/>' +
+          '<circle cx="255" cy="96" r="2.8" fill="#FDE047" fill-opacity="0.9"/>' +
+          '<!-- Desk Tabletop & Legs -->' +
+          '<rect x="46" y="134" width="268" height="9" rx="4.5" fill="url(#ilDesk)"/>' +
+          '<rect x="46" y="134" width="268" height="2.5" rx="1.2" fill="#4ADE80" fill-opacity="0.5"/>' +
+          '<!-- Desk Hanging Tag -->' +
+          '<rect x="278" y="140" width="12" height="15" rx="2" fill="#E2E8F0" transform="rotate(10 278 140)"/>' +
+          '<!-- Desk Legs -->' +
+          '<rect x="64" y="143" width="9" height="73" fill="url(#ilDesk)"/>' +
+          '<rect x="58" y="213" width="21" height="4.5" rx="2.2" fill="#4ADE80" fill-opacity="0.55"/>' +
+          '<rect x="287" y="143" width="9" height="73" fill="url(#ilDesk)"/>' +
+          '<rect x="281" y="213" width="21" height="4.5" rx="2.2" fill="#4ADE80" fill-opacity="0.55"/>' +
         '</g>' +
-        '<!-- Swivel Chair Base & Seat -->' +
-        '<rect x="209" y="162" width="6" height="38" rx="3" fill="#CBD5E1"/>' +
-        '<path d="M192 206L212 195L232 206" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<line x1="212" y1="195" x2="212" y2="208" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>' +
-        '<circle cx="191" cy="209" r="3.5" fill="#0F172A"/>' +
-        '<circle cx="212" cy="210" r="3.5" fill="#0F172A"/>' +
-        '<circle cx="233" cy="209" r="3.5" fill="#0F172A"/>' +
-        '<rect x="184" y="152" width="56" height="12" rx="6" fill="url(#ilHat)"/>' +
-        '<!-- Character Lower Body / Legs under Desk -->' +
-        '<path d="M192 142L166 172L179 181L207 152Z" fill="url(#ilPants)"/>' +
-        '<path d="M232 142L258 172L245 181L217 152Z" fill="url(#ilPants)"/>' +
-        '<!-- Sneakers -->' +
-        '<g transform="translate(150, 170) rotate(-24)">' +
-          '<rect x="0" y="0" width="24" height="10" rx="5" fill="#166534"/>' +
-          '<rect x="-2" y="8" width="28" height="4" rx="2" fill="#FFFFFF"/>' +
-        '</g>' +
-        '<g transform="translate(252, 160) rotate(24)">' +
-          '<rect x="0" y="0" width="24" height="10" rx="5" fill="#166534"/>' +
-          '<rect x="-2" y="8" width="28" height="4" rx="2" fill="#FFFFFF"/>' +
-        '</g>' +
-        '<!-- Character Torso & Raised Waving Arm -->' +
-        '<g class="illo-waving-arm">' +
-          '<path d="M238 112L269 63" stroke="url(#ilSweater)" stroke-width="14" stroke-linecap="round"/>' +
-          '<!-- Hand Peace / Wave Sign -->' +
-          '<circle cx="273" cy="55" r="7" fill="url(#ilFace)"/>' +
-          '<line x1="271" y1="50" x2="268" y2="39" stroke="#F3B893" stroke-width="3.5" stroke-linecap="round"/>' +
-          '<line x1="276" y1="50" x2="279" y2="40" stroke="#F3B893" stroke-width="3.5" stroke-linecap="round"/>' +
-        '</g>' +
-        '<!-- Left Arm to Keyboard -->' +
-        '<path d="M186 112L166 128" stroke="url(#ilSweater)" stroke-width="13" stroke-linecap="round"/>' +
-        '<!-- Sweater Body -->' +
-        '<rect x="180" y="96" width="64" height="46" rx="20" fill="url(#ilSweater)"/>' +
-        '<ellipse cx="212" cy="98" rx="16" ry="5" fill="#CBD5E1"/>' +
-        '<!-- Character Head & Hat -->' +
-        '<g class="illo-head">' +
-          '<circle cx="187" cy="74" r="6" fill="#F3B893"/>' +
-          '<circle cx="237" cy="74" r="6" fill="#F3B893"/>' +
-          '<rect x="190" y="52" width="44" height="41" rx="20" fill="url(#ilFace)"/>' +
-          '<!-- Hair under hat -->' +
-          '<path d="M190 65C190 54 234 54 234 65" fill="#1E293B"/>' +
-          '<!-- Eyes & Smile -->' +
-          '<circle cx="204" cy="72" r="2.6" fill="#1E293B"/>' +
-          '<circle cx="220" cy="72" r="2.6" fill="#1E293B"/>' +
-          '<circle cx="198" cy="77" r="4.5" fill="#FB7185" fill-opacity="0.45"/>' +
-          '<circle cx="226" cy="77" r="4.5" fill="#FB7185" fill-opacity="0.45"/>' +
-          '<path d="M208 79Q212 83 216 79" stroke="#9A3412" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
-          '<!-- Stylish Cap / Hat -->' +
-          '<path d="M194 54C194 43 230 43 230 54Z" fill="url(#ilHat)"/>' +
-          '<ellipse cx="212" cy="55" rx="31" ry="5.5" fill="#FB923C"/>' +
-          '<ellipse cx="212" cy="56.5" rx="29" ry="3.5" fill="#9A3412" fill-opacity="0.45"/>' +
-        '</g>' +
-        '<!-- Action Spark Lines Above Monitor -->' +
-        '<g class="illo-sparks" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round">' +
-          '<line x1="120" y1="62" x2="115" y2="50"/>' +
-          '<line x1="129" y1="60" x2="129" y2="47"/>' +
-          '<line x1="138" y1="62" x2="142" y2="51"/>' +
-        '</g>' +
-        '<!-- Desktop Monitor (Left of Desk) -->' +
-        '<rect x="92" y="72" width="70" height="48" rx="6" fill="url(#ilMon)" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>' +
-        '<!-- Sticky Note on Monitor Back -->' +
-        '<rect x="142" y="88" width="11" height="13" rx="1.5" fill="#FEF08A" transform="rotate(-6 142 88)"/>' +
-        '<!-- Monitor Stand -->' +
-        '<path d="M120 100H134L138 130H116L120 100Z" fill="#E2E8F0"/>' +
-        '<rect x="110" y="128" width="34" height="4" rx="2" fill="#CBD5E1"/>' +
-        '<!-- Keyboard on Desk -->' +
-        '<rect x="176" y="127" width="58" height="4" rx="2" fill="#1E293B"/>' +
-        '<!-- Laptop on Stand (Right of Desk) -->' +
-        '<rect x="260" y="116" width="32" height="15" rx="2" fill="#94A3B8"/>' +
-        '<path d="M250 88H298L293 118H245L250 88Z" fill="url(#ilLap)"/>' +
-        '<circle cx="272" cy="103" r="4" fill="#93E0A2" fill-opacity="0.85"/>' +
-        '<circle cx="284" cy="96" r="2.5" fill="#FDE047" fill-opacity="0.85"/>' +
-        '<!-- Desk Tabletop & Legs -->' +
-        '<rect x="74" y="131" width="272" height="8" rx="4" fill="url(#ilDesk)"/>' +
-        '<rect x="74" y="131" width="272" height="2.2" rx="1.1" fill="#4ADE80" fill-opacity="0.45"/>' +
-        '<!-- Desk Hanging Tag -->' +
-        '<rect x="303" y="136" width="11" height="14" rx="1.5" fill="#E2E8F0" transform="rotate(10 303 136)"/>' +
-        '<!-- Desk Legs -->' +
-        '<rect x="92" y="139" width="8" height="71" fill="url(#ilDesk)"/>' +
-        '<rect x="87" y="207" width="18" height="4" rx="2" fill="#4ADE80" fill-opacity="0.5"/>' +
-        '<rect x="320" y="139" width="8" height="71" fill="url(#ilDesk)"/>' +
-        '<rect x="315" y="207" width="18" height="4" rx="2" fill="#4ADE80" fill-opacity="0.5"/>' +
       '</svg>' +
     '</div>';
   }
@@ -196,30 +221,6 @@
               '<p class="login-hero-sub">Pusat tata kelola nilai komprehensif, evaluasi kelulusan multi-semester berbasis KKM institusi, dan penerbitan sertifikat elektronik resmi.</p>' +
             '</div>' +
             ilustrasiLogin() +
-            '<div class="login-features" id="login-ft-list">' +
-              [
-                ['layers', 'Sinkronisasi Multi-Tutor Real-Time', 'Nilai semester ganjil &amp; genap dari pengajar terintegrasi otomatis dalam satu basis data terpusat.', 'Otomatis'],
-                ['shieldCheck', 'Evaluasi Kelulusan 4 Program', 'Perhitungan otomatis status kelulusan Arab &amp; Inggris 2 semester sesuai ambang batas KKM.', 'Standar KKM'],
-                ['award', 'Penerbitan Sertifikat &amp; Surel Digital', 'Sertifikat resmi berseri dengan QR Code validasi langsung terdistribusi ke email mahasiswa.', 'QR Verifikasi']
-              ].map(function (f, idx) {
-                return '<div class="ft-card' + (idx === 0 ? ' is-active' : '') + '" data-ft-idx="' + idx + '">' +
-                  '<div class="ic">' + SP.icon(f[0]) + '</div>' +
-                  '<div class="ft-card-body">' +
-                    '<div class="ft-card-head">' +
-                      '<b>' + f[1] + '</b>' +
-                      '<span class="ft-card-tag">' + f[3] + '</span>' +
-                    '</div>' +
-                    '<div class="ft-card-desc">' + f[2] + '</div>' +
-                  '</div>' +
-                '</div>';
-              }).join('') +
-            '</div>' +
-            '<div class="login-pills">' +
-              '<span class="login-pill-item">' + SP.icon('check', 'sm') + ' 2 Bahasa Asing</span>' +
-              '<span class="login-pill-item">' + SP.icon('calendar', 'sm') + ' 2 Semester</span>' +
-              '<span class="login-pill-item">' + SP.icon('award', 'sm') + ' Sertifikat QR</span>' +
-              '<span class="login-pill-item">' + SP.icon('shieldCheck', 'sm') + ' Basis Data Terpusat</span>' +
-            '</div>' +
           '</section>' +
           '<section class="login-r">' +
             '<div class="login-r-brand">' +
@@ -291,32 +292,6 @@
         '</div>' +
       '</main>' +
       footer(SP.infoPublik);
-
-    // Interaksi dinamis kartu fitur pada panel kiri
-    const ftCards = document.querySelectorAll('#login-ft-list .ft-card');
-    if (ftCards.length) {
-      let activeIdx = 0;
-      let paused = false;
-      const setFtActive = function (i) {
-        activeIdx = i;
-        ftCards.forEach(function (c, idx) {
-          c.classList.toggle('is-active', idx === i);
-        });
-      };
-      ftCards.forEach(function (c, idx) {
-        c.addEventListener('mouseenter', function () { paused = true; setFtActive(idx); });
-        c.addEventListener('mouseleave', function () { paused = false; });
-        c.addEventListener('click', function () { setFtActive(idx); });
-      });
-      if (SP._loginFtTimer) clearInterval(SP._loginFtTimer);
-      SP._loginFtTimer = setInterval(function () {
-        if (!document.getElementById('login-ft-list')) {
-          clearInterval(SP._loginFtTimer);
-          return;
-        }
-        if (!paused) setFtActive((activeIdx + 1) % ftCards.length);
-      }, 3600);
-    }
 
     // Render tombol Google Sign-In segera jika Client ID sudah ada di config.js
     const g = SP.$('#gbtn');

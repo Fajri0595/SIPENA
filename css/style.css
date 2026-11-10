@@ -534,14 +534,14 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 .login-l {
   background: linear-gradient(160deg, #1f8746 0%, #166534 48%, #0c361c 100%);
   color: #fff;
-  padding: 32px 34px 28px;
+  padding: 38px 36px 26px;
   border-radius: 24px;
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   overflow: hidden;
   box-shadow: 0 20px 44px -12px rgba(13, 56, 30, 0.42), inset 0 1px 1px rgba(255, 255, 255, 0.28);
 }
@@ -558,7 +558,7 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
 .login-l-top {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   position: relative;
   z-index: 2;
 }
@@ -566,12 +566,12 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
+  padding: 5px 13px;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -579,59 +579,91 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   backdrop-filter: blur(6px);
 }
 .login-hero-title {
-  font-size: 27px;
-  line-height: 1.2;
+  font-size: 31px;
+  line-height: 1.18;
   font-weight: 800;
   letter-spacing: -.02em;
   color: #fff;
 }
 .login-hero-sub {
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
-  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  line-height: 1.55;
   max-width: 96%;
 }
 
-/* 3D-Style Desk & Character Illustration Stage */
+/* 3D-Style Desk & Character Illustration Stage (Dominant Lower Area) */
 .login-illo-stage {
   position: relative;
   z-index: 2;
+  flex: 1;
   width: 100%;
-  height: 182px;
+  min-height: 320px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  margin: 2px 0;
+  margin-top: 6px;
 }
 .login-illo-svg {
   width: 100%;
-  max-width: 390px;
-  height: 100%;
+  max-width: 460px;
+  height: auto;
+  max-height: 330px;
   overflow: visible;
-  filter: drop-shadow(0 12px 20px rgba(5, 28, 14, 0.32));
+  filter: drop-shadow(0 16px 28px rgba(4, 24, 12, 0.38));
 }
 .illo-waving-arm {
-  transform-origin: 238px 112px;
-  animation: illoWave 3.2s ease-in-out infinite alternate;
+  transform-origin: 206px 112px;
+  animation: illoWave 2.8s ease-in-out infinite alternate;
 }
 .illo-head {
-  transform-origin: 212px 80px;
-  animation: illoBob 4s ease-in-out infinite alternate;
+  transform-origin: 178px 78px;
+  animation: illoBob 3.6s ease-in-out infinite alternate;
+}
+.illo-eyes {
+  transform-origin: 178px 70px;
+  animation: illoBlink 5.2s ease-in-out infinite;
+}
+.illo-plant {
+  transform-origin: 52px 190px;
+  animation: illoLeafSway 4.4s ease-in-out infinite alternate;
 }
 .illo-sparks {
-  animation: illoSparkPulse 2.2s ease-in-out infinite alternate;
+  animation: illoSparkPulse 2s ease-in-out infinite alternate;
+}
+.illo-sphere-1 {
+  animation: badgeFloat 4.5s ease-in-out infinite alternate;
+}
+.illo-sphere-2 {
+  animation: badgeFloat 5.2s ease-in-out -2s infinite alternate;
+}
+.illo-orbit {
+  transform-origin: 235px 165px;
+  animation: illoOrbitPulse 6s ease-in-out infinite alternate;
 }
 @keyframes illoWave {
-  0% { transform: rotate(-4deg); }
-  100% { transform: rotate(8deg); }
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(9deg); }
 }
 @keyframes illoBob {
-  0% { transform: translateY(0) rotate(-1deg); }
-  100% { transform: translateY(-2.5px) rotate(1.5deg); }
+  0% { transform: translateY(0) rotate(-1.2deg); }
+  100% { transform: translateY(-3px) rotate(1.8deg); }
+}
+@keyframes illoBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.12); }
+}
+@keyframes illoLeafSway {
+  0% { transform: rotate(-1.5deg); }
+  100% { transform: rotate(2deg); }
 }
 @keyframes illoSparkPulse {
-  0% { opacity: 0.45; transform: translateY(1px); }
-  100% { opacity: 1; transform: translateY(-2px); }
+  0% { opacity: 0.4; transform: translateY(1.5px); }
+  100% { opacity: 1; transform: translateY(-2.5px); }
+}
+@keyframes illoOrbitPulse {
+  0% { opacity: 0.55; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.03); }
 }
 
 /* Floating Dynamic Badges around Illustration */
@@ -640,28 +672,28 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
+  gap: 7px;
+  padding: 6px 13px;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(10px);
   color: #fff;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
 }
 .illo-fb-dot {
-  width: 7px;
-  height: 7px;
+  width: 7.5px;
+  height: 7.5px;
   border-radius: 50%;
   background: #4ADE80;
   box-shadow: 0 0 8px #4ADE80;
 }
 .illo-fb-ic {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.24);
   color: #FEF08A;
@@ -671,23 +703,28 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   font-weight: 800;
 }
 .illo-fb-1 {
-  top: 4px;
-  left: 8px;
+  top: 12px;
+  left: 6px;
   animation: badgeFloat 4.2s ease-in-out infinite alternate;
 }
 .illo-fb-2 {
-  top: 2px;
-  right: 6px;
+  top: 8px;
+  right: 4px;
   animation: badgeFloat 4.8s ease-in-out -1.5s infinite alternate;
 }
 .illo-fb-3 {
-  bottom: 18px;
-  right: 12px;
+  bottom: 24px;
+  right: 8px;
   animation: badgeFloat 3.9s ease-in-out -2.4s infinite alternate;
+}
+.illo-fb-4 {
+  bottom: 28px;
+  left: 8px;
+  animation: badgeFloat 4.5s ease-in-out -1s infinite alternate;
 }
 @keyframes badgeFloat {
   0% { transform: translateY(0px); }
-  100% { transform: translateY(-6px); }
+  100% { transform: translateY(-7px); }
 }
 
 /* Feature Showcase Cards inside Left Inset Card */
@@ -1226,13 +1263,8 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
     white-space: normal;
   }
   .login-illo-stage {
-    height: 165px;
-  }
-  .login-features {
-    gap: 8px;
-  }
-  .ft-card {
-    padding: 10px 12px;
+    min-height: 240px;
+    height: auto;
   }
 }
 
@@ -1324,7 +1356,7 @@ svg.i.sm { width: 14px; height: 14px; } svg.i.lg { width: 22px; height: 22px; } 
   .login-sub { font-size: 12.5px; }
   .login-auth-box { padding: 14px 12px; }
   .login-guide-card { padding: 12px; }
-  .login-illo-stage { height: 150px; }
+  .login-illo-stage { min-height: 205px; height: auto; }
   .illo-float-badge { font-size: 10px; padding: 3.5px 8px; }
   .login-quick-row { gap: 6px; }
   .login-quick-btn { height: 40px; padding: 0 8px; font-size: 12px; gap: 5px; }
