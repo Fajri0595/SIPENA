@@ -43,6 +43,146 @@
     return SP.infoPublik;
   }
 
+  function ilustrasiLogin() {
+    return '<div class="login-illo-stage" aria-hidden="true">' +
+      '<div class="illo-float-badge illo-fb-1"><span class="illo-fb-dot"></span><span><b>AR &amp; EN</b> • 4 Program</span></div>' +
+      '<div class="illo-float-badge illo-fb-2"><span class="illo-fb-ic">✓</span><span>Evaluasi KKM Otomatis</span></div>' +
+      '<div class="illo-float-badge illo-fb-3"><span class="illo-fb-ic">★</span><span>E-Sertifikat QR</span></div>' +
+      '<svg class="login-illo-svg" viewBox="0 0 420 230" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+          '<radialGradient id="ilGlow" cx="50%" cy="55%" r="48%">' +
+            '<stop offset="0%" stop-color="#93E0A2" stop-opacity="0.38"/>' +
+            '<stop offset="100%" stop-color="#166534" stop-opacity="0"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="ilDesk" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#0D4A26"/>' +
+            '<stop offset="100%" stop-color="#072814"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilSweater" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#FFFFFF"/>' +
+            '<stop offset="100%" stop-color="#DCE7E0"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilPants" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#0F532B"/>' +
+            '<stop offset="100%" stop-color="#062E16"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilFace" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#FDE2C4"/>' +
+            '<stop offset="100%" stop-color="#F3B893"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilHat" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#EA580C"/>' +
+            '<stop offset="100%" stop-color="#9A3412"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilMon" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#334155"/>' +
+            '<stop offset="100%" stop-color="#0F172A"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilLap" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#DC2626"/>' +
+            '<stop offset="100%" stop-color="#991B1B"/>' +
+          '</linearGradient>' +
+          '<linearGradient id="ilPlant" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="#86EFAC"/>' +
+            '<stop offset="100%" stop-color="#15803D"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<!-- Ambient Glow & Floor Shadow -->' +
+        '<ellipse cx="215" cy="135" rx="155" ry="78" fill="url(#ilGlow)"/>' +
+        '<ellipse cx="210" cy="212" rx="164" ry="8" fill="#041E0E" fill-opacity="0.45"/>' +
+        '<!-- Potted Plant (Left) -->' +
+        '<g class="illo-plant">' +
+          '<ellipse cx="56" cy="168" rx="14" ry="18" fill="url(#ilPlant)"/>' +
+          '<circle cx="56" cy="153" r="11" fill="#4ADE80" fill-opacity="0.65"/>' +
+          '<rect x="46" y="185" width="20" height="4" rx="2" fill="#FB923C"/>' +
+          '<path d="M48 189H64L61 210H51L48 189Z" fill="url(#ilHat)"/>' +
+          '<rect x="47" y="209" width="18" height="3" rx="1.5" fill="#072814"/>' +
+        '</g>' +
+        '<!-- Swivel Chair Base & Seat -->' +
+        '<rect x="209" y="162" width="6" height="38" rx="3" fill="#CBD5E1"/>' +
+        '<path d="M192 206L212 195L232 206" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<line x1="212" y1="195" x2="212" y2="208" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>' +
+        '<circle cx="191" cy="209" r="3.5" fill="#0F172A"/>' +
+        '<circle cx="212" cy="210" r="3.5" fill="#0F172A"/>' +
+        '<circle cx="233" cy="209" r="3.5" fill="#0F172A"/>' +
+        '<rect x="184" y="152" width="56" height="12" rx="6" fill="url(#ilHat)"/>' +
+        '<!-- Character Lower Body / Legs under Desk -->' +
+        '<path d="M192 142L166 172L179 181L207 152Z" fill="url(#ilPants)"/>' +
+        '<path d="M232 142L258 172L245 181L217 152Z" fill="url(#ilPants)"/>' +
+        '<!-- Sneakers -->' +
+        '<g transform="translate(150, 170) rotate(-24)">' +
+          '<rect x="0" y="0" width="24" height="10" rx="5" fill="#166534"/>' +
+          '<rect x="-2" y="8" width="28" height="4" rx="2" fill="#FFFFFF"/>' +
+        '</g>' +
+        '<g transform="translate(252, 160) rotate(24)">' +
+          '<rect x="0" y="0" width="24" height="10" rx="5" fill="#166534"/>' +
+          '<rect x="-2" y="8" width="28" height="4" rx="2" fill="#FFFFFF"/>' +
+        '</g>' +
+        '<!-- Character Torso & Raised Waving Arm -->' +
+        '<g class="illo-waving-arm">' +
+          '<path d="M238 112L269 63" stroke="url(#ilSweater)" stroke-width="14" stroke-linecap="round"/>' +
+          '<!-- Hand Peace / Wave Sign -->' +
+          '<circle cx="273" cy="55" r="7" fill="url(#ilFace)"/>' +
+          '<line x1="271" y1="50" x2="268" y2="39" stroke="#F3B893" stroke-width="3.5" stroke-linecap="round"/>' +
+          '<line x1="276" y1="50" x2="279" y2="40" stroke="#F3B893" stroke-width="3.5" stroke-linecap="round"/>' +
+        '</g>' +
+        '<!-- Left Arm to Keyboard -->' +
+        '<path d="M186 112L166 128" stroke="url(#ilSweater)" stroke-width="13" stroke-linecap="round"/>' +
+        '<!-- Sweater Body -->' +
+        '<rect x="180" y="96" width="64" height="46" rx="20" fill="url(#ilSweater)"/>' +
+        '<ellipse cx="212" cy="98" rx="16" ry="5" fill="#CBD5E1"/>' +
+        '<!-- Character Head & Hat -->' +
+        '<g class="illo-head">' +
+          '<circle cx="187" cy="74" r="6" fill="#F3B893"/>' +
+          '<circle cx="237" cy="74" r="6" fill="#F3B893"/>' +
+          '<rect x="190" y="52" width="44" height="41" rx="20" fill="url(#ilFace)"/>' +
+          '<!-- Hair under hat -->' +
+          '<path d="M190 65C190 54 234 54 234 65" fill="#1E293B"/>' +
+          '<!-- Eyes & Smile -->' +
+          '<circle cx="204" cy="72" r="2.6" fill="#1E293B"/>' +
+          '<circle cx="220" cy="72" r="2.6" fill="#1E293B"/>' +
+          '<circle cx="198" cy="77" r="4.5" fill="#FB7185" fill-opacity="0.45"/>' +
+          '<circle cx="226" cy="77" r="4.5" fill="#FB7185" fill-opacity="0.45"/>' +
+          '<path d="M208 79Q212 83 216 79" stroke="#9A3412" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
+          '<!-- Stylish Cap / Hat -->' +
+          '<path d="M194 54C194 43 230 43 230 54Z" fill="url(#ilHat)"/>' +
+          '<ellipse cx="212" cy="55" rx="31" ry="5.5" fill="#FB923C"/>' +
+          '<ellipse cx="212" cy="56.5" rx="29" ry="3.5" fill="#9A3412" fill-opacity="0.45"/>' +
+        '</g>' +
+        '<!-- Action Spark Lines Above Monitor -->' +
+        '<g class="illo-sparks" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round">' +
+          '<line x1="120" y1="62" x2="115" y2="50"/>' +
+          '<line x1="129" y1="60" x2="129" y2="47"/>' +
+          '<line x1="138" y1="62" x2="142" y2="51"/>' +
+        '</g>' +
+        '<!-- Desktop Monitor (Left of Desk) -->' +
+        '<rect x="92" y="72" width="70" height="48" rx="6" fill="url(#ilMon)" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>' +
+        '<!-- Sticky Note on Monitor Back -->' +
+        '<rect x="142" y="88" width="11" height="13" rx="1.5" fill="#FEF08A" transform="rotate(-6 142 88)"/>' +
+        '<!-- Monitor Stand -->' +
+        '<path d="M120 100H134L138 130H116L120 100Z" fill="#E2E8F0"/>' +
+        '<rect x="110" y="128" width="34" height="4" rx="2" fill="#CBD5E1"/>' +
+        '<!-- Keyboard on Desk -->' +
+        '<rect x="176" y="127" width="58" height="4" rx="2" fill="#1E293B"/>' +
+        '<!-- Laptop on Stand (Right of Desk) -->' +
+        '<rect x="260" y="116" width="32" height="15" rx="2" fill="#94A3B8"/>' +
+        '<path d="M250 88H298L293 118H245L250 88Z" fill="url(#ilLap)"/>' +
+        '<circle cx="272" cy="103" r="4" fill="#93E0A2" fill-opacity="0.85"/>' +
+        '<circle cx="284" cy="96" r="2.5" fill="#FDE047" fill-opacity="0.85"/>' +
+        '<!-- Desk Tabletop & Legs -->' +
+        '<rect x="74" y="131" width="272" height="8" rx="4" fill="url(#ilDesk)"/>' +
+        '<rect x="74" y="131" width="272" height="2.2" rx="1.1" fill="#4ADE80" fill-opacity="0.45"/>' +
+        '<!-- Desk Hanging Tag -->' +
+        '<rect x="303" y="136" width="11" height="14" rx="1.5" fill="#E2E8F0" transform="rotate(10 303 136)"/>' +
+        '<!-- Desk Legs -->' +
+        '<rect x="92" y="139" width="8" height="71" fill="url(#ilDesk)"/>' +
+        '<rect x="87" y="207" width="18" height="4" rx="2" fill="#4ADE80" fill-opacity="0.5"/>' +
+        '<rect x="320" y="139" width="8" height="71" fill="url(#ilDesk)"/>' +
+        '<rect x="315" y="207" width="18" height="4" rx="2" fill="#4ADE80" fill-opacity="0.5"/>' +
+      '</svg>' +
+    '</div>';
+  }
+
   // ---------------- Login ----------------
   SP.tampilLogin = async function (pesan) {
     document.getElementById('app').innerHTML = topbar() +
@@ -54,29 +194,25 @@
           '<div class="auth-grid-pattern"></div>' +
         '</div>' +
         '<div class="login">' +
+          '<div class="login-card-glow login-card-glow-tr" aria-hidden="true"></div>' +
+          '<div class="login-card-glow login-card-glow-bl" aria-hidden="true"></div>' +
           '<section class="login-l">' +
-            '<div class="login-l-head">' +
-              '<div class="sb-logo-wrap" style="width:50px;height:50px;padding:4px;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.2)">' +
-                '<img src="assets/logo.png" alt="SIPENA Logo" style="width:100%;height:100%;object-fit:contain;display:block">' +
-              '</div>' +
-              '<div>' +
-                '<div class="sb-title" style="font-size:24px;letter-spacing:-.01em">SIPENA</div>' +
-                '<div class="cap" style="color:var(--primary-l);letter-spacing:.08em" id="lg-lembaga">LEMBAGA PENGEMBANGAN BAHASA</div>' +
-              '</div>' +
+            '<div class="login-l-top">' +
+              '<span class="login-badge-hero">' +
+                '<span class="auth-live-dot" style="background:var(--primary-l)"></span>' +
+                'PROGRAM INTENSIF BAHASA ARAB &amp; INGGRIS' +
+              '</span>' +
+              '<h2 class="login-hero-title">Portal Penilaian &amp; Sertifikasi Digital Terpadu</h2>' +
+              '<p class="login-hero-sub">Pusat tata kelola nilai komprehensif, evaluasi kelulusan multi-semester berbasis KKM institusi, dan penerbitan sertifikat elektronik resmi.</p>' +
             '</div>' +
-            '<span class="login-badge-hero">' +
-              '<span class="auth-live-dot" style="background:var(--primary-l)"></span>' +
-              'PROGRAM INTENSIF BAHASA ARAB &amp; INGGRIS' +
-            '</span>' +
-            '<h2 class="login-hero-title">Portal Penilaian &amp; Sertifikasi Digital Terpadu</h2>' +
-            '<p class="login-hero-sub">Pusat tata kelola nilai komprehensif, evaluasi kelulusan multi-semester berbasis KKM institusi, dan penerbitan sertifikat elektronik resmi.</p>' +
-            '<div class="login-features">' +
+            ilustrasiLogin() +
+            '<div class="login-features" id="login-ft-list">' +
               [
                 ['layers', 'Sinkronisasi Multi-Tutor Real-Time', 'Nilai semester ganjil &amp; genap dari pengajar terintegrasi otomatis dalam satu basis data terpusat.', 'Otomatis'],
                 ['shieldCheck', 'Evaluasi Kelulusan 4 Program', 'Perhitungan otomatis status kelulusan Arab &amp; Inggris 2 semester sesuai ambang batas KKM.', 'Standar KKM'],
                 ['award', 'Penerbitan Sertifikat &amp; Surel Digital', 'Sertifikat resmi berseri dengan QR Code validasi langsung terdistribusi ke email mahasiswa.', 'QR Verifikasi']
-              ].map(function (f) {
-                return '<div class="ft-card">' +
+              ].map(function (f, idx) {
+                return '<div class="ft-card' + (idx === 0 ? ' is-active' : '') + '" data-ft-idx="' + idx + '">' +
                   '<div class="ic">' + SP.icon(f[0]) + '</div>' +
                   '<div class="ft-card-body">' +
                     '<div class="ft-card-head">' +
@@ -96,50 +232,93 @@
             '</div>' +
           '</section>' +
           '<section class="login-r">' +
-            '<div class="login-eyebrow">' +
-              '<span class="auth-live-dot" style="background:var(--primary)"></span>' +
-              'AUTENTIKASI AKSES AKADEMIK' +
+            '<div class="login-r-brand">' +
+              '<div class="login-r-logo-ring">' +
+                '<img src="assets/logo.png" alt="SIPENA Logo">' +
+              '</div>' +
+              '<div class="login-r-brand-txt">' +
+                '<span class="login-r-brand-name">SIPENA</span>' +
+                '<span class="login-r-brand-sub" id="lg-lembaga">LEMBAGA PENGEMBANGAN BAHASA</span>' +
+              '</div>' +
             '</div>' +
-            '<div>' +
+            '<div class="login-r-head">' +
+              '<div class="login-eyebrow">' +
+                '<span class="auth-live-dot" style="background:var(--primary)"></span>' +
+                'AUTENTIKASI AKSES AKADEMIK' +
+              '</div>' +
               '<h1 class="login-title">Masuk ke Portal</h1>' +
               '<p class="login-sub">Silakan autentikasi menggunakan akun Google resmi yang telah didaftarkan oleh Superadmin.</p>' +
             '</div>' +
-            (pesan ? '<div class="callout bad"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + SP.esc(pesan) + '</div></div>' : '') +
-            '<div class="login-auth-box">' +
-              '<div class="login-auth-box-head">' +
-                '<div class="login-auth-box-title">' +
+            (pesan ? '<div class="callout bad" style="width:100%;max-width:430px;text-align:left"><div class="ic">' + SP.icon('alert') + '</div><div class="tx">' + SP.esc(pesan) + '</div></div>' : '') +
+            '<div class="login-form-stack">' +
+              '<div class="login-guide-card">' +
+                '<div class="login-guide-ic">' + SP.icon('lock') + '</div>' +
+                '<div class="login-guide-tx">' +
+                  '<b>Akses Khusus Pendidik &amp; Administrator</b>' +
+                  '<p>Hanya Tutor aktif dan Superadmin yang memiliki hak akses ke sistem. Mahasiswa tidak memiliki akun login — seluruh rekapan nilai dan sertifikat dikirim otomatis melalui surel resmi.</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="login-auth-box">' +
+                '<div class="login-auth-cta-bar">' +
                   SP.icon('lock', 'sm') +
                   '<span>Lanjutkan dengan Akun Google</span>' +
                 '</div>' +
-              '</div>' +
-              '<div class="gbtn" id="gbtn">' +
-                '<div class="sk" style="height:44px;width:100%;max-width:380px;border-radius:8px"></div>' +
-              '</div>' +
-              '<div class="login-auth-box-foot">' +
-                SP.icon('shieldCheck', 'sm') +
-                '<span>Akses aman langsung via Google Identity Services</span>' +
-              '</div>' +
-            '</div>' +
-            '<div class="login-guide-card">' +
-              SP.icon('lock') +
-              '<div>' +
-                '<b>Akses Khusus Pendidik &amp; Administrator</b>' +
-                '<p>Hanya Tutor aktif dan Superadmin yang memiliki hak akses ke sistem. Mahasiswa tidak memiliki akun login — seluruh rekapan nilai dan sertifikat dikirim otomatis melalui surel resmi.</p>' +
+                '<div class="gbtn" id="gbtn">' +
+                  '<div class="sk" style="height:44px;width:100%;max-width:380px;border-radius:10px"></div>' +
+                '</div>' +
+                '<div class="login-auth-box-foot">' +
+                  SP.icon('shieldCheck', 'sm') +
+                  '<span>Akses aman langsung via Google Identity Services</span>' +
+                '</div>' +
               '</div>' +
             '</div>' +
-            '<div class="login-footer-meta muted">' +
-              '<span class="row gap4" style="justify-content:center">' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span>' +
-              '<span>•</span>' +
-              '<button class="btn btn-ghost btn-sm" data-act="panduanLogin" style="padding:0 4px;height:auto">' + SP.icon('help', 'sm') + ' Panduan</button>' +
-              '<span>•</span>' +
-              '<button class="btn btn-ghost btn-sm" data-act="bantuanLogin" style="padding:0 4px;height:auto">' + SP.icon('mail', 'sm') + ' Bantuan</button>' +
-              '<span>•</span>' +
-              '<button class="btn btn-ghost btn-sm" data-act="loginDaruratModal" title="Akses Darurat Superadmin" style="padding:0 4px;height:auto">' + SP.icon('shield', 'sm') + ' Darurat</button>' +
+            '<div class="login-or-divider">' +
+              '<span>' + SP.icon('calendar', 'sm') + ' T.A. Aktif: <b id="lg-ta" style="color:var(--text)">…</b></span>' +
+            '</div>' +
+            '<div class="login-quick-row">' +
+              '<button type="button" class="login-quick-btn" data-act="panduanLogin">' +
+                '<span class="qb-ic qb-ic-ok">' + SP.icon('help', 'sm') + '</span>' +
+                '<span>Panduan</span>' +
+              '</button>' +
+              '<button type="button" class="login-quick-btn" data-act="bantuanLogin">' +
+                '<span class="qb-ic qb-ic-info">' + SP.icon('mail', 'sm') + '</span>' +
+                '<span>Bantuan</span>' +
+              '</button>' +
+              '<button type="button" class="login-quick-btn" data-act="loginDaruratModal" title="Akses Darurat Superadmin">' +
+                '<span class="qb-ic qb-ic-warn">' + SP.icon('shield', 'sm') + '</span>' +
+                '<span>Darurat</span>' +
+              '</button>' +
             '</div>' +
           '</section>' +
         '</div>' +
       '</main>' +
       footer(SP.infoPublik);
+
+    // Interaksi dinamis kartu fitur pada panel kiri
+    const ftCards = document.querySelectorAll('#login-ft-list .ft-card');
+    if (ftCards.length) {
+      let activeIdx = 0;
+      let paused = false;
+      const setFtActive = function (i) {
+        activeIdx = i;
+        ftCards.forEach(function (c, idx) {
+          c.classList.toggle('is-active', idx === i);
+        });
+      };
+      ftCards.forEach(function (c, idx) {
+        c.addEventListener('mouseenter', function () { paused = true; setFtActive(idx); });
+        c.addEventListener('mouseleave', function () { paused = false; });
+        c.addEventListener('click', function () { setFtActive(idx); });
+      });
+      if (SP._loginFtTimer) clearInterval(SP._loginFtTimer);
+      SP._loginFtTimer = setInterval(function () {
+        if (!document.getElementById('login-ft-list')) {
+          clearInterval(SP._loginFtTimer);
+          return;
+        }
+        if (!paused) setFtActive((activeIdx + 1) % ftCards.length);
+      }, 3600);
+    }
 
     // Render tombol Google Sign-In segera jika Client ID sudah ada di config.js
     const g = SP.$('#gbtn');
