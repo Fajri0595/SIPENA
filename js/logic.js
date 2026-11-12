@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — logic.js
+// SIPENA: logic.js
 // State aplikasi + aturan bisnis sisi klien (cermin dari Logika.gs).
 // Semua perhitungan berjalan lokal sehingga UI terasa instan;
 // server tetap menjadi sumber kebenaran dan memvalidasi ulang.
@@ -13,7 +13,7 @@
   SP.PROG_KODE = { ARB_GJL: 'ARB-1', ING_GJL: 'ENG-1', ARB_GNP: 'ARB-2', ING_GNP: 'ENG-2' };
   SP.kodeProgram = function (bahasa, sem) { return (bahasa === 'ARAB' ? 'ARB' : 'ING') + '_' + (sem === 'GANJIL' ? 'GJL' : 'GNP'); };
   SP.bahasaProgram = function (p) { return p.indexOf('ARB') === 0 ? 'ARAB' : 'INGGRIS'; };
-  SP.bahasaLabel = function (b) { return b === 'ARAB' ? 'Bahasa Arab' : b === 'INGGRIS' ? 'Bahasa Inggris' : '—'; };
+  SP.bahasaLabel = function (b) { return b === 'ARAB' ? 'Bahasa Arab' : b === 'INGGRIS' ? 'Bahasa Inggris' : '-'; };
   SP.taBerikut = function (ta) { const a = String(ta).split('/').map(Number); return (a[0] + 1) + '/' + (a[1] + 1); };
   SP.tahunAwal = function (ta) {
     const m = String(ta || '').match(/\d{4}/);
@@ -132,7 +132,7 @@
   SP.set = function () { return SP.S.pengaturan; };
   SP.hari = function () { return (SP.S.meta && SP.S.meta.hari) || SP.hariIni(); };
   SP.namaUser = function (email) { const u = SP.X.user[email]; return u ? u.nama : email; };
-  SP.kelasNama = function (id) { const k = SP.X.kelas[id]; return k ? k.nama : '—'; };
+  SP.kelasNama = function (id) { const k = SP.X.kelas[id]; return k ? k.nama : '-'; };
 
   // ---------- Kelulusan ----------
   SP.barisProgramTerbaik = function (nim, prog) {
@@ -169,7 +169,7 @@
     const n = Number(angka);
     const batas = Number(kkm) || 75;
     if (angka === '' || angka === null || angka === undefined || isNaN(n)) {
-      return { angka: '—', huruf: '—', predikat: '—' };
+      return { angka: '-', huruf: '-', predikat: '-' };
     }
     const fmt = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
     if (n >= 85) return { angka: fmt, huruf: 'A', predikat: 'Sangat Memuaskan' };
@@ -190,7 +190,7 @@
       email: 'ridwan@mhs.ac.id'
     };
     const klsObj = mAsli ? SP.kelasTerkini(m.nim) : null;
-    const namaKelas = klsObj ? klsObj.nama : (isContoh ? 'PAI A' : '—');
+    const namaKelas = klsObj ? klsObj.nama : (isContoh ? 'PAI A' : '-');
     const namaProdi = (klsObj && klsObj.prodi) ? klsObj.prodi : (isContoh ? 'Pendidikan Agama Islam' : 'Program Sarjana');
     const sert = (mAsli && SP.X && SP.X.sert) ? SP.X.sert[m.nim] : null;
     const thNow = String(new Date().getFullYear());
@@ -246,15 +246,15 @@
       m: m,
       kelas: namaKelas,
       prodi: namaProdi,
-      angkatan: m.angkatan || '—',
+      angkatan: m.angkatan || '-',
       nomor: nomor,
       tanggal: tanggal,
       tanggalLabel: SP.tgl(tanggal, true),
       lembaga: s.nama_lembaga || 'PUSAT PENGEMBANGAN BAHASA',
       kkm: kkm,
       programRows: programRows,
-      totalAngka: count ? String(Math.round(sum * 100) / 100) : '—',
-      rataAngka: count ? rataFmt : '—',
+      totalAngka: count ? String(Math.round(sum * 100) / 100) : '-',
+      rataAngka: count ? rataFmt : '-',
       hurufAkhir: infoAkhir.huruf,
       predikatAkhir: infoAkhir.predikat,
       ttd1: {

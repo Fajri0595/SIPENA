@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — app.js
+// SIPENA: app.js
 // Shell aplikasi (sidebar + topbar), router berbasis hash,
 // pencarian global, notifikasi, dan proses boot.
 // Perpindahan halaman 100% lokal (tanpa panggilan server) = instan.
@@ -118,8 +118,8 @@
     const m = SP.S.me;
     document.getElementById('app').innerHTML =
       '<aside class="sb" aria-label="Navigasi utama"><div class="sb-brand"><div class="sb-logo-wrap"><img src="assets/logo.png" alt="SIPENA Logo" class="sb-brand-logo"></div><div><div class="sb-title">SIPENA</div><div class="sb-sub">Nilai Bahasa Arab &amp; Inggris</div></div></div>' +
-      '<nav class="sb-nav" id="sb-nav"></nav><div class="sb-user" data-act="bukaModalAkun" role="button" tabindex="0" title="Klik untuk Pengaturan Akun &amp; Profil">' + SP.avatarHtml(m.nama, m.email, 'sm') + '<div class="ut grow"><div class="nm trunc" style="max-width:125px">' + esc(m.nama) + '</div><span class="rl">' + esc(rolLabel()) + '</span></div>' +
-      '<div class="sb-user-gear" title="Pengaturan Profil">' + SP.icon('settings', 'sm') + '</div></div></aside><div class="sb-ovl" data-act="tutupSb"></div>' +
+      '<nav class="sb-nav" id="sb-nav"></nav><button type="button" class="sb-user" data-act="bukaModalAkun" aria-label="Pengaturan Akun dan Profil" title="Pengaturan Akun &amp; Profil">' + SP.avatarHtml(m.nama, m.email, 'sm') + '<div class="ut grow"><div class="nm trunc" style="max-width:125px">' + esc(m.nama) + '</div><span class="rl">' + esc(rolLabel()) + '</span></div>' +
+      '<div class="sb-user-gear" title="Pengaturan Profil">' + SP.icon('settings', 'sm') + '</div></button></aside><button type="button" class="sb-ovl" data-act="tutupSb" aria-label="Tutup navigasi sidebar"></button>' +
       '<div class="main"><header class="tb"><button class="tb-menu" data-act="bukaSb" aria-label="Menu">' + SP.icon('menu', 'lg') + '</button>' +
       '<div class="tb-crumb">SIPENA ' + SP.icon('chevronRight', 'sm') + ' <b>Portal Akademik</b></div><span class="pill-ta" id="pill-ta"></span>' +
       '<div class="tb-search">' + SP.icon('search') + '<input class="input" id="gsearch" placeholder="Cari NIM, Nama, Kelas…" autocomplete="off" aria-label="Pencarian global"><div id="gsr"></div></div>' +
@@ -142,7 +142,7 @@
   function renderView() {
     const v = SP.views[SP.rute.nama], el = SP.$('#view'); if (!v || !el) return;
     el.innerHTML = v.render(SP.rute.params);
-    document.title = v.judul + ' — SIPENA';
+    document.title = v.judul + ' - SIPENA';
     el.classList.remove('view-enter');
     void el.offsetWidth;
     el.classList.add('view-enter');

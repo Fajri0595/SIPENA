@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — ui.js
+// SIPENA: ui.js
 // Utilitas tampilan: ikon, badge, modal, toast, event delegation,
 // CSV, unduh/cetak, paginasi.
 // ============================================================
@@ -167,12 +167,12 @@
   SP.hariIni = function () { return SP.sekarang().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }); };
   SP.tgl = function (iso, panjang) {
     const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (!m) return iso || '—';
+    if (!m) return iso || '-';
     return Number(m[3]) + ' ' + (panjang ? BLN_PANJANG : BLN)[Number(m[2]) - 1] + ' ' + m[1];
   };
   SP.waktu = function (s) {
     const m = String(s || '').match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
-    return m ? SP.tgl(m[1]) + ', ' + m[2] + ' WIB' : (s || '—');
+    return m ? SP.tgl(m[1]) + ', ' + m[2] + ' WIB' : (s || '-');
   };
   SP.jamWIB = function () { return SP.sekarang().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).replace('.', ':') + ' WIB'; };
   SP.selisihHari = function (iso) {
@@ -181,7 +181,7 @@
     return Math.round((a - b) / 86400000);
   };
   SP.pct = function (a, b) { return b ? Math.round((a * 1000) / b) / 10 : null; };
-  SP.pctStr = function (v) { return v === null || v === undefined ? '—' : (Number.isInteger(v) ? v : v.toFixed(1)) + '%'; };
+  SP.pctStr = function (v) { return v === null || v === undefined ? '-' : (Number.isInteger(v) ? v : v.toFixed(1)) + '%'; };
   SP.semLabel = function (s) { return s === 'GENAP' ? 'Genap' : 'Ganjil'; };
 
   // ---------------- Toast & modal ----------------
@@ -249,6 +249,15 @@
     if (!el || el.disabled || el.classList.contains('disabled')) return;
     const fn = SP.actions[el.dataset.act];
     if (fn) { if (el.tagName === 'A' && !el.hasAttribute('data-native')) e.preventDefault(); fn(el, e); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest('[data-act]');
+    if (!el || el.disabled || el.classList.contains('disabled') || el.tagName === 'BUTTON' || el.tagName === 'A') return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    e.preventDefault();
+    const fn = SP.actions[el.dataset.act];
+    if (fn) fn(el, e);
   });
   document.addEventListener('input', function (e) { const el = e.target.closest('[data-in]'); if (el && SP.inputs[el.dataset.in]) SP.inputs[el.dataset.in](el, e); });
   document.addEventListener('change', function (e) { const el = e.target.closest('[data-ch]'); if (el && SP.changes[el.dataset.ch]) SP.changes[el.dataset.ch](el, e); });

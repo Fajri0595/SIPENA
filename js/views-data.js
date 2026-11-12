@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — views-data.js
+// SIPENA: views-data.js
 // Impor Mahasiswa (CSV), Status Kelulusan, Detail Mahasiswa,
 // Cetak Sertifikat.
 // ============================================================
@@ -72,7 +72,7 @@
     const errs = u.baris.filter(function (x) { return x.status === 'ERROR'; });
     return '<div class="card mt16"><div class="card-h"><div class="row gap8"><span class="stat-ic" style="color:var(--primary)">' + SP.icon('checkCircle', 'lg') + '</span><div><h2 class="h2">Hasil Validasi &amp; Pratinjau Data</h2><p class="muted" style="font-size:13px">Tinjau hasil pemindaian struktur dan integritas data sebelum dimasukkan ke dalam daftar kelas.</p></div></div>' +
       '<div class="row wrap gap8"><span class="chip">Total terbaca: ' + c.total + ' baris</span><span class="chip ok">' + SP.icon('check', 'sm') + ' Data valid: ' + c.valid + ' mahasiswa</span>' + (c.skip ? '<span class="chip nul">Sudah terdaftar: ' + c.skip + '</span>' : '') + (c.err ? '<span class="chip bad">' + SP.icon('alert', 'sm') + ' Bermasalah: ' + c.err + ' baris</span>' : '') + '</div></div><div class="card-b">' +
-      (errs.length ? '<div class="callout bad" style="margin-bottom:16px"><div class="ic">' + SP.icon('alert') + '</div><div><div class="ct">Ditemukan ' + errs.length + ' kesalahan yang perlu diperbaiki:</div><div class="tx">' + errs.slice(0, 5).map(function (e) { return 'Baris ' + e.baris + ' — ' + esc(e.catatan); }).join('<br>') + (errs.length > 5 ? '<br>… dan ' + (errs.length - 5) + ' lainnya' : '') + '<br><b>Baris bermasalah akan diabaikan jika Anda melanjutkan impor.</b></div></div></div>' : '') +
+      (errs.length ? '<div class="callout bad" style="margin-bottom:16px"><div class="ic">' + SP.icon('alert') + '</div><div><div class="ct">Ditemukan ' + errs.length + ' kesalahan yang perlu diperbaiki:</div><div class="tx">' + errs.slice(0, 5).map(function (e) { return 'Baris ' + e.baris + ': ' + esc(e.catatan); }).join('<br>') + (errs.length > 5 ? '<br>… dan ' + (errs.length - 5) + ' lainnya' : '') + '<br><b>Baris bermasalah akan diabaikan jika Anda melanjutkan impor.</b></div></div></div>' : '') +
       '<div class="tbl-wrap has-foot"><table class="tbl cards"><thead><tr><th>Baris</th><th>Status</th><th>NIM</th><th>Nama lengkap</th><th>Email mahasiswa</th><th>Kelas</th><th>Angkatan</th><th>Catatan validasi</th></tr></thead><tbody>' +
       pg.items.map(function (x) {
         return '<tr class="' + (x.status === 'ERROR' ? 'rowbad' : '') + '"><td data-l="Baris" class="num">' + x.baris + '</td><td data-l="Status">' + SP.badge(x.status === 'SKIP' ? 'BELUM' : x.status, x.status === 'SKIP' ? 'Terdaftar' : x.status === 'VALID' ? 'Valid' : 'Error') + '</td><td data-l="NIM" class="mono">' + esc(x.nim) + '</td><td data-l="Nama">' + esc(x.nama) + '</td><td data-l="Email" class="muted">' + esc(x.email) + '</td><td data-l="Kelas">' + esc(x.kelas) + '</td><td data-l="Angkatan" class="num">' + esc(x.angkatan) + '</td><td data-l="Catatan" style="' + (x.status === 'ERROR' ? 'color:var(--danger)' : 'color:var(--primary)') + '">' + esc(x.catatan) + '</td></tr>';
@@ -88,7 +88,7 @@
       const langkah = function (no, cap, tt, sb, st) {
         return '<div class="step ' + st + '"><div class="no">' + (st === 'done' ? SP.icon('check') : no) + '</div><div><div class="cp">LANGKAH 0' + no + (st === 'on' ? ' • AKTIF' : '') + '</div><div class="tt">' + tt + '</div><div class="sb2">' + sb + '</div></div></div>';
       };
-      const kol = [['NIM', 'Nomor induk mahasiswa, angka 5–20 digit.', '2310601001'], ['NAMA_LENGKAP', 'Nama lengkap sesuai data resmi (maks. 120 karakter).', 'MUHAMMAD RIDWAN MALIK'], ['EMAIL_MAHASISWA', 'Email aktif mahasiswa — dipakai untuk mengirim sertifikat.', 'ridwan@mhs.ac.id'], ['KELAS', 'Nama kelas yang sudah terdaftar di sistem.', 'PAI A'], ['ANGKATAN', 'Tahun masuk, 4 digit.', '2026']];
+      const kol = [['NIM', 'Nomor induk mahasiswa, angka 5–20 digit.', '2310601001'], ['NAMA_LENGKAP', 'Nama lengkap sesuai data resmi (maks. 120 karakter).', 'MUHAMMAD RIDWAN MALIK'], ['EMAIL_MAHASISWA', 'Email aktif mahasiswa, dipakai untuk mengirim sertifikat.', 'ridwan@mhs.ac.id'], ['KELAS', 'Nama kelas yang sudah terdaftar di sistem.', 'PAI A'], ['ANGKATAN', 'Tahun masuk, 4 digit.', '2026']];
       return SP.header({ crumbs: [['Dasbor', '#/dasbor'], ['Impor Mahasiswa']], judul: 'Impor Data Mahasiswa Baru', desc: 'Unggah berkas CSV untuk mendaftarkan mahasiswa semester ganjil ke dalam sistem penugasan kelas.', aksi: '<button class="btn btn-outline" data-act="bukaTambahMhsManual">' + SP.icon('plus') + ' Tambah Mahasiswa Manual</button>' }) +
         SP.callout({ ikon: 'info', judul: 'Pemberitahuan Kelanjutan Semester', tag: 'OTOMATISASI SISTEM', teks: 'Untuk <b>semester genap</b>, daftar mahasiswa per kelas otomatis diteruskan dari semester ganjil sehingga tutor tidak perlu mengimpor ulang. Impor CSV hanya diperlukan untuk angkatan baru atau penambahan mahasiswa susulan.' }) +
         '<div class="steps mt16">' + langkah(1, '', 'Unduh Format Template', 'Skema CSV baku SIPENA', u.templateDiunduh || ada ? 'done' : 'on') + langkah(2, '', 'Unggah Berkas CSV', ada ? 'Berkas terunggah: ' + (u.ukuran / 1024).toFixed(1) + ' KB' : 'Pilih atau seret berkas', ada ? 'done' : (u.templateDiunduh ? 'on' : '')) + langkah(3, '', 'Pratinjau &amp; Validasi', ada ? 'Verifikasi ' + c.total + ' baris data' : 'Menunggu berkas', ada ? 'on' : '') + '</div>' +
@@ -118,7 +118,7 @@
     const teks = await file.text();
     const r = validasi(SP.csvParse(teks));
     if (r.err) return SP.toast(esc(r.err), 'err', 8000);
-    if (r.baris.length > 500) return SP.toast('Berkas berisi ' + r.baris.length + ' baris. Maksimal 500 baris per unggahan — pecah berkas Anda.', 'err', 8000);
+    if (r.baris.length > 500) return SP.toast('Berkas berisi ' + r.baris.length + ' baris. Maksimal 500 baris per unggahan; pecah berkas Anda.', 'err', 8000);
     Object.assign(SP.ui.impor, { namaFile: file.name, ukuran: file.size, baris: r.baris, page: 1, hanyaError: false, hasil: null });
     SP.renderUlang();
   }
@@ -134,7 +134,7 @@
   SP.actions.imporHal = function (el) { SP.ui.impor.page = Number(el.dataset.p); SP.refresh('imporPratinjau'); };
   SP.actions.imporLaporanError = function () {
     const e = SP.ui.impor.baris.filter(function (x) { return x.status === 'ERROR'; });
-    SP.unduh('laporan-kesalahan-impor.txt', 'LAPORAN KESALAHAN IMPOR — ' + SP.ui.impor.namaFile + '\r\n\r\n' + e.map(function (x) { return 'Baris ' + x.baris + ' | NIM ' + x.nim + ' | ' + x.catatan; }).join('\r\n'));
+    SP.unduh('laporan-kesalahan-impor.txt', 'LAPORAN KESALAHAN IMPOR: ' + SP.ui.impor.namaFile + '\r\n\r\n' + e.map(function (x) { return 'Baris ' + x.baris + ' | NIM ' + x.nim + ' | ' + x.catatan; }).join('\r\n'));
   };
   SP.actions.imporKirim = async function () {
     const u = SP.ui.impor, valid = u.baris.filter(function (x) { return x.status === 'VALID'; });
@@ -160,7 +160,7 @@
     const peng = (SP.X.peng[nim] || []).filter(function (r) { return r.status !== 'DIBATALKAN' && r.status !== 'DIGANTI'; });
     const h = SP.modal({
       judul: 'Detail Mahasiswa', lebar: 760, tanpaFokus: true,
-      isi: '<div class="row top wrap mb16"><div id="dm-foto" class="avatar" style="width:84px;height:84px;border-radius:12px;font-size:26px;overflow:hidden">' + esc(SP.inisial(m.nama)) + '</div><div class="grow"><h3 class="h2">' + esc(m.nama) + '</h3><div class="row wrap gap8 mt8"><span class="chip mono">' + esc(m.nim) + '</span><span class="chip">Angkatan ' + esc(m.angkatan || '—') + '</span><span class="chip">' + esc(kelas ? kelas.nama : '—') + '</span>' + SP.badge(kel.akhir) + '</div><p class="muted mt8">' + SP.icon('mail', 'sm') + ' ' + esc(m.email || '—') + (m.no_hp ? ' &nbsp;·&nbsp; <a href="https://wa.me/' + esc(m.no_hp) + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">📱 WhatsApp: +' + esc(m.no_hp) + ' ↗</a>' : '') + '</p></div></div>' +
+      isi: '<div class="row top wrap mb16"><div id="dm-foto" class="avatar" style="width:84px;height:84px;border-radius:12px;font-size:26px;overflow:hidden">' + esc(SP.inisial(m.nama)) + '</div><div class="grow"><h3 class="h2">' + esc(m.nama) + '</h3><div class="row wrap gap8 mt8"><span class="chip mono">' + esc(m.nim) + '</span><span class="chip">Angkatan ' + esc(m.angkatan || '-') + '</span><span class="chip">' + esc(kelas ? kelas.nama : '-') + '</span>' + SP.badge(kel.akhir) + '</div><p class="muted mt8">' + SP.icon('mail', 'sm') + ' ' + esc(m.email || '-') + (m.no_hp ? ' &nbsp;·&nbsp; <a href="https://wa.me/' + esc(m.no_hp) + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600">WhatsApp: +' + esc(m.no_hp) + '</a>' : '') + '</p></div></div>' +
         '<div class="grid2 mb16">' + SP.PROGRAM.map(function (p) {
           const st = kel.program[p];
           const angka = SP.nilaiAngkaProgram ? SP.nilaiAngkaProgram(nim, p) : '';
@@ -375,14 +375,14 @@
       if (st === 'TIDAK_LULUS') {
         return '<span class="badge b-bad num" style="min-width:38px;justify-content:center;font-weight:700;font-size:12.5px" title="Tidak Lulus' + (angka ? ' (Nilai: ' + esc(angka) + ')' : '') + '">' + (angka ? esc(angka) : 'Tdk Lulus') + '</span>';
       }
-      return '<span class="badge b-null" style="min-width:38px;justify-content:center">—</span>';
+      return '<span class="badge b-null" style="min-width:38px;justify-content:center">-</span>';
     };
     if (!pg.total) return '<div class="card">' + SP.kosong('search', 'Tidak ada data', 'Tidak ada mahasiswa yang cocok dengan filter saat ini.') + '</div>';
     return '<div class="card"><div class="card-h" style="padding:14px 20px"><div class="row gap8">' + SP.icon('shieldCheck') + '<b>Data Rekap Kelulusan 4 Mata Uji</b></div><div class="row wrap gap8 muted" style="font-size:12.5px"><span><span class="dotp" style="color:var(--primary)"></span> Lulus (4 modul)</span><span><span class="dotp" style="color:#F97316"></span> Wajib mengulang (≥1 gagal)</span><span><span class="dotp" style="color:#6B7280"></span> Belum lengkap</span></div></div>' +
       '<div class="tbl-wrap" style="border:0;border-radius:0"><table class="tbl cards compact"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama mahasiswa</th><th>Kelas</th><th>Arab Ganjil</th><th>Inggris Ganjil</th><th>Arab Genap</th><th>Inggris Genap</th><th>Status akhir</th><th>Aksi</th></tr></thead><tbody>' +
       pg.items.map(function (b, i) {
         return '<tr class="' + (b.akhir === 'WAJIB_MENGULANG' ? 'rowbad' : '') + '"><td data-l="No" class="col-no num muted">' + String(pg.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b style="' + (b.akhir === 'WAJIB_MENGULANG' ? 'color:var(--danger)' : '') + '">' + esc(b.m.nim) + '</b></td>' +
-          '<td data-l="Nama" class="nm"><b>' + esc(b.m.nama) + '</b>' + (b.m.status === 'NONAKTIF' ? ' <span class="chip nul" style="font-size:10.5px;padding:1px 6px">Nonaktif</span>' : '') + '<small>' + esc(b.kelas ? b.kelas.prodi || '' : '') + '</small></td><td data-l="Kelas">' + esc(b.kelas ? b.kelas.nama : '—') + '</td>' +
+          '<td data-l="Nama" class="nm"><b>' + esc(b.m.nama) + '</b>' + (b.m.status === 'NONAKTIF' ? ' <span class="chip nul" style="font-size:10.5px;padding:1px 6px">Nonaktif</span>' : '') + '<small>' + esc(b.kelas ? b.kelas.prodi || '' : '') + '</small></td><td data-l="Kelas">' + esc(b.kelas ? b.kelas.nama : '-') + '</td>' +
           SP.PROGRAM.map(function (p) { return '<td data-l="' + esc(SP.PROG_SHORT[p]) + '">' + sel(p, b) + '</td>'; }).join('') + '<td data-l="Status akhir">' + SP.badge(b.akhir) + '</td>' +
           '<td><button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(b.m.nim) + '">' + SP.icon('eye') + ' Detail</button></td></tr>';
       }).join('') + '</tbody></table></div><div class="tbl-foot" style="border-top:1px solid var(--border)"><span>Menampilkan ' + pg.dari + ' – ' + pg.sampai + ' dari <b class="num">' + SP.n(pg.total) + '</b> data mahasiswa <select class="select" style="width:auto;height:30px;margin-left:8px" data-ch="kelPer" aria-label="Baris per halaman">' + [10, 25, 50, 100].map(function (n) { return '<option ' + (n === u.per ? 'selected' : '') + '>' + n + '</option>'; }).join('') + '</select></span>' + SP.pagerHtml('kelHal', pg) + '</div></div>';
@@ -854,7 +854,7 @@
     });
   }
   function badgeEmail(s) {
-    if (!s) return '<span class="muted3">—</span>';
+    if (!s) return '<span class="muted3">-</span>';
     const k = { TERKIRIM: 'TERKIRIM', ANTRE: 'ANTRE', GAGAL: 'GAGAL', BELUM: 'BELUM_KIRIM' }[s.status_email] || 'BELUM_KIRIM';
     return SP.badge(k) + (s.status_email === 'GAGAL' ? ' <button class="btn btn-ghost btn-sm" style="color:var(--danger)" data-act="certKirim" data-nim="' + esc(s.nim) + '">Kirim Ulang</button>' : '');
   }
@@ -901,7 +901,7 @@
     const pilihMhsHtml = d.length > 1
       ? '<div class="field mb12"><label for="cp-mhs" style="font-size:11.5px">Mahasiswa pada Pratinjau</label><select id="cp-mhs" class="select" style="height:34px;font-size:12.5px" data-ch="certPreviewMhs">' +
         d.map(function (x) {
-          return '<option value="' + esc(x.m.nim) + '"' + (x.m.nim === targetNim ? ' selected' : '') + '>' + esc(x.m.nama + ' (' + x.m.nim + ') — ' + (x.kelas ? x.kelas.nama : '')) + '</option>';
+          return '<option value="' + esc(x.m.nim) + '"' + (x.m.nim === targetNim ? ' selected' : '') + '>' + esc(x.m.nama + ' (' + x.m.nim + ') - ' + (x.kelas ? x.kelas.nama : '')) + '</option>';
         }).join('') +
         '</select></div>'
       : '';
@@ -909,13 +909,13 @@
     let lembarHtml = '';
     if (sisi === 'depan' || sisi === 'dua') {
       lembarHtml += '<div class="cert-side-block">' +
-        '<div class="cert-side-label"><span>Halaman 1 — Sisi Depan (Keterangan Lulus &amp; Pengesahan)</span><span>A4 Landscape</span></div>' +
+        '<div class="cert-side-label"><span>Halaman 1: Sisi Depan (Keterangan Lulus &amp; Pengesahan)</span><span>A4 Landscape</span></div>' +
         SP.renderSertifikatDepanHtml(info, aset) +
       '</div>';
     }
     if (sisi === 'belakang' || sisi === 'dua') {
       lembarHtml += '<div class="cert-side-block">' +
-        '<div class="cert-side-label back"><span>Halaman 2 — Sisi Belakang (Transkrip Skor 4 Program)</span><span>Rata-rata: ' + esc(info.rataAngka) + ' (' + esc(info.hurufAkhir) + ')</span></div>' +
+        '<div class="cert-side-label back"><span>Halaman 2: Sisi Belakang (Transkrip Skor 4 Program)</span><span>Rata-rata: ' + esc(info.rataAngka) + ' (' + esc(info.hurufAkhir) + ')</span></div>' +
         SP.renderSertifikatBelakangHtml(info, aset) +
       '</div>';
     }
@@ -942,7 +942,7 @@
           }).join(' ');
           return '<tr><td><label class="chk"><input type="checkbox" data-ch="certPilih" data-nim="' + esc(b.m.nim) + '" ' + (u.sel[b.m.nim] ? 'checked' : '') + ' aria-label="Pilih ' + esc(b.m.nama) + '"></label></td><td data-l="Mahasiswa" class="nm"><b>' + esc(b.m.nama) + '</b><small><span class="mono">' + esc(b.m.nim) + '</span> · ' + esc(b.kelas ? b.kelas.nama : '') + '</small></td>' +
             '<td data-l="Skor 4 Program"><div class="row wrap gap4">' + ringkasSkor + '</div><small class="muted">Rata-rata: <b>' + esc(info.rataAngka) + ' (' + esc(info.predikatAkhir) + ')</b></small></td>' +
-            '<td data-l="No. sertifikat" class="mono" style="font-size:12px">' + esc(c.sert ? c.sert.nomor : '—') +
+            '<td data-l="No. sertifikat" class="mono" style="font-size:12px">' + esc(c.sert ? c.sert.nomor : '-') +
               (c.sert && c.sert.sig_hmac ? '<div class="row gap4 mt4"><span class="badge b-ok" style="font-size:10px;padding:1px 6px" title="Hash PDF SHA-256: ' + esc(c.sert.hash_pdf || '-') + '">' + SP.icon('shieldCheck', 'sm') + ' HMAC</span><button class="btn btn-ghost btn-sm" style="height:22px;padding:0 6px;font-size:10.5px" data-act="salinUrlVerif" data-url="' + esc(info.urlVerifikasi) + '" title="Salin tautan verifikasi ber-HMAC">' + SP.icon('copy', 'sm') + '</button></div>' : '') +
             '</td><td data-l="Status terbit">' + SP.badge(c.terbit ? 'DITERBITKAN' : 'SIAP_CETAK') + '</td><td data-l="Status email">' + badgeEmail(c.sert) + '</td>' +
             '<td><div class="row gap4">' +
@@ -1018,7 +1018,7 @@
   };
   async function jalankanCetak(nims, ulang) {
     const u = SP.ui.cert; if (u.job && u.job.selesai < u.job.total && !u.job.henti) return SP.toast('Masih ada proses pencetakan yang berjalan.', 'warn');
-    const j = (u.job = { total: nims.length, selesai: 0, gagal: [], jeda: false, henti: false, mulai: Date.now(), label: (u.kelas ? SP.kelasNama(u.kelas) : 'Semua kelas') + ' — ' + SP.set().semester_aktif.toLowerCase() + ' ' + SP.set().tahun_ajaran_aktif });
+    const j = (u.job = { total: nims.length, selesai: 0, gagal: [], jeda: false, henti: false, mulai: Date.now(), label: (u.kelas ? SP.kelasNama(u.kelas) : 'Semua kelas') + ' - ' + SP.set().semester_aktif.toLowerCase() + ' ' + SP.set().tahun_ajaran_aktif });
     SP.refresh('certJob');
     for (let i = 0; i < nims.length; i += 3) {
       while (j.jeda && !j.henti) await sleep(300);

@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — views-laporan.js
+// SIPENA: views-laporan.js
 // Wajib Mengulang & Notifikasi, Laporan & Analitik Kelulusan.
 // ============================================================
 (function () {
@@ -48,7 +48,7 @@
         } else {
           aksi = '<button class="btn btn-outline btn-sm" data-act="detailMhs" data-nim="' + esc(r.nim) + '">' + SP.icon('history') + ' Lihat Riwayat</button>';
         }
-        return '<tr><td data-l="Mahasiswa" class="nm"><b>' + esc(x.m.nama) + '</b><small><span class="mono">' + esc(r.nim) + '</span></small></td><td data-l="Kelas asal"><span class="chip">' + esc(x.kelasAsal ? x.kelasAsal.nama : '—') + '</span></td>' +
+        return '<tr><td data-l="Mahasiswa" class="nm"><b>' + esc(x.m.nama) + '</b><small><span class="mono">' + esc(r.nim) + '</span></small></td><td data-l="Kelas asal"><span class="chip">' + esc(x.kelasAsal ? x.kelasAsal.nama : '-') + '</span></td>' +
           '<td data-l="Program gagal"><span class="badge b-bad">' + esc(SP.PROG_SHORT[r.program]) + '</span></td><td data-l="Semester asal" style="white-space:nowrap">' + esc(SP.semLabel(r.semester_asal) + ' ' + r.ta_asal) + '</td>' +
           '<td data-l="Jadwal"><b>' + esc(SP.targetLabel(r)) + '</b>' +
             (r.kelas_ulang_id ? '<br><small class="muted">Kelas ' + esc(SP.kelasNama(r.kelas_ulang_id)) + '</small>' : '') +
@@ -175,11 +175,11 @@
         const tagSem = SP.semLabel(item.semester) + ' ' + item.tahun_ajaran + (isAktif ? ' • Semester Aktif' : '');
         const sel = (kelasPilihan && item.kelas_id === kelasPilihan) ? ' selected' : '';
         return '<option value="' + esc(item.kelas_id) + '" data-pg="' + esc(item.pg_id) + '" data-tutor="' + esc(item.tutor_email) + '" data-sem="' + esc(item.semester) + '" data-ta="' + esc(item.tahun_ajaran) + '"' + sel + '>' +
-          esc(SP.kelasNama(item.kelas_id) + ' — Tutor ' + SP.namaUser(item.tutor_email) + ' (' + tagSem + ')') +
+          esc(SP.kelasNama(item.kelas_id) + ': Tutor ' + SP.namaUser(item.tutor_email) + ' (' + tagSem + ')') +
           '</option>';
       }).join('');
       opsiHtml += '<option value="__TANPA_KELAS__" data-pg="" data-tutor="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '"' + (kelasPilihan === '__TANPA_KELAS__' ? ' selected' : '') + '>' +
-        esc('— Atur Ulang Jadwal ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + ' (Tanpa Kelas Dulu / Menunggu Kelas) —') +
+        esc('(Atur Ulang Jadwal ke ' + SP.semLabel(semPilihan) + ' ' + taPilihan + ': Tanpa Kelas Dulu / Menunggu Kelas)') +
         '</option>';
     } else if (cocokSem) {
       opsiHtml += '<option value="__TANPA_KELAS__" data-pg="" data-tutor="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '" selected>' +
@@ -191,12 +191,12 @@
           const tagSem = SP.semLabel(semPilihan) + ' ' + item.tahun_ajaran + ' • TIDAK SESUAI SEMESTER';
           const sel = (kelasPilihan && item.kelas_id === kelasPilihan) ? ' selected' : '';
           return '<option value="' + esc(item.kelas_id) + '" data-pg="' + esc(item.pg_id) + '" data-tutor="' + esc(item.tutor_email) + '" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(item.tahun_ajaran) + '"' + sel + '>' +
-            esc(SP.kelasNama(item.kelas_id) + ' — Tutor ' + SP.namaUser(item.tutor_email) + ' (' + tagSem + ')') +
+            esc(SP.kelasNama(item.kelas_id) + ': Tutor ' + SP.namaUser(item.tutor_email) + ' (' + tagSem + ')') +
             '</option>';
         }).join('');
       } else {
         opsiHtml += '<option value="" data-pg="" data-tutor="" data-sem="' + esc(semPilihan) + '" data-ta="' + esc(taPilihan) + '" selected>' +
-          esc('— Tidak sesuai semester (Wajib Semester ' + SP.semLabel(semWajib) + ') —') +
+          esc('(Tidak sesuai semester: Wajib Semester ' + SP.semLabel(semWajib) + ')') +
           '</option>';
       }
     }
@@ -499,7 +499,7 @@
       (pg.total ? '<div class="tbl-wrap" style="border:0;border-radius:0"><table class="tbl cards compact"><thead><tr><th>Kelas</th><th>Tutor pengampu (Arab / Ing)</th><th class="right">Jml Mhs</th>' + SP.PROGRAM.map(function (p) { return '<th class="right">' + esc(SP.PROG_SHORT[p]) + '</th>'; }).join('') + '<th class="right">Lulus penuh</th><th class="right">Wajib ulang</th><th>Aksi</th></tr></thead><tbody>' +
         pg.items.map(function (x) {
           const rendah = x.pctPenuh !== null && x.pctPenuh < target;
-          return '<tr><td data-l="Kelas" class="nm" style="white-space:nowrap"><b><span class="dotp" style="color:' + (rendah ? 'var(--accent)' : 'var(--primary)') + '"></span> ' + esc(x.k.nama) + '</b><small>' + esc(x.k.prodi || '—') + '</small></td><td data-l="Tutor" style="font-size:12.5px">' + esc(x.tutor.ARAB || '—') + '<br><span class="muted">' + esc(x.tutor.INGGRIS || '—') + '</span></td><td data-l="Jml" class="right num">' + x.n + '</td>' +
+          return '<tr><td data-l="Kelas" class="nm" style="white-space:nowrap"><b><span class="dotp" style="color:' + (rendah ? 'var(--accent)' : 'var(--primary)') + '"></span> ' + esc(x.k.nama) + '</b><small>' + esc(x.k.prodi || '-') + '</small></td><td data-l="Tutor" style="font-size:12.5px">' + esc(x.tutor.ARAB || '-') + '<br><span class="muted">' + esc(x.tutor.INGGRIS || '-') + '</span></td><td data-l="Jml" class="right num">' + x.n + '</td>' +
             SP.PROGRAM.map(function (p) { const v = x.pp[p].pct; return '<td data-l="' + esc(SP.PROG_SHORT[p]) + '" class="right num" style="' + (v !== null && v < target ? 'color:var(--accent-d);font-weight:700' : '') + '">' + SP.pctStr(v) + '</td>'; }).join('') +
             '<td data-l="Lulus penuh" class="right num"><b style="' + (rendah ? 'color:var(--accent-d)' : 'color:var(--primary)') + '">' + SP.pctStr(x.pctPenuh) + '</b><br><small class="muted">' + x.penuh + ' mahasiswa</small></td><td data-l="Wajib ulang" class="right"><span class="badge ' + (x.wajib ? 'b-warn' : 'b-neutral') + '">' + x.wajib + ' org</span></td>' +
             '<td><button class="btn btn-outline btn-sm" data-act="lapRincian" data-id="' + esc(x.id) + '">Rincian ' + SP.icon('arrowRight', 'sm') + '</button></td></tr>';

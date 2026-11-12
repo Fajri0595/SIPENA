@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — views-main.js
+// SIPENA: views-main.js
 // Dasbor, Kelas Saya, Input Nilai.
 // ============================================================
 (function () {
@@ -50,7 +50,7 @@
   SP.parts.dasProgram = function () {
     const d = persenProgram();
     return '<div class="vbars">' + d.map(function (x) {
-      return '<div class="vbar"><div class="p num">' + (x.pct === null ? '—' : Math.round(x.pct) + '%') + '</div><div class="b" style="height:' + (x.pct === null ? 4 : Math.max(4, x.pct * 1.15)) + 'px;' + (x.p.indexOf('ING') === 0 ? 'background:#2F7D4B' : '') + '"></div><div class="l">' + SP.PROG_KODE[x.p] + '</div></div>';
+      return '<div class="vbar"><div class="p num">' + (x.pct === null ? '-' : Math.round(x.pct) + '%') + '</div><div class="b" style="height:' + (x.pct === null ? 4 : Math.max(4, x.pct * 1.15)) + 'px;' + (x.p.indexOf('ING') === 0 ? 'background:#2F7D4B' : '') + '"></div><div class="l">' + SP.PROG_KODE[x.p] + '</div></div>';
     }).join('') + '</div><div class="legend">' + d.map(function (x) {
       return '<span><i style="background:' + (x.p.indexOf('ING') === 0 ? '#2F7D4B' : 'var(--primary)') + '"></i>' + esc(SP.PROG_SHORT[x.p]) + ' (' + SP.pctStr(x.pct) + ')</span>';
     }).join('') + '</div>' + SP.callout({ ikon: 'info', judul: 'Peraturan Kelulusan:', teks: 'Mahasiswa dinyatakan lulus dan berhak sertifikat hanya bila <b>keempat program</b> (Arab &amp; Inggris, Ganjil &amp; Genap) berstatus Lulus.' });
@@ -95,7 +95,7 @@
 
       h += '<div class="grid4 mb16">' +
         SP.stat({ label: 'Kelas diampu', nilai: aktif.length, satuan: 'Kelas', ikon: 'book', warna: 'g', foot: '<span>' + nArab + ' Arab · ' + nIng + ' Inggris</span><span class="muted3">' + Object.keys(kelasUnik).length + ' rombel</span>' }) +
-        SP.stat({ label: 'Nilai terisi', nilai: pct === null ? '—' : SP.pctStr(pct), satuan: terisi + '/' + total + ' Mhs', ikon: 'edit', warna: 'b', progress: pct || 0,
+        SP.stat({ label: 'Nilai terisi', nilai: pct === null ? '-' : SP.pctStr(pct), satuan: terisi + '/' + total + ' Mhs', ikon: 'edit', warna: 'b', progress: pct || 0,
           foot: '<span>' + SP.icon('clock', 'sm') + ' ' + (batas ? 'Batas: ' + SP.tgl(batas.tgl, true) : 'Batas belum diatur') + '</span><b>' + (total - terisi) + ' Sisa</b>' }) +
         SP.stat({ label: 'Mahasiswa lulus', nilai: SP.n(nLulus), satuan: 'Mahasiswa', ikon: 'checkCircle', warna: 'g', foot: '<span>' + SP.icon('trending', 'sm') + ' ' + SP.pctStr(SP.pct(nLulus, baris.length)) + ' dari ' + SP.n(baris.length) + ' mahasiswa</span>' }) +
         SP.stat({ label: 'Wajib mengulang', nilai: SP.n(nWajib), satuan: 'Mahasiswa', ikon: 'rotate', warna: 'o', kelas: 'warn', foot: '<span class="badge b-warn">Perlu tindak lanjut</span><a href="#/mengulang"><b>Verifikasi</b></a>' }) +
@@ -113,7 +113,7 @@
         h += '<div class="tbl-wrap has-foot" style="border-radius:0;border-left:0;border-right:0"><table class="tbl cards"><thead><tr><th>Kelas</th><th>Program studi</th><th>Mata program</th><th>Tutor</th><th>Mahasiswa belum dinilai</th><th>Status</th><th class="right">Aksi</th></tr></thead><tbody>' +
           belumLengkap.map(function (r) {
             const dapat = SP.bolehTulis(r.pg);
-            return '<tr><td data-l="Kelas"><span class="chip" style="font-weight:700">' + esc(r.kelas.nama) + '</span></td><td data-l="Program studi" class="nm"><b>' + esc(r.kelas.prodi || '—') + '</b><small>Angkatan ' + esc(r.kelas.angkatan || '—') + '</small></td>' +
+            return '<tr><td data-l="Kelas"><span class="chip" style="font-weight:700">' + esc(r.kelas.nama) + '</span></td><td data-l="Program studi" class="nm"><b>' + esc(r.kelas.prodi || '-') + '</b><small>Angkatan ' + esc(r.kelas.angkatan || '-') + '</small></td>' +
               '<td data-l="Mata program">' + SP.icon(r.pg.bahasa === 'ARAB' ? 'edit' : 'globe', 'sm') + ' ' + esc(labelProgramPg(r.pg)) + '</td>' +
               '<td data-l="Tutor"><span class="row gap8"><span class="avatar sm lt">' + esc(SP.inisial(SP.namaUser(r.pg.tutor_email))) + '</span>' + esc(SP.namaUser(r.pg.tutor_email)) + '</span></td>' +
               '<td data-l="Belum dinilai"><span class="badge b-warn">' + SP.icon('clock') + r.k.belum + ' belum diisi</span></td><td data-l="Status"><span style="color:var(--primary);font-weight:600"><span class="dotp"></span> Aktif</span></td>' +
@@ -157,9 +157,9 @@
         (tntas ? '<p class="mt8" style="font-size:13px;color:var(--ok-tx)">' + SP.icon('checkCircle', 'sm') + ' Selesai lengkap</p>' : rendah ? '<p class="mt8" style="font-size:13px;color:var(--accent-d)">' + SP.icon('alert', 'sm') + ' ' + k.belum + ' nilai belum diisi</p>' : '');
     }
     return '<div class="card kc ' + (peran === 'PENGGANTI' ? 'pengganti' : '') + ' ' + (arsip ? 'arsip' : '') + '"><div class="kb"><div class="kt">' + bahasaChip + (arsip ? '<span class="chip nul">' + SP.icon('folder', 'sm') + ' Terarsip</span>' : chipPeran) + '</div>' +
-      '<div class="kn">' + esc(r.kelas.nama) + '</div><div class="ks">' + esc(r.kelas.prodi || '—') + ' · ' + esc(SP.semLabel(pg.semester) + ' ' + pg.tahun_ajaran) + '</div>' +
+      '<div class="kn">' + esc(r.kelas.nama) + '</div><div class="ks">' + esc(r.kelas.prodi || '-') + ' · ' + esc(SP.semLabel(pg.semester) + ' ' + pg.tahun_ajaran) + '</div>' +
       (peran === 'PENGGANTI' ? '<p class="mt8" style="font-size:12.5px;color:var(--accent-d)">' + SP.icon('swap', 'sm') + ' Menggantikan ' + esc(SP.namaUser(pg.tutor_email)) + ' (s.d. ' + SP.tgl(pgn.selesai) + ')</p>' : '') +
-      '<div class="kbox"><span class="row gap8">' + SP.icon('users', 'sm') + '<b>' + k.total + ' Mahasiswa</b></span><span class="muted">Angkatan ' + esc(r.kelas.angkatan || '—') + '</span></div>' + status + '</div>' +
+      '<div class="kbox"><span class="row gap8">' + SP.icon('users', 'sm') + '<b>' + k.total + ' Mahasiswa</b></span><span class="muted">Angkatan ' + esc(r.kelas.angkatan || '-') + '</span></div>' + status + '</div>' +
       '<div class="kf">' + (arsip ? '<button class="btn btn-outline" data-act="lihatRiwayat" data-pg="' + esc(pg.id) + '">' + SP.icon('history') + ' Lihat Riwayat</button>'
         : (dapat ? '<a class="btn ' + (rendah ? 'btn-accent' : 'btn-primary') + '" href="#/nilai/' + encodeURIComponent(pg.id) + '">' + SP.icon(rendah ? 'alert' : 'edit') + ' Input Nilai</a>' : '<a class="btn btn-outline" href="#/nilai/' + encodeURIComponent(pg.id) + '">' + SP.icon('eye') + ' Lihat Nilai</a>') +
           '<button class="btn btn-outline" data-act="lihatRiwayat" data-pg="' + esc(pg.id) + '">Lihat Riwayat</button>') + '</div></div>';
@@ -229,12 +229,12 @@
     const kelas = SP.X.kelas[pg.kelas_id], b = SP.barisRoster(pg);
     const nilaiCell = function (nim, p) { return SP.badge(SP.statusProgram(nim, p), null, true); };
     SP.modal({
-      judul: 'Riwayat — ' + kelas.nama + ' · ' + labelProgramPg(pg), lebar: 920,
+      judul: 'Riwayat: ' + kelas.nama + ' · ' + labelProgramPg(pg), lebar: 920,
       isi: '<p class="muted mb16">' + esc(SP.semLabel(pg.semester) + ' ' + pg.tahun_ajaran) + ' · Tutor: ' + esc(SP.namaUser(pg.tutor_email)) + ' · ' + b.length + ' mahasiswa</p><div class="tbl-wrap"><table class="tbl"><thead><tr><th>NIM</th><th>Nama</th>' +
         SP.PROGRAM.map(function (p) { return '<th>' + esc(SP.PROG_SHORT[p]) + '</th>'; }).join('') + '<th>Status Akhir</th></tr></thead><tbody>' +
         b.map(function (r) {
           const kel = SP.kelulusan(r.nim);
-          return '<tr><td class="mono">' + esc(r.nim) + '</td><td>' + esc(r.mhs ? r.mhs.nama : '—') + '</td>' + SP.PROGRAM.map(function (p) { return '<td>' + nilaiCell(r.nim, p) + '</td>'; }).join('') + '<td>' + SP.badge(kel.akhir) + '</td></tr>';
+          return '<tr><td class="mono">' + esc(r.nim) + '</td><td>' + esc(r.mhs ? r.mhs.nama : '-') + '</td>' + SP.PROGRAM.map(function (p) { return '<td>' + nilaiCell(r.nim, p) + '</td>'; }).join('') + '<td>' + SP.badge(kel.akhir) + '</td></tr>';
         }).join('') + '</tbody></table></div>',
       footer: '<button class="btn btn-outline" data-act="tutupModal">Tutup</button>'
     });
@@ -306,13 +306,13 @@
     return '<div class="tbl-wrap has-foot"><table class="tbl cards"><thead><tr><th class="col-no">No</th><th>NIM</th><th>Nama Mahasiswa</th><th>Status Nilai Akhir</th><th>Riwayat Program Lain</th><th>Keterangan</th><th>Terakhir Diperbarui</th></tr></thead><tbody>' +
       pgn.items.map(function (r, i) {
         return '<tr class="' + (r.status === 'BELUM' ? 'rowwarn' : '') + '" data-nim="' + esc(r.nim) + '"><td data-l="No" class="col-no num muted">' + String(pgn.dari + i).padStart(2, '0') + '</td><td data-l="NIM" class="mono"><b>' + esc(r.nim) + '</b></td>' +
-          '<td data-l="Nama" class="nm"><b>' + esc(r.mhs ? r.mhs.nama : '—') + (r.ubah ? ' <span class="dotp" style="color:var(--accent)" title="Belum disimpan"></span>' : '') + '</b><small>' + esc((SP.X.kelas[pg.kelas_id] || {}).prodi || '') + '</small></td>' +
+          '<td data-l="Nama" class="nm"><b>' + esc(r.mhs ? r.mhs.nama : '-') + (r.ubah ? ' <span class="dotp" style="color:var(--accent)" title="Belum disimpan"></span>' : '') + '</b><small>' + esc((SP.X.kelas[pg.kelas_id] || {}).prodi || '') + '</small></td>' +
           '<td data-l="Status nilai"><div class="row gap8 wrap" style="align-items:center">' +
           '<input type="number" min="0" max="100" class="input num inp-nilai" style="width:68px;height:32px;padding:0 6px;text-align:center;font-weight:700" placeholder="0–100" value="' + esc(r.angka !== undefined ? r.angka : '') + '" data-in="nilaiAngka" data-ch="nilaiAngka" data-nim="' + esc(r.nim) + '" ' + (dapat ? '' : 'disabled') + ' tabindex="0" aria-label="Nilai angka 0-100">' +
           '<div class="seg">' + btn(r, 'LULUS', 'Lulus', 'on-ok', 'check') + btn(r, 'TIDAK_LULUS', 'Tdk Lulus', 'on-bad', 'x') + btn(r, 'BELUM', 'Belum', 'on-null', 'minus') + '</div>' +
           (dapat ? '' : ' <span class="muted3">' + SP.icon('lock', 'sm') + '</span>') + '</div></td>' +
           '<td data-l="Riwayat program lain"><div class="row wrap gap4">' + riwayatLain(r, pg) + '</div></td><td data-l="Keterangan">' + tag(r) + '</td>' +
-          '<td data-l="Diperbarui" class="muted" style="font-size:12.5px">' + (r.row ? SP.waktu(r.row.waktu_ubah) + '<br>oleh ' + esc(SP.namaUser(r.row.penginput).split(' ')[0]) : '— Belum ada<br>Draf') + '</td></tr>';
+          '<td data-l="Diperbarui" class="muted" style="font-size:12.5px">' + (r.row ? SP.waktu(r.row.waktu_ubah) + '<br>oleh ' + esc(SP.namaUser(r.row.penginput).split(' ')[0]) : '- Belum ada<br>Draf') + '</td></tr>';
       }).join('') + '</tbody></table></div><div class="tbl-foot"><span>Menampilkan ' + pgn.dari + ' – ' + pgn.sampai + ' dari <b>' + pgn.total + '</b> Mahasiswa <select class="select" style="width:auto;height:30px;margin-left:8px" data-ch="nilaiPer" aria-label="Baris per halaman">' + [10, 25, 50, 100].map(function (n) { return '<option ' + (n === u.per ? 'selected' : '') + '>' + n + '</option>'; }).join('') + '</select></span>' + SP.pagerHtml('nilaiHal', pgn) + '</div>';
   };
 
@@ -340,11 +340,11 @@
       }
       const kelas = SP.X.kelas[pg.kelas_id], batas = sisaHariBatas();
       const opsi = daftar.slice().sort(function (a, b) { return (SP.pgAktif(b) ? 1 : 0) - (SP.pgAktif(a) ? 1 : 0) || (a.kelas_id < b.kelas_id ? -1 : 1); }).map(function (p) {
-        return '<option value="' + esc(p.id) + '" ' + (p.id === pg.id ? 'selected' : '') + '>' + esc(SP.kelasNama(p.kelas_id) + ' — ' + labelProgramPg(p) + ' (' + p.tahun_ajaran + (SP.pgAktif(p) ? '' : ', arsip') + ')') + '</option>';
+        return '<option value="' + esc(p.id) + '" ' + (p.id === pg.id ? 'selected' : '') + '>' + esc(SP.kelasNama(p.kelas_id) + ': ' + labelProgramPg(p) + ' (' + p.tahun_ajaran + (SP.pgAktif(p) ? '' : ', arsip') + ')') + '</option>';
       }).join('');
       return '<nav class="crumbs"><a href="#/dasbor">Dasbor</a>' + SP.icon('chevronRight', 'sm') + '<a href="#/kelas">Kelas Saya</a>' + SP.icon('chevronRight', 'sm') + '<span>' + esc(kelas.nama) + '</span>' + SP.icon('chevronRight', 'sm') + '<b>Input Nilai</b></nav>' +
         '<a class="back" href="#/kelas">' + SP.icon('arrowLeft') + ' Kembali ke Kelas Saya</a>' +
-        '<div class="ph"><div><h1 class="h1">Input Nilai Akhir — Kelas ' + esc(kelas.nama) + '</h1><p class="lead">Program: <b>' + esc(SP.bahasaLabel(pg.bahasa)) + '</b> · ' + esc(SP.semLabel(pg.semester) + ' ' + pg.tahun_ajaran) + ' · Tutor: <b>' + esc(SP.namaUser(pg.tutor_email)) + '</b></p></div>' +
+        '<div class="ph"><div><h1 class="h1">Input Nilai Akhir: Kelas ' + esc(kelas.nama) + '</h1><p class="lead">Program: <b>' + esc(SP.bahasaLabel(pg.bahasa)) + '</b> · ' + esc(SP.semLabel(pg.semester) + ' ' + pg.tahun_ajaran) + ' · Tutor: <b>' + esc(SP.namaUser(pg.tutor_email)) + '</b></p></div>' +
         '<div class="ph-act">' + (SP.pgAktif(pg) ? '<span class="chip ok">' + SP.icon('checkCircle', 'sm') + ' SEMESTER AKTIF</span>' : '<span class="chip nul">' + SP.icon('folder', 'sm') + ' ARSIP</span>') +
         '<div class="card" style="padding:10px 16px"><div class="cap">Batas penilaian</div><b>' + (batas ? SP.tgl(batas.tgl) + (batas.hari >= 0 ? ' (Sisa ' + batas.hari + ' Hari)' : ' (Terlewat)') : 'Belum diatur') + '</b></div></div></div>' +
         '<div class="field mb16" style="max-width:560px"><label for="pgSel">Kelas &amp; program</label><select id="pgSel" class="select" data-ch="nilaiPg">' + opsi + '</select></div>' +

@@ -1,5 +1,5 @@
 // ============================================================
-// SIPENA — api.js
+// SIPENA: api.js
 // - Autentikasi Google Sign-In (ID token) + Token Sesi HMAC 12 Jam (gas-scale-turbo)
 // - Akses Darurat Superadmin (gas-rahasia-script-properties)
 // - Panggilan REST ke Google Apps Script dengan Idempotency (reqId),
